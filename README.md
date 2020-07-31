@@ -36,6 +36,6 @@ between Windows and Linux)
 
 - `pacman -Rs $(pacman -Qtdq)` Removes all uneeded* dependencies. `pacman -Rs <package>` removes
 the package and it's uneeded dependencies
-  - * Be sure to check the list using just `pacman -Qtdq`
+  - Be sure to check the list using just `pacman -Qtdq`
 
 - I use Arch btw XD
