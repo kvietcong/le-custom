@@ -38,4 +38,7 @@ between Windows and Linux)
 the package and it's uneeded dependencies
   - Be sure to check the list using just `pacman -Qtdq`
 
+- Using the `alt` keys as a Window Manager's Mod keys is so much more ergonomic for me.
+You can use it on both sides and it strains a lot less than the Super (Windows) Key
+
 - I use Arch btw XD
