@@ -20,7 +20,7 @@ between Windows and Linux)
 
 - If stranded in an Arch install without Ethernet, use `iwctl`
   - To ensure your wifi adapter isn't blocked use `rfkill unblock all`
-    - If you don't want to unblock all, I believe it can be replaced with `wifi`
+    - If you don't want to unblock `all`, I believe it can be replaced with `wifi`
   - If you don't know your wifi adapter's name you can use `device list` after getting
   into the `iwctl` shell
   - To actually connect, go into `iwctl` and type `station <Device Name> connect <Network Name>`
@@ -29,4 +29,13 @@ between Windows and Linux)
 
 - `lsblk` is a lot cleaner to see partitions compared to `fsdisk -l`
 
-- I use Arch btw
+- To remove mouse acceleration, configure your xorg files according to
+[this](https://wiki.archlinux.org/index.php/Mouse_acceleration) Arch wiki page
+  - It seems that the first option disables acceleration but also is a bit slower
+  than Windows. Use the second option with `libinput` for a more Window's like sensitivity
+
+- `pacman -Rs $(pacman -Qtdq)` Removes all uneeded* dependencies. `pacman -Rs <package>` removes
+the package and it's uneeded dependencies
+  - * Be sure to check the list using just `pacman -Qtdq`
+
+- I use Arch btw XD
