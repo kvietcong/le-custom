@@ -45,4 +45,7 @@ You can use it on both sides and it strains a lot less than the Super (Windows) 
   - Xresources (`.Xresources`) is a files in the `~` directory that is a common place that
   programs "pick" their colors from
 
+- Easy way to find window class: `xprop WM_CLASS` in the console lets you click on any window
+and retrieve's its window class
+
 - I use Arch btw XD
