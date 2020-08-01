@@ -41,4 +41,8 @@ the package and it's uneeded dependencies
 - Using the `alt` keys as a Window Manager's Mod keys is so much more ergonomic for me.
 You can use it on both sides and it strains a lot less than the Super (Windows) Key
 
+- Great Xresources color theme maker can be found [here](https://github.com/deviantfero/wpgtk)
+  - Xresources (`.Xresources`) is a files in the `~` directory that is a common place that
+  programs "pick" their colors from
+
 - I use Arch btw XD
