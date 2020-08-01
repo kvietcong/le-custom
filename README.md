@@ -48,4 +48,6 @@ You can use it on both sides and it strains a lot less than the Super (Windows) 
 - Easy way to find window class: `xprop WM_CLASS` in the console lets you click on any window
 and retrieve's its window class
 
+- `.xinitrc` and `.xprofile` are great places for startup scripting
+
 - I use Arch btw XD
