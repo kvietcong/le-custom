@@ -9,7 +9,8 @@ to just good things to know
   `pulseaudio` and `pulseaudio-alsa`
   - I also used `pulsemixer` to mix the sounds
 
-- When using lightdm, it seems to also require the `lightdm-gtk-greeter`
+- When using lightdm, it also requires some type of greeter like `lightdm-gtk-greeter`
+or `lightdm-webkit2-greeter`
 
 - You cannot partition nested partitions (Useful when splitting drive
 between Windows and Linux)
@@ -49,5 +50,11 @@ You can use it on both sides and it strains a lot less than the Super (Windows) 
 and retrieve's its window class
 
 - `.xinitrc` and `.xprofile` are great places for startup scripting
+
+- Forget to do `sudo` on a command? Just type `sudo !!` after your mistake. `!!` repeats the
+immediately preceeding command
+
+- To allow a script (usually `.sh` files) to execute, you must give them the proper flags with
+`chmod u+x <File Name>`
 
 - I use Arch btw XD
