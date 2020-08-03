@@ -50,4 +50,7 @@ and retrieve's its window class
 
 - `.xinitrc` and `.xprofile` are great places for startup scripting
 
+- Forget to do `sudo` on a command? Just type `sudo !!` after your mistake. `!!` repeats the
+immediately preceeding command
+
 - I use Arch btw XD
