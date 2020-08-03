@@ -54,4 +54,7 @@ and retrieve's its window class
 - Forget to do `sudo` on a command? Just type `sudo !!` after your mistake. `!!` repeats the
 immediately preceeding command
 
+- To allow a script (usually `.sh` files) to execute, you must give them the proper flags with
+`chmod u+x <File Name>`
+
 - I use Arch btw XD
