@@ -57,4 +57,7 @@ immediately preceeding command
 - To allow a script (usually `.sh` files) to execute, you must give them the proper flags with
 `chmod u+x <File Name>`
 
+- Adding `export <Variable Name>=<Value>` to your `.bashrc` or `.zshrc` seems to block mouse clicking
+(confirmed in vim) (To solve)
+
 - I use Arch btw XD
