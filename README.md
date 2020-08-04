@@ -60,4 +60,6 @@ immediately preceeding command
 - Adding `export <Variable Name>=<Value>` to your `.bashrc` or `.zshrc` seems to block mouse clicking
 (confirmed in vim) (To solve)
 
+- You can sync Linux and Windows time with `timedatectl set-local-rtc 1 --adjust-system-clock` on Linux
+
 - I use Arch btw XD
