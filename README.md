@@ -57,4 +57,9 @@ immediately preceeding command
 - To allow a script (usually `.sh` files) to execute, you must give them the proper flags with
 `chmod u+x <File Name>`
 
+- Adding `export <Variable Name>=<Value>` to your `.bashrc` or `.zshrc` seems to block mouse clicking
+(confirmed in vim) (To solve)
+
+- You can sync Linux and Windows time with `timedatectl set-local-rtc 1 --adjust-system-clock` on Linux
+
 - I use Arch btw XD
