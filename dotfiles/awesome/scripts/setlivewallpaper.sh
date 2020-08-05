@@ -14,7 +14,8 @@ declare -a PIDs
 # A private function to execute xwinwrap+mpv for a live wallpaper and add
 # PIDs for later usage
 _screen() {
-    xwinwrap -ov -ni -g "$1" -- mpv --fullscreen --no-stop-screensaver \
+    xwinwrap -ov -ni -nf -un -g "$1" -- \
+        mpv --fullscreen --no-stop-screensaver \
         --hwdec=auto --vo=gpu --loop --no-audio --no-osd-bar \
         -wid WID --no-input-default-bindings "$2" & PIDs+=($!)
 }
