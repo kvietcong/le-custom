@@ -1,10 +1,22 @@
-" My Added Options
-set relativenumber
-set autoindent
-set autoread
-set laststatus=2
-set showtabline=2
-set noshowmode
+" ===================
+" KV Le's Vim Configs
+" ===================
+
+" Plug manager configuration
+call plug#begin()
+Plug 'vim-airline/vim-airline'
+Plug 'deviantfero/wpgtk.vim'
+Plug 'tpope/vim-surround'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-fugitive'
+Plug 'sheerun/vim-polyglot'
+Plug 'tpope/vim-repeat'
+Plug 'preservim/nerdtree'
+call plug#end()
+
+colorscheme wpgtk
+set relativenumber autoindent autoread noshowmode ignorecase
+set encoding=utf-8
 
 " Sets tabs to 4 wide and expands them into spaces
 set tabstop=4 shiftwidth=4 expandtab
