@@ -53,33 +53,27 @@ user = {
     editor = os.getenv("EDITOR") or "vim",
     browser = "google-chrome-stable",
     theme = "static",
+    modkey = "Mod1"
 }
-user["editor_cmd"] = user.terminal .. " -e " .. user.editor
+user["editor_cmd"] = user.terminal .. " " .. user.editor
+modkey = user.modkey
+superkey = "Mod4"
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
 -- beautiful.init(gears.filesystem.get_themes_dir() .. "xresources/theme.lua")
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/" .. user.theme .. "/theme.lua")
 
--- Default modkey.
--- Usually, Mod4 is the key with a logo between Control and Alt.
--- If you do not like this or do not have such a key,
--- I suggest you to remap Mod4 to another key using xmodmap or other tools.
--- However, you can use another modifier like Mod1, but it may interact with others.
--- modkey = "Mod4"
-
-modkey = "Mod1"
-
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
-    awful.layout.suit.spiral.dwindle,
-    awful.layout.suit.corner.nw,
-    awful.layout.suit.tile.bottom,
     awful.layout.suit.tile,
+    awful.layout.suit.spiral.dwindle,
     awful.layout.suit.floating,
     awful.layout.suit.max,
-    -- awful.layout.suit.spiral,
     -- awful.layout.suit.max.fullscreen,
+    -- awful.layout.suit.tile.bottom,
+    -- awful.layout.suit.corner.nw,
+    -- awful.layout.suit.spiral,
     -- awful.layout.suit.tile.left,
     -- awful.layout.suit.tile.top,
     -- awful.layout.suit.fair,
@@ -95,7 +89,7 @@ awful.layout.layouts = {
 -- Create a launcher widget and a main menu
 myawesomemenu = {
    { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
-   { "manual", user.terminal .. " -e man awesome" },
+--   { "manual", user.terminal .. " -e man awesome" },
    { "edit config", user.editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
    { "quit", function() awesome.quit() end },
@@ -117,8 +111,9 @@ menubar.utils.terminal = user.terminal -- Set the terminal for applications that
 mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{ Wibar
+
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock()
+mytextclock = wibox.widget.textclock(" %a %b %e, %H:%M ")
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -175,12 +170,17 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+local spotify_widget = require("awesome-wm-widgets.spotify-widget.spotify")
+function padding_widget (pad_size)
+    return wibox.widget.textbox(string.rep(" ", pad_size))
+end
+
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    awful.tag({ "1", "2", "3", "4", "5" }, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -192,6 +192,7 @@ awful.screen.connect_for_each_screen(function(s)
                            awful.button({ }, 3, function () awful.layout.inc(-1) end),
                            awful.button({ }, 4, function () awful.layout.inc( 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(-1) end)))
+
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
         screen  = s,
@@ -215,14 +216,21 @@ awful.screen.connect_for_each_screen(function(s)
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
             mylauncher,
+            padding_widget(1),
             s.mytaglist,
-            s.mypromptbox,
+            padding_widget(1),
         },
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
+            padding_widget(1),
+            spotify_widget({
+                play_icon = '/usr/share/icons/Papirus-Light/24x24/categories/spotify.svg',
+                pause_icon = '/usr/share/icons/Papirus-Dark/24x24/panel/spotify-indicator.svg',
+            }),
+            padding_widget(1),
             wibox.widget.systray(),
+            padding_widget(1),
             mytextclock,
             s.mylayoutbox,
         },
@@ -286,28 +294,28 @@ globalkeys = gears.table.join(
     --     {description = "go back", group = "client"}),
 
     -- Standard programs
-    awful.key({ modkey,           }, "Return", function () awful.spawn(user.terminal) end,
+    awful.key({ modkey, }, "Return", function () awful.spawn(user.terminal) end,
               {description = "open a terminal", group = "launcher"}),
     awful.key({ modkey, "Control" }, "r", awesome.restart,
               {description = "reload awesome", group = "awesome"}),
-    awful.key({ modkey, "Shift"   }, "q", awesome.quit,
+    awful.key({ modkey, "Shift" }, "q", awesome.quit,
               {description = "quit awesome", group = "awesome"}),
 
-    awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)          end,
+    awful.key({ modkey, }, "l",     function () awful.tag.incmwfact( 0.025)          end,
               {description = "increase master width factor", group = "layout"}),
-    awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)          end,
+    awful.key({ modkey, }, "h",     function () awful.tag.incmwfact(-0.025)          end,
               {description = "decrease master width factor", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
+    awful.key({ modkey, "Shift" }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
               {description = "increase the number of master clients", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
+    awful.key({ modkey, "Shift" }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
               {description = "decrease the number of master clients", group = "layout"}),
     awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
               {description = "increase the number of columns", group = "layout"}),
     awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
               {description = "decrease the number of columns", group = "layout"}),
-    awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
+    awful.key({ modkey, }, "space", function () awful.layout.inc( 1)                end,
               {description = "select next", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
+    awful.key({ modkey, "Shift" }, "space", function () awful.layout.inc(-1)                end,
               {description = "select previous", group = "layout"}),
     awful.key({ modkey, "Control" }, "n",
               function ()
@@ -321,20 +329,24 @@ globalkeys = gears.table.join(
               end,
               {description = "restore minimized", group = "client"}),
 
-    -- Prompt
-    -- awful.key({ modkey }, "r", function () awful.screen.focused().mypromptbox:run() end,
-    --           {description = "run prompt", group = "launcher"}),
+    -- Run typed command in shell
+    awful.key({ superkey  }, "r", function () awful.screen.focused().mypromptbox:run() end,
+               {description = "run prompt", group = "launcher"}),
+ 
+    -- New Prompt
+    awful.key({ modkey }, "r", function() awful.spawn("rofi -show run") end,
+               { description = "show the run menu", group = "launcher" }),
 
-    awful.key({ modkey }, "x",
-              function ()
-                  awful.prompt.run {
-                    prompt       = "Run Lua code: ",
-                    textbox      = awful.screen.focused().mypromptbox.widget,
-                    exe_callback = awful.util.eval,
-                    history_path = awful.util.get_cache_dir() .. "/history_eval"
-                  }
-              end,
-              {description = "lua execute prompt", group = "awesome"}),
+    -- awful.key({ modkey }, "x",
+    --           function ()
+    --               awful.prompt.run {
+    --                 prompt       = "Run Lua code: ",
+    --                 textbox      = awful.screen.focused().mypromptbox.widget,
+    --                 exe_callback = awful.util.eval,
+    --                 history_path = awful.util.get_cache_dir() .. "/history_eval"
+    --               }
+    --           end,
+    --           {description = "lua execute prompt", group = "awesome"}),
 
     -- Original Menubar
     -- awful.key({ modkey }, "p", function() menubar.show() end,
@@ -342,7 +354,7 @@ globalkeys = gears.table.join(
 
     -- New Menubar (Rofi)
     awful.key({ modkey }, "p", function() awful.spawn("rofi -show drun") end,
-               { description = "show the menubar", group = "launcher" }),
+               { description = "show the application launcher", group = "launcher" }),
 
     -- Custom Keybindings
     awful.key({ modkey }, "b", function () awful.spawn(user.browser) end,
