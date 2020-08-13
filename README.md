@@ -62,4 +62,7 @@ immediately preceeding command
 
 - You can sync Linux and Windows time with `timedatectl set-local-rtc 1 --adjust-system-clock` on Linux
 
+- Fonts are important! If you see a lot of missing symbols within your linux install remember to get
+font packages that support the symbols you'll be using.
+
 - I use Arch btw XD
