@@ -59,9 +59,8 @@ user["editor_cmd"] = user.terminal .. " " .. user.editor
 modkey = user.modkey
 superkey = "Mod4"
 
--- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
--- beautiful.init(gears.filesystem.get_themes_dir() .. "xresources/theme.lua")
+-- beautiful.init(gears.filesystem.get_themes_dir() .. "gtk/theme.lua")
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/" .. user.theme .. "/theme.lua")
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
@@ -69,21 +68,8 @@ awful.layout.layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.spiral.dwindle,
     awful.layout.suit.floating,
-    awful.layout.suit.max,
-    -- awful.layout.suit.max.fullscreen,
-    -- awful.layout.suit.tile.bottom,
-    -- awful.layout.suit.corner.nw,
-    -- awful.layout.suit.spiral,
-    -- awful.layout.suit.tile.left,
-    -- awful.layout.suit.tile.top,
-    -- awful.layout.suit.fair,
-    -- awful.layout.suit.fair.horizontal,
-    -- awful.layout.suit.magnifier,
-    -- awful.layout.suit.corner.ne,
-    -- awful.layout.suit.corner.sw,
-    -- awful.layout.suit.corner.se,
+    awful.layout.suit.max
 }
--- }}}
 
 -- {{{ Menu
 -- Create a launcher widget and a main menu
@@ -107,13 +93,10 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 menubar.utils.terminal = user.terminal -- Set the terminal for applications that require it
 -- }}}
 
--- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
-
 -- {{{ Wibar
 
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock(" %a %b %e, %H:%M ")
+mytextclock = wibox.widget.textclock(" ~ %a %b %e, %H:%M ~ ")
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -170,20 +153,18 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+-- Extra custom widgets to use
 local spotify_widget = require("awesome-wm-widgets.spotify-widget.spotify")
+
 function padding_widget (pad_size)
     return wibox.widget.textbox(string.rep(" ", pad_size))
 end
 
 awful.screen.connect_for_each_screen(function(s)
-    -- Wallpaper
     set_wallpaper(s)
 
-    -- Each screen has its own tag table.
     awful.tag({ "1", "2", "3", "4", "5" }, s, awful.layout.layouts[1])
 
-    -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
     -- Create an imagebox widget which will contain an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     s.mylayoutbox = awful.widget.layoutbox(s)
@@ -209,31 +190,39 @@ awful.screen.connect_for_each_screen(function(s)
 
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "top", screen = s })
+    s.bottom_wibox = awful.wibar({ position = "bottom", screen = s })
 
-    -- Add widgets to the wibox
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
-        { -- Left widgets
+        {
             layout = wibox.layout.fixed.horizontal,
             mylauncher,
-            padding_widget(1),
             s.mytaglist,
-            padding_widget(1),
         },
-        s.mytasklist, -- Middle widget
-        { -- Right widgets
+        s.mytasklist,
+        { 
             layout = wibox.layout.fixed.horizontal,
-            padding_widget(1),
+            mytextclock,
+        },
+    }
+
+    s.bottom_wibox:setup {
+        layout = wibox.layout.align.horizontal,
+        {
+            layout = wibox.layout.align.horizontal,
             spotify_widget({
-                play_icon = '/usr/share/icons/Papirus-Light/24x24/categories/spotify.svg',
-                pause_icon = '/usr/share/icons/Papirus-Dark/24x24/panel/spotify-indicator.svg',
+                play_icon = beautiful.note_on,
+                pause_icon = beautiful.note,
+                max_length = -1,
             }),
-            padding_widget(1),
+        },
+        nil,
+        {
+            layout = wibox.layout.align.horizontal,
             wibox.widget.systray(),
             padding_widget(1),
-            mytextclock,
             s.mylayoutbox,
-        },
+        }
     }
 end)
 -- }}}
@@ -604,3 +593,12 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- Autostart
 awful.spawn.with_shell("picom -cb --experimental-backends")
+
+-- Dynamic Wallpaper Setting
+script_path = gears.filesystem.get_configuration_dir() .. "scripts/"
+if beautiful.dynamic_wallpaper then
+    bg_path = gears.filesystem.get_configuration_dir() .. "themes/" .. user.theme .. "/background.mp4"
+    awful.spawn.with_shell(script_path .. "setlivewallpaper.sh " .. bg_path)
+else
+    awful.spawn.with_shell(script_path .. "killlivewallpapers.sh")
+end
