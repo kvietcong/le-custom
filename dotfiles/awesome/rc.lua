@@ -53,17 +53,20 @@ user = {
     editor = os.getenv("EDITOR") or "vim",
     browser = "google-chrome-stable",
     theme = "static",
-    modkey = "Mod1"
+    primary_key = "Mod1"
 }
-user["editor_cmd"] = user.terminal .. " " .. user.editor
-modkey = user.modkey
-superkey = "Mod4"
 
--- Themes define colours, icons, font and wallpapers.
+user["editor_cmd"] = user.terminal .. " " .. user.editor
+modkey = user.primary_key
+superkey = "Mod4"
+mod1 = user.primary_key
+mod2 = user.secondary_key
+
+-- Theme Initialization
 -- beautiful.init(gears.filesystem.get_themes_dir() .. "gtk/theme.lua")
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/" .. user.theme .. "/theme.lua")
 
--- Table of layouts to cover with awful.layout.inc, order matters.
+-- Table of layouts
 awful.layout.layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.spiral.dwindle,
@@ -95,10 +98,9 @@ menubar.utils.terminal = user.terminal -- Set the terminal for applications that
 
 -- {{{ Wibar
 
--- Create a textclock widget
-mytextclock = wibox.widget.textclock(" ~ %a %b %e, %H:%M ~ ")
-
 -- Create a wibox for each screen and add it
+local mytextclock = wibox.widget.textclock(" ~ %a %b %e, %H:%M ~ ")
+
 local taglist_buttons = gears.table.join(
                     awful.button({ }, 1, function(t) t:view_only() end),
                     awful.button({ modkey }, 1, function(t)
@@ -158,7 +160,7 @@ local spotify_widget = require("awesome-wm-widgets.spotify-widget.spotify")
 
 local volumearc_widget = require("awesome-wm-widgets.volumearc-widget.volumearc")
 
-function padding_widget (pad_size)
+local function padding_widget (pad_size)
     return wibox.widget.textbox(string.rep(" ", pad_size))
 end
 
@@ -171,10 +173,10 @@ awful.screen.connect_for_each_screen(function(s)
     -- We need one layoutbox per screen.
     s.mylayoutbox = awful.widget.layoutbox(s)
     s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
+                          awful.button({ }, 1, function () awful.layout.inc( 1) end),
+                          awful.button({ }, 3, function () awful.layout.inc(-1) end),
+                          awful.button({ }, 4, function () awful.layout.inc( 1) end),
+                          awful.button({ }, 5, function () awful.layout.inc(-1) end)))
 
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
@@ -183,56 +185,90 @@ awful.screen.connect_for_each_screen(function(s)
         buttons = taglist_buttons
     }
 
-    -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist {
-        screen  = s,
-        filter  = awful.widget.tasklist.filter.currenttags,
-        buttons = tasklist_buttons
-    }
+    -- Serves as padding for the top widgets
+    s.mywibox = awful.wibar({ position = "top", screen = s, opacity = 0, height = 58 })
+    s.mywibox:setup();
 
-    -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s })
-    s.bottom_wibox = awful.wibar({ position = "bottom", screen = s })
+    s.tag_wibox = wibox({
+        border_width = 12,
+        border_color = beautiful.bg_normal,
+        ontop = false,
+        x = s.geometry["x"] + 8 * 1.5,
+        y = s.geometry["y"] + 8,
+        width = 112,
+        height = 30,
+        screen = s,
+        visible = true,
+    })
 
-    s.mywibox:setup {
+    s.tag_wibox:setup {
         layout = wibox.layout.align.horizontal,
         {
             layout = wibox.layout.fixed.horizontal,
-            mylauncher,
             s.mytaglist,
         },
-        s.mytasklist,
-        { 
-            layout = wibox.layout.fixed.horizontal,
-            mytextclock,
-        },
     }
 
-    s.bottom_wibox:setup {
+    s.time_bar = wibox({
+        border_width = 12,
+        border_color = beautiful.bg_normal,
+        ontop = false,
+        x = s.geometry["x"] + s.geometry["width"] / 2 - 125,
+        y = s.geometry["y"] + 8,
+        width = 250,
+        height = 30,
+        screen = s,
+        visible = true,
+    })
+
+    s.time_bar:setup {
         layout = wibox.layout.align.horizontal,
+        padding_widget(1),
         {
             layout = wibox.layout.align.horizontal,
-            spotify_widget({
-                play_icon = beautiful.note_on,
-                pause_icon = beautiful.note,
-                max_length = -1,
-            }),
-            padding_widget(1),
-            volumearc_widget({
-                main_color = beautiful.fg_normal,
-                mute_color = beautiful.bg_focus,
-                thickness = 5,
-                height = 25,
-            }),
+            mytextclock,
         },
-        nil,
-        {
-            layout = wibox.layout.align.horizontal,
-            wibox.widget.systray(),
-            padding_widget(1),
-            s.mylayoutbox,
-        }
+        padding_widget(1),
     }
+
+    s.util_bar = wibox({
+        -- TODO: Find out why borders are so weird
+        border_width = 12,
+        border_color = beautiful.bg_normal,
+        ontop = false,
+        width = 100,
+        height = 30,
+        screen = s,
+        visible = true,
+    })
+    s.util_bar.y = s.geometry["y"] + 8
+
+    if s.index == 1 then
+        s.util_bar.x = s.geometry["x"] + s.geometry["width"] - 100 - 8 * 1.5 * 2.5,
+        s.util_bar:setup {
+            layout = wibox.layout.align.horizontal,
+            {
+                layout = wibox.layout.align.horizontal,
+                wibox.widget.systray(),
+            },
+        }
+    else
+        s.util_bar.width = 300
+        s.util_bar.x = s.geometry["x"] + s.geometry["width"] - s.util_bar.width - 25
+        s.util_bar:setup {
+            layout = wibox.layout.align.horizontal,
+            {
+                layout = wibox.layout.align.horizontal,
+                spotify_widget({
+                    play_icon = beautiful.note_on,
+                    pause_icon = beautiful.note,
+                    max_length = 18,
+                    font = "Monaco 8"
+                })
+            },
+        }
+    end
+            
 end)
 -- }}}
 
@@ -318,9 +354,9 @@ globalkeys = gears.table.join(
     awful.key({ modkey, "Shift" }, "q", awesome.quit,
               { description = "quit awesome", group = "awesome" }),
     awful.key({ modkey }, "b", function () awful.spawn(user.browser) end,
-              { description = "open browser", group = "custom" }),
+              { description = "open browser", group = "apps" }),
     awful.key({ modkey }, "d", function () awful.spawn("discord") end,
-              { description = "open discord", group = "custom" }),
+              { description = "open discord", group = "apps" }),
  
     -- Rofi Prompts
     awful.key({ modkey }, "r", function() awful.spawn("rofi -show run") end,
@@ -332,50 +368,47 @@ globalkeys = gears.table.join(
 )
 
 clientkeys = gears.table.join(
-    awful.key({ modkey,           }, "f",
+    awful.key({ modkey }, "f",
         function (c)
             c.fullscreen = not c.fullscreen
             c:raise()
         end,
-        {description = "toggle fullscreen", group = "client"}),
-    awful.key({ modkey, 	   }, "c",      function (c) c:kill()                         end,
-              {description = "close", group = "client"}),
-    -- Original close/kill function
-    -- awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
-    --          {description = "close", group = "client"}),
-    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
-              {description = "toggle floating", group = "client"}),
+        { description = "toggle fullscreen", group = "client" }),
+    awful.key({ modkey }, "c", function (c) c:kill() end,
+              { description = "close", group = "client" }),
+    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle,
+              { description = "toggle floating", group = "client" }),
     awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
-              {description = "move to master", group = "client"}),
-    awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
-              {description = "move to screen", group = "client"}),
-    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
-              {description = "toggle keep on top", group = "client"}),
-    awful.key({ modkey,           }, "n",
+              { description = "move to master", group = "client" }),
+    awful.key({ modkey }, "o", function (c) c:move_to_screen() end,
+              { description = "move to screen", group = "client" }),
+    awful.key({ modkey }, "t", function (c) c.ontop = not c.ontop end,
+              { description = "toggle keep on top", group = "client" }),
+    awful.key({ modkey }, "n",
         function (c)
             -- The client currently has the input focus, so it cannot be
             -- minimized, since minimized clients can't have the focus.
             c.minimized = true
         end ,
-        {description = "minimize", group = "client"}),
+        { description = "minimize", group = "client" }),
     awful.key({ modkey,           }, "m",
         function (c)
             c.maximized = not c.maximized
             c:raise()
         end ,
-        {description = "(un)maximize", group = "client"}),
+        { description = "(un)maximize", group = "client" }),
     awful.key({ modkey, "Control" }, "m",
         function (c)
             c.maximized_vertical = not c.maximized_vertical
             c:raise()
         end ,
-        {description = "(un)maximize vertically", group = "client"}),
+        { description = "(un)maximize vertically", group = "client" }),
     awful.key({ modkey, "Shift"   }, "m",
         function (c)
             c.maximized_horizontal = not c.maximized_horizontal
             c:raise()
         end ,
-        {description = "(un)maximize horizontally", group = "client"})
+        { description = "(un)maximize horizontally", group = "client" })
 )
 
 -- Bind all key numbers to tags.
@@ -393,6 +426,7 @@ for i = 1, 9 do
                         end
                   end,
                   {description = "view tag #"..i, group = "tag"}),
+
         -- Toggle tag display.
         awful.key({ modkey, "Control" }, "#" .. i + 9,
                   function ()
@@ -403,6 +437,7 @@ for i = 1, 9 do
                       end
                   end,
                   {description = "toggle tag #" .. i, group = "tag"}),
+
         -- Move client to tag.
         awful.key({ modkey, "Shift" }, "#" .. i + 9,
                   function ()
@@ -414,6 +449,7 @@ for i = 1, 9 do
                      end
                   end,
                   {description = "move focused client to tag #"..i, group = "tag"}),
+                  
         -- Toggle tag on focused client.
         awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
@@ -451,15 +487,16 @@ root.keys(globalkeys)
 awful.rules.rules = {
     -- All clients will match this rule.
     { rule = { },
-      properties = { border_width = beautiful.border_width,
-                     border_color = beautiful.border_normal,
-                     focus = awful.client.focus.filter,
-                     raise = true,
-                     keys = clientkeys,
-                     buttons = clientbuttons,
-                     screen = awful.screen.preferred,
-                     placement = awful.placement.no_overlap+awful.placement.no_offscreen
-     }
+        properties = {
+            border_width = beautiful.border_width,
+            border_color = beautiful.border_normal,
+            focus = awful.client.focus.filter,
+            raise = true,
+            keys = clientkeys,
+            buttons = clientbuttons,
+            screen = awful.screen.preferred,
+            placement = awful.placement.no_overlap+awful.placement.no_offscreen
+        }
     },
 
     -- Floating clients.
@@ -497,10 +534,6 @@ awful.rules.rules = {
     { rule_any = {type = { "normal", "dialog" }
       }, properties = { titlebars_enabled = false }
     },
-
-    -- Set Firefox to always map on the tag named "2" on screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { screen = 1, tag = "2" } },
 }
 -- }}}
 
@@ -517,46 +550,6 @@ client.connect_signal("manage", function (c)
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
     end
-end)
-
--- Add a titlebar if titlebars_enabled is set to true in the rules.
-client.connect_signal("request::titlebars", function(c)
-    -- buttons for the titlebar
-    local buttons = gears.table.join(
-        awful.button({ }, 1, function()
-            c:emit_signal("request::activate", "titlebar", {raise = true})
-            awful.mouse.client.move(c)
-        end),
-        awful.button({ }, 3, function()
-            c:emit_signal("request::activate", "titlebar", {raise = true})
-            awful.mouse.client.resize(c)
-        end)
-    )
-
-    awful.titlebar(c) : setup {
-        { -- Left
-            awful.titlebar.widget.iconwidget(c),
-            buttons = buttons,
-            layout  = wibox.layout.fixed.horizontal
-        },
-        { -- Middle
-            { -- Title
-                align  = "center",
-                widget = awful.titlebar.widget.titlewidget(c)
-            },
-            buttons = buttons,
-            layout  = wibox.layout.flex.horizontal
-        },
-        { -- Right
-            awful.titlebar.widget.floatingbutton (c),
-            awful.titlebar.widget.maximizedbutton(c),
-            awful.titlebar.widget.stickybutton   (c),
-            awful.titlebar.widget.ontopbutton    (c),
-            awful.titlebar.widget.closebutton    (c),
-            layout = wibox.layout.fixed.horizontal()
-        },
-        layout = wibox.layout.align.horizontal
-    }
 end)
 
 -- Enable sloppy focus, so that focus follows mouse.
