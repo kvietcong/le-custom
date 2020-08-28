@@ -1,11 +1,12 @@
 # linux-things
 Just a repo to store linux related things
 
-## 🥇 What I use
+## 💻 What I use
 
 - Distributions
     - **Arch**
-    - Ubuntu/Debian
+    - Manjaro
+    - Ubuntu
 - Window Managers
     - **AwesomeWM**
     - Qtile
