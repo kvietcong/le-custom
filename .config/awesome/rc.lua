@@ -1,51 +1,37 @@
---           _____                    _____          
---          /\    \                  /\    \         
---         /::\    \                /::\    \        
---        /::::\    \              /::::\    \       
---       /::::::\    \            /::::::\    \      
---      /:::/\:::\    \          /:::/\:::\    \     
---     /:::/__\:::\    \        /:::/  \:::\    \    
---    /::::\   \:::\    \      /:::/    \:::\    \   
---   /::::::\   \:::\    \    /:::/    / \:::\    \  
---  /:::/\:::\   \:::\____\  /:::/    /   \:::\    \ 
--- /:::/  \:::\   \:::|    |/:::/____/     \:::\____\
--- \::/   |::::\  /:::|____|\:::\    \      \::/    /
---  \/____|:::::\/:::/    /  \:::\    \      \/____/ 
---        |:::::::::/    /    \:::\    \             
---        |::|\::::/    /      \:::\    \            
---        |::| \::/____/        \:::\    \           
---        |::|  ~|               \:::\    \          
---        |::|   |                \:::\    \         
---        \::|   |                 \:::\____\        
---         \:|   |                  \::/    /        
---          \|___|                   \/____/         
---
---           _____            _____                    _____          
---          /\    \          /\    \                  /\    \         
---         /::\____\        /::\____\                /::\    \        
---        /:::/    /       /:::/    /               /::::\    \       
---       /:::/    /       /:::/    /               /::::::\    \      
---      /:::/    /       /:::/    /               /:::/\:::\    \     
---     /:::/    /       /:::/    /               /:::/__\:::\    \    
---    /:::/    /       /:::/    /               /::::\   \:::\    \   
---   /:::/    /       /:::/    /      _____    /::::::\   \:::\    \  
---  /:::/    /       /:::/____/      /\    \  /:::/\:::\   \:::\    \ 
--- /:::/____/       |:::|    /      /::\____\/:::/  \:::\   \:::\____\
--- \:::\    \       |:::|____\     /:::/    /\::/    \:::\  /:::/    /
---  \:::\    \       \:::\    \   /:::/    /  \/____/ \:::\/:::/    / 
---   \:::\    \       \:::\    \ /:::/    /            \::::::/    /  
---    \:::\    \       \:::\    /:::/    /              \::::/    /   
---     \:::\    \       \:::\__/:::/    /               /:::/    /    
---      \:::\    \       \::::::::/    /               /:::/    /     
---       \:::\    \       \::::::/    /               /:::/    /      
---        \:::\____\       \::::/    /               /:::/    /       
---         \::/    /        \::/____/                \::/    /        
---          \/____/          ~~                       \/____/         
+--       ___           ___     
+--      /\  \         /\  \    
+--     /::\  \       /::\  \   
+--    /:/\:\  \     /:/\:\  \  
+--   /::\~\:\  \   /:/  \:\  \ 
+--  /:/\:\ \:\__\ /:/__/ \:\__\
+--  \/_|::\/:/  / \:\  \  \/__/
+--     |:|::/  /   \:\  \      
+--     |:|\/__/     \:\  \     
+--     |:|  |        \:\__\    
+--      \|__|         \/__/ 
 
--- ===================================================================
+--                     ___           ___
+--                    /__/\         /  /\
+--                    \  \:\       /  /::\
+--   ___     ___       \  \:\     /  /:/\:\
+--  /__/\   /  /\  ___  \  \:\   /  /:/~/::\
+--  \  \:\ /  /:/ /__/\  \__\:\ /__/:/ /:/\:\
+--   \  \:\  /:/  \  \:\ /  /:/ \  \:\/:/__\/
+--    \  \:\/:/    \  \:\  /:/   \  \::/
+--     \  \::/      \  \:\/:/     \  \:\
+--      \__\/        \  \::/       \  \:\
+--                    \__\/         \__\/    
+
+
+-- ===============================================================
+-- ===============================================================
+--
 -- Hello and welcome to derpyasianpanda's rc.lua for the "Awesome"
 -- window manager. I hope you enjoy your stay!
--- ===================================================================
+--
+-- ===============================================================
+-- ===============================================================
+
 
 -- ==========================
 -- Initializing Prerequisites
@@ -184,7 +170,8 @@ screen.connect_signal("property::geometry", set_wallpaper)
 -- Dynamic Wallpaper Setting
 script_path = gears.filesystem.get_configuration_dir() .. "scripts/"
 if beautiful.dynamic_wallpaper then
-    bg_path = gears.filesystem.get_configuration_dir() .. "themes/" .. user.theme .. "/background.mp4"
+    bg_path = gears.filesystem.get_configuration_dir() .. 
+        "themes/" .. user.theme .. "/background.mp4"
     awful.spawn.with_shell(script_path .. "setlivewallpaper.sh " .. bg_path)
 else
     awful.spawn.with_shell(script_path .. "killlivewallpapers.sh")
@@ -283,8 +270,7 @@ awful.screen.connect_for_each_screen(function(s)
 
     awful.tag({ "1", "2", "3", "4", "5" }, s, awful.layout.layouts[1])
 
-    -- Create an imagebox widget which will contain an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
+    -- Imagebox which will contain an icon indicating which layout we're using.
     s.mylayoutbox = awful.widget.layoutbox(s)
     s.mylayoutbox:buttons(gears.table.join(
         awful.button({ }, 1, function () awful.layout.inc( 1) end),
@@ -310,7 +296,7 @@ awful.screen.connect_for_each_screen(function(s)
         ontop = false,
         x = s.geometry["x"] + 8 * 1.5,
         y = s.geometry["y"] + 7,
-        width = 112,
+        width = 135,
         height = 25,
         screen = s,
         visible = true,
@@ -321,6 +307,7 @@ awful.screen.connect_for_each_screen(function(s)
         {
             layout = wibox.layout.fixed.horizontal,
             s.mytaglist,
+            s.mylayoutbox,
         },
     }
 
@@ -403,7 +390,7 @@ globalkeys = gears.table.join(
     awful.key(
         { user.modkey }, "s",
         hotkeys_popup.show_help,
-        { description="show help", group="awesome" }
+        { description = "show help", group = "awesome" }
     ),
     awful.key(
         { user.modkey }, "Left",
@@ -432,6 +419,10 @@ globalkeys = gears.table.join(
         { user.modkey }, "w",
         function () mymainmenu:show() end,
         { description = "show main menu", group = "awesome" }
+    ),
+    awful.key(
+        { user.modkey, "Control" }, "r", awesome.restart,
+        { description = "reload awesome", group = "awesome" }
     ),
 
     -- Layout manipulation
@@ -519,10 +510,6 @@ globalkeys = gears.table.join(
         { user.modkey }, "Return",
         function () awful.spawn(user.terminal) end,
         { description = "open a terminal", group = "launcher" }
-    ),
-    awful.key(
-        { user.modkey, "Control" }, "r", awesome.restart,
-        { description = "reload awesome", group = "awesome" }
     ),
     awful.key(
         { user.modkey, "Shift" }, "q", awesome.quit,
