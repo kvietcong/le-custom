@@ -1,3 +1,13 @@
+## Useful programs I use
+
+- Rofi: DMenu alternative. App launcher/Command Runner
+- Redshift: Blue light limiter for night time (f.lux but linux)
+- Ranger: Terminal File Explorer
+- Solaar: Logitech Device Support
+- Font Manager: Good way to visualize/manage fonts
+- LXAppearance: Lighweight GTK Configurator
+- PavuControl: Nice Pulseaudio GUI
+- OpenTabletDriver: Pen Tablet Driver support (for osu! and art 😃)
 
 ## Nice things to know
 
@@ -61,6 +71,9 @@
 
 - Fonts are important! If you see a lot of missing symbols within your linux install remember to get
   font packages that support the symbols you'll be using.
+
+- `picom` seems to have VSync enabled by default. Make sure you disable that if you have a dual
+  monitor setup. (Or launch on a per monitor basis)
 
 - Documentation is key!
 
