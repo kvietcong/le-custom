@@ -75,6 +75,9 @@
 - `picom` seems to have VSync enabled by default. Make sure you disable that if you have a dual
   monitor setup. (Or launch on a per monitor basis)
 
+- To use run React Scripts on Linux, it seems you have to install the module globally using
+  `npm install -g react-scripts`. For me, this required sudo so I am fairly sure this is jank 😂
+
 - Documentation is key!
 
 - I use Arch btw XD
