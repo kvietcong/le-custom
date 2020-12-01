@@ -53,6 +53,8 @@ local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
 
+local lain = require("lain")
+
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
@@ -74,15 +76,15 @@ user = {
 awful.layout.layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.floating,
-    awful.layout.suit.max,
-    awful.layout.suit.spiral.dwindle,
+    awful.layout.suit.max.fullscreen,
+    --awful.layout.suit.max,
+    --awful.layout.suit.spiral.dwindle,
     --awful.layout.suit.spiral,
     --awful.layout.suit.tile.top,
     --awful.layout.suit.fair,
     --awful.layout.suit.fair.horizontal,
     --awful.layout.suit.tile.left,
     --awful.layout.suit.tile.bottom,
-    --awful.layout.suit.max.fullscreen,
     --awful.layout.suit.corner.nw,
     --awful.layout.suit.magnifier,
     --awful.layout.suit.corner.ne,
@@ -130,7 +132,7 @@ myawesomemenu = {
    { "Hotkeys", function() 
        hotkeys_popup.show_help(nil, awful.screen.focused())
    end },
-   { "Docs", "xdg-open /usr/share/doc/awesome/doc/index.html" },
+   { "Docs", user.browser .. " /usr/share/doc/awesome/doc/index.html" },
    { "Config", user.editor_cmd .. " " .. awesome.conffile },
    { "Restart", awesome.restart },
    { "Quit", function() awesome.quit() end },
@@ -181,8 +183,13 @@ end
 -- Wibar/Widget Setup
 -- ==================
 
-local mytextclock = wibox.widget.textclock(" ~ %a %b %e, %H:%M ~ ")
+-- Date/Time
+local date = wibox.widget.textclock("%a, %b. %e")
+local time = wibox.widget.textclock("%H:%M")
+date.align = "center"
+time.align = "center"
 
+-- Taglist
 local taglist_buttons = gears.table.join(
     awful.button(
         { }, 1,
@@ -218,61 +225,166 @@ local taglist_buttons = gears.table.join(
     )
 )
 
-local tasklist_buttons = gears.table.join(
-    awful.button(
-        { }, 1,
-        function (c)
-            if c == client.focus then
-                c.minimized = true
-            else
-                c:emit_signal(
-                    "request::activate",
-                    "tasklist",
-                    { raise = true }
-                )
-            end
-        end
-    ),
-    awful.button(
-        { }, 3,
-        function()
-            awful.menu.client_list({
-                theme = { width = 250 }
-            })
-        end
-    ),
-    awful.button(
-        { }, 4,
-        function ()
-            awful.client.focus.byidx(1)
-        end
-    ),
-    awful.button(
-        { }, 5,
-        function ()
-            awful.client.focus.byidx(-1)
-        end
-    )
-)
+-- (WIP) Power menu of some kind
+local power_button = wibox.widget.imagebox(beautiful.shutdown)
+power_button.forced_height = 25
 
--- Extra custom widgets to use
-local spotify_widget = require("awesome-wm-widgets.spotify-widget.spotify")
+power_button:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click
+        awful.spawn("")
+    end)
+))
 
-local volumearc_widget = require("awesome-wm-widgets.volumearc-widget.volumearc")
 
-local function padding_widget (pad_size)
-    return wibox.widget.textbox(string.rep(" ", pad_size))
+-- PulseAudio Volume Controller
+local volume_text = lain.widget.pulse {
+    settings = function()
+        vlevel = volume_now.right .. "%"
+        if volume_now.muted == "yes" then
+            vlevel = "Mute"
+        end
+        widget:set_markup(vlevel)
+    end
+}
+
+local volume = wibox.widget {
+    widget = wibox.layout.fixed.horizontal,
+    {
+        widget = wibox.container.margin,
+        right = 5,
+        {
+            widget = wibox.widget.imagebox,
+            image = beautiful.speaker,
+            resize = true,
+        }
+    },
+    volume_text.widget,
+}
+
+volume:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click
+        awful.spawn("pavucontrol")
+    end),
+    awful.button({}, 3, function() -- right click
+        os.execute(
+            string.format("pactl set-sink-mute %s toggle", volume_text.device)
+        )
+        volume_text.update()
+    end),
+    awful.button({}, 4, function() -- scroll up
+        os.execute(
+            string.format("pactl set-sink-volume %s +1%%", volume_text.device)
+        )
+        volume_text.update()
+    end),
+    awful.button({}, 5, function() -- scroll down
+        os.execute(
+            string.format("pactl set-sink-volume %s -1%%", volume_text.device)
+        )
+        volume_text.update()
+    end)
+))
+
+-- Battery Indicator
+local battery_text = lain.widget.bat({
+    settings = function()
+        widget.text =
+            ((bat_now.perc == "N/A") and "?" or bat_now.perc) .. "%"
+    end,
+})
+
+local battery = wibox.widget {
+    widget = wibox.layout.fixed.horizontal,
+    {
+        widget = wibox.container.margin,
+        left = 10,
+        right = 5,
+        {
+            widget = wibox.widget.imagebox,
+            image = beautiful.battery,
+            resize = true,
+        }
+    },
+    battery_text.widget,
+}
+
+-- CPU Indicator
+local cpu_text = lain.widget.cpu({
+    settings = function()
+        widget.text = cpu_now.usage .. "%"
+    end,
+})
+
+local cpu = wibox.widget {
+    widget = wibox.layout.fixed.horizontal,
+    {
+        widget = wibox.container.margin,
+        left = 15,
+        right = 5,
+        {
+            widget = wibox.widget.imagebox,
+            image = beautiful.cpu,
+            resize = true,
+        }
+    },
+    cpu_text.widget,
+}
+
+-- Memory Indicator
+local mem_text = lain.widget.mem({
+    settings = function()
+        widget.text = mem_now.used / 1000 .. "GiB"
+    end,
+})
+
+local mem = wibox.widget {
+    widget = wibox.layout.fixed.horizontal,
+    {
+        widget = wibox.container.margin,
+        left = 15,
+        right = 5,
+        {
+            widget = wibox.widget.imagebox,
+            image = beautiful.ram,
+            resize = true,
+        }
+    },
+    mem_text.widget,
+}
+
+-- Creates floating wibar sections
+local wibar_section = function(screen, args)
+    local section = wibox({
+        screen = s, height = args.height, width = args.width,
+        x = screen.geometry.x + args.x,
+        y = screen.geometry.y + args.y,
+        bg = beautiful.bg_normal, visible = true,
+        ontop = false, shape = gears.shape.rectangle,
+        input_passthrough = true, type = "dock",
+    })
+    section:struts({ top = 45 })
+    section:setup {
+        layout = wibox.layout.fixed.horizontal,
+        args.widget
+    }
+
+    return section
 end
 
--- Add a wibar to each screen
+-- Add a widgets to each screen
 awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
-    awful.tag({ "1", "2", "3", "4", "5" }, s, awful.layout.layouts[1])
+    awful.tag({ " ", " ", " ", " ", " " }, s, awful.layout.layouts[1])
 
-    -- Imagebox which will contain an icon indicating which layout we're using.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
+    -- System Tray (BUGGED: No Transparency)
+    s.systray = wibox.widget.systray()
+    s.systray.visible = false
+    s.systray.forced_height = 25
+
+    -- Imagebox which contains an icon indicating current layout
+    s.layoutbox = awful.widget.layoutbox(s)
+    s.layoutbox:buttons(gears.table.join(
         awful.button({ }, 1, function () awful.layout.inc( 1) end),
         awful.button({ }, 3, function () awful.layout.inc(-1) end),
         awful.button({ }, 4, function () awful.layout.inc( 1) end),
@@ -280,99 +392,111 @@ awful.screen.connect_for_each_screen(function(s)
     ))
 
     -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist {
+    s.taglist = awful.widget.taglist {
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
-        buttons = taglist_buttons
+        style = {
+            shape = gears.shape.circle,
+            spacing = 5,
+            bg_focus = beautiful.fg_focus,
+            bg_empty = beautiful.fg_minimize,
+            bg_occupied = beautiful.fg_normal,
+            font = "Monaco 15"
+        },
+        buttons = taglist_buttons,
     }
 
-    -- Serves as padding for the top widgets
-    s.mywibox = awful.wibar({ position = "top", screen = s, opacity = 0, height = 50 })
-    s.mywibox:setup();
+    -- Create Wibar
+    s.wibar = {}
 
-    s.tag_wibox = wibox({
-        border_width = 12,
-        border_color = beautiful.bg_normal,
-        ontop = false,
-        x = s.geometry["x"] + 8 * 1.5,
-        y = s.geometry["y"] + 7,
-        width = 135,
-        height = 25,
-        screen = s,
-        visible = true,
-    })
-
-    s.tag_wibox:setup {
-        layout = wibox.layout.align.horizontal,
-        {
+    s.wibar.first = wibar_section(s, {
+        widget = {
             layout = wibox.layout.fixed.horizontal,
-            s.mytaglist,
-            s.mylayoutbox,
-        },
-    }
-
-    s.time_bar = wibox({
-        border_width = 12,
-        border_color = beautiful.bg_normal,
-        ontop = false,
-        x = s.geometry["x"] + s.geometry["width"] / 2 - 125,
-        y = s.geometry["y"] + 7,
-        width = 250,
-        height = 25,
-        screen = s,
-        visible = true,
-    })
-              
-    s.time_bar:setup {
-        layout = wibox.layout.align.horizontal,
-        padding_widget(1),
-        {
-            layout = wibox.layout.align.horizontal,
-            mytextclock,
-        },
-        padding_widget(1),
-    }
-
-    s.util_bar = wibox({
-        -- TODO: Find out why borders are so weird
-        border_width = 12,
-        border_color = beautiful.bg_normal,
-        ontop = false,
-        width = 100,
-        height = 25,
-        screen = s,
-        visible = true,
-    })
-    s.util_bar.y = s.geometry["y"] + 7
-
-    if s.index == 1 then
-        s.util_bar.x = s.geometry["x"] + s.geometry["width"] - 100 - 12 * 1.5 * 2,
-        s.util_bar:setup {
-            layout = wibox.layout.align.horizontal,
             {
-                layout = wibox.layout.align.horizontal,
-                wibox.widget.systray(),
-            },
-        }
-    else
-        s.util_bar.width = 300
-        s.util_bar.x = s.geometry["x"] + s.geometry["width"] - s.util_bar.width - 35
-        s.util_bar:setup {
-            layout = wibox.layout.align.horizontal,
+                widget = wibox.container.margin,
+                left = 15, {
+                    layout = wibox.layout.fixed.horizontal,
+                    {
+                            widget = wibox.container.margin,
+                            right = 5, top = 5, bottom = 5,
+                            s.layoutbox,
+                    },
+                    s.taglist,
+                }
+            }
+        },
+        x = 15, y = 10, width = 165, height = 40,
+    })
+
+    s.wibar.second = wibar_section(s, {
+        widget = {
+            widget = wibox.container.place,
+            halign = "center", forced_width = 500,
             {
-                layout = wibox.layout.align.horizontal,
-                spotify_widget({
-                    play_icon = beautiful.note_on,
-                    pause_icon = beautiful.note,
-                    max_length = 18,
-                    font = "Monaco 8"
-                })
+                widget = wibox.container.margin,
+                left = 15, top = 8, bottom = 8, {
+                    widget = wibox.layout.fixed.horizontal,
+                    volume,
+                    mem,
+                    cpu,
+                    battery,
+                    {
+                        widget = wibox.container.margin,
+                        left = 15,
+                        s.systray,
+                    },
+                },
             },
-        }
-    end
-            
+        },
+        x = s.geometry.width / 2 - 250, y = 10, width = 500, height = 40,
+    })
+
+    s.wibar.third = wibar_section(s, {
+        widget = {
+            widget = wibox.container.margin,
+            left = 15, top = 8, bottom = 8, {
+                widget = wibox.layout.fixed.horizontal,
+                {
+                    widget = wibox.container.margin,
+                    right = 5,
+                    {
+                        widget = wibox.widget.imagebox,
+                        image = beautiful.calendar,
+                        resize = true,
+                    }
+                },
+                date,
+                {
+                    widget = wibox.container.margin,
+                    left = 10, right = 5,
+                    {
+                        widget = wibox.widget.imagebox,
+                        image = beautiful.clock,
+                        resize = true,
+                    }
+                },
+                time,
+            },
+        },
+        x = s.geometry.width - 265, y = 10, width = 250, height = 40,
+    })
+
+    s.cal = awful.widget.calendar_popup.month({
+        margin = 15, screen = s, spacing = 10,
+        week_numbers = true,
+        style_focus = { fg_color = beautiful.fg_normal, border_width = 1 },
+        style_weekday = { border_width = 0, bg_color = "#00000000" },
+        style_normal = { border_width = 0, bg_color = "#00000000" },
+        style_header = { border_width = 0, bg_color = "#00000000" },
+        style_month  = { padding = 25 },
+        style_weeknumber  = {
+            fg_color = beautiful.fg_minimize,
+            bg_color = beautiful.fg_normal,
+            border_width = 0,
+        },
+    })
+    s.cal:attach(s.wibar.third.widget, "tr")
 end)
--- }}}
 
 -- ==================
 -- Bindings/Shortcuts
@@ -423,6 +547,36 @@ globalkeys = gears.table.join(
     awful.key(
         { user.modkey, "Control" }, "r", awesome.restart,
         { description = "reload awesome", group = "awesome" }
+    ),
+    awful.key(
+        { user.modkey }, ",",
+        function()
+            awful.screen.focused().systray.visible =
+                not awful.screen.focused().systray.visible
+        end,
+        { description = "toggle system tray", group = "awesome" }
+    ),
+    awful.key(
+        { user.modkey, "Shift" }, "q", awesome.quit,
+        { description = "quit awesome", group = "awesome" }
+    ),
+    awful.key(
+        { user.modkey, "Control" }, "f", 
+        function()
+            screen = awful.screen.focused()
+            for _, section in pairs(screen.wibar) do
+                section.visible = not section.visible
+
+                for _, tag in pairs(screen.tags) do
+                    if section.visible then
+                        tag.gap = 8
+                    else 
+                        tag.gap = 0
+                    end
+                end
+            end
+        end,
+        { description = "toggle focus mode", group = "awesome" }
     ),
 
     -- Layout manipulation
@@ -509,11 +663,7 @@ globalkeys = gears.table.join(
     awful.key(
         { user.modkey }, "Return",
         function () awful.spawn(user.terminal) end,
-        { description = "open a terminal", group = "launcher" }
-    ),
-    awful.key(
-        { user.modkey, "Shift" }, "q", awesome.quit,
-        { description = "quit awesome", group = "awesome" }
+        { description = "open a terminal", group = "apps" }
     ),
     awful.key(
         { user.modkey }, "b", function () awful.spawn(user.browser) end,
@@ -524,7 +674,7 @@ globalkeys = gears.table.join(
         { description = "open discord", group = "apps" }
     ),
  
-    -- Rofi Prompts
+    -- Rofi Prompts (Launcher)
     awful.key(
         { user.modkey }, "r",
         function() awful.spawn("rofi -show run") end,
@@ -532,8 +682,13 @@ globalkeys = gears.table.join(
     ),
     awful.key(
         { user.modkey }, "p",
-        function() awful.spawn("rofi -show drun") end,
+        function() awful.spawn("rofi -show drun -show-icons true") end,
         { description = "show the application launcher", group = "launcher" }
+    ),
+    awful.key(
+        { user.modkey }, ".",
+        function() awful.spawn("rofimoji")  end,
+        { description = "open emoji selector", group = "launcher" }
     ),
     awful.key(
         { user.modkey }, "Tab",
@@ -675,20 +830,20 @@ clientbuttons = gears.table.join(
     awful.button(
         { }, 1,
         function (c)
-            c:emit_signal("request::activate", "mouse_click", {raise = true})
+            c:emit_signal("request::activate", "mouse_click", { raise = true })
         end
     ),
     awful.button(
         { user.modkey }, 1,
         function (c)
-            c:emit_signal("request::activate", "mouse_click", {raise = true})
+            c:emit_signal("request::activate", "mouse_click", { raise = true })
             awful.mouse.client.move(c)
         end
     ),
     awful.button(
         { user.modkey }, 3,
         function (c)
-            c:emit_signal("request::activate", "mouse_click", {raise = true})
+            c:emit_signal("request::activate", "mouse_click", { raise = true })
             awful.mouse.client.resize(c)
         end
     )
@@ -722,8 +877,7 @@ awful.rules.rules = {
 }
 
 -- Signal function to execute when a new client appears.
-client.connect_signal("manage",
-    function (c)
+client.connect_signal("manage", function (c)
     -- Set the windows at the slave,
     -- i.e. put it at the end of others instead of setting it master.
     -- if not awesome.startup then awful.client.setslave(c) end
@@ -732,10 +886,15 @@ client.connect_signal("manage",
       and not c.size_hints.program_position then
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
-    end
+    end 
+
+    -- Border Radius
+    -- c.shape = function(cr, w, h)
+    --     gears.shape.rounded_rect(cr, w, h, 10)
+    -- end
 end)
 
--- Sloppy Focus
+-- Sloppy Focus (Focus follows mouse)
 client.connect_signal("mouse::enter",
     function(c)
         c:emit_signal("request::activate", "mouse_enter", {raise = false})
