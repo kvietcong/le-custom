@@ -82,6 +82,9 @@
 - To use run React Scripts on Linux, it seems you have to install the module globally using
   `npm install -g react-scripts`. For me, this required sudo so I am fairly sure this is jank 😂
 
+- Remember to setup your new SSH keys for any git services you use.
+  ([Github](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account))
+
 - Documentation is key!
 
 - I use Arch btw XD
