@@ -6,8 +6,10 @@
 - Solaar: Logitech Device Support
 - Font Manager: Good way to visualize/manage fonts
 - LXAppearance: Lighweight GTK Configurator
-- PavuControl: Nice Pulseaudio GUI
 - OpenTabletDriver: Pen Tablet Driver support (for osu! and art 😃)
+- Thunar: Good file manager
+- qBittorrent: Good torrent client
+- kitty: Pretty cool terminal with good display capabilities
 
 ## Nice things to know
 
@@ -15,13 +17,14 @@
   - Most machines from what I researched have ALSA it is rec. to install
   `pulseaudio` and `pulseaudio-alsa`
   - I also used `pulsemixer` to mix the sounds
+  - `pavucontrol` is a nice GUI for pulseaudio
 
 - When using lightdm, it also requires some type of greeter like `lightdm-gtk-greeter`
   or `lightdm-webkit2-greeter`
 
 - You cannot partition nested partitions (Useful when splitting drive
   between Windows and Linux)
-  - Instead partition the uppermost parent drive
+  - Instead partition the lowermsot parent drive
 
 - Use `cfdisk` to partition rather than `fdisk`
   - cfdisk is a bit easier to use and understand (especially for noobs like me)
@@ -45,6 +48,7 @@
 - `pacman -Rs $(pacman -Qtdq)` Removes all uneeded* dependencies. `pacman -Rs <package>` removes
   the package and it's uneeded dependencies
   - Be sure to check the list using just `pacman -Qtdq`
+  - `pacman -Qe` lists the packages that you have (usually) installed manually
 
 - Using the `alt` keys as a Window Manager's Mod keys is so much more ergonomic for me.
   You can use it on both sides and it strains a lot less than the Super (Windows) Key
