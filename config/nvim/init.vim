@@ -1,6 +1,6 @@
-" ============================
-" KV Le's NeoVim Configuration
-" ============================
+" ==================================
+" == KV Le's NeoVim Configuration ==
+" ==================================
 
 " Plug manager configuration
 call plug#begin()
@@ -24,7 +24,7 @@ set termguicolors
 set timeoutlen=500
 set ignorecase smartcase
 set relativenumber number
-set smartindent cindent indentexpr
+set smartindent cindent autoindent
 
 " Allow mouse usage
 set mouse=a
@@ -66,10 +66,12 @@ map <Leader>f :NERDTreeToggle<Enter>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
 
-" Banner comment with //
-nnoremap <Buffer> <Leader>/ I// <Esc>A //<Esc>yyp0llv$hhhr-yykPjj
 " Banner comment with --
 nnoremap <buffer> <Leader>- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj
+" Banner comment with ==
+nnoremap <buffer> <Leader>= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj
+" Banner comment with //
+nnoremap <buffer> <Leader>/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj
 
 " When editing a file, always jump to the last known cursor position.
 " Don't do it when the position is invalid, when inside an event handler
@@ -79,6 +81,10 @@ autocmd BufReadPost *
   \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
   \ |   exe "normal! g`\""
   \ | endif
+
+if exists("g:vscode")
+    source $HOME/.config/nvim/vscode.vim
+endif
 
 " <Unused stuff>
 
