@@ -18,6 +18,5 @@ Just a repo to store linux related things
 
 ## 🎇 Check these things out
 
-- [Some Things I Wish I Knew Earlier](GoodToKnow.md)
+- [Some good* tips?](GoodToKnow.md)
 - [My Dot Files](dotfiles/)
-- [My Backgrounds](backgrounds/)
