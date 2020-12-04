@@ -763,6 +763,10 @@ local globalkeys = gears.table.join(
         { user.modkey }, "d", function () awful.spawn("discord") end,
         { description = "open discord", group = "apps" }
     ),
+    awful.key(
+        {}, "Print", function () awful.spawn("flameshot gui") end,
+        { description = "open flameshot (Screnshot tool)", group = "apps" }
+    ),
 
     -- Rofi Prompts (Launcher)
     awful.key(

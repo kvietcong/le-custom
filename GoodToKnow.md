@@ -1,16 +1,17 @@
 ## Useful programs I use
 
-- Rofi: DMenu alternative. App launcher/Command Runner
+- Rofi: App launcher/Command Runner
 - Redshift: Blue light limiter for night time (f.lux but linux)
-- Ranger: Terminal File Explorer
+- Ranger: Terminal file manager
 - Solaar: Logitech Device Support
 - Font Manager: Good way to visualize/manage fonts
 - LXAppearance: Lighweight GTK Configurator
 - OpenTabletDriver: Pen Tablet Driver support (for osu! and art 😃)
-- Thunar: Good file manager
-- qBittorrent: Good torrent client
+- Thunar: Graphical file manager
+- qBittorrent: GUI torrent client
 - kitty: Pretty cool terminal with good display capabilities
 - Samba: Nice SMB file sharing service
+- Flameshot: Powerful screen-shot tool
 
 ## Nice things to know
 
@@ -25,7 +26,7 @@
 
 - You cannot partition nested partitions (Useful when splitting drive
   between Windows and Linux)
-  - Instead partition the lowermsot parent drive
+  - Instead partition the lowermost parent drive
 
 - Use `cfdisk` to partition rather than `fdisk`
   - cfdisk is a bit easier to use and understand (especially for noobs like me)
@@ -46,8 +47,8 @@
   - It seems that the first option disables acceleration but also is a bit slower
   than Windows. Use the second option with `libinput` for a more Window's like sensitivity
 
-- `pacman -Rs $(pacman -Qtdq)` Removes all uneeded* dependencies. `pacman -Rs <package>` removes
-  the package and it's uneeded dependencies
+- `pacman -Rs $(pacman -Qtdq)` Removes all unneeded* dependencies. `pacman -Rs <package>` removes
+  the package and it's unneeded dependencies
   - Be sure to check the list using just `pacman -Qtdq`
   - `pacman -Qe` lists the packages that you have (usually) installed manually
 
@@ -61,7 +62,7 @@
 - Easy way to find window class: `xprop WM_CLASS` in the console lets you click on any window
   and retrieve's its window class
 
-- `.xinitrc` and `.xprofile` are great places for startup scripting
+- `.xinitrc` and `.xprofile` are great places for autostart stuff
 
 - Forget to do `sudo` on a command? Just type `sudo !!` after your mistake. `!!` repeats the
   immediately preceeding command
@@ -85,6 +86,9 @@
 
 - Remember to setup your new SSH keys for any git services you use.
   ([Github](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account))
+
+- `pgrep` is to retrieve the process ID of a program. REALLY useful to run programs dependent on
+  if it is already running or not
 
 - Documentation is key!
 
