@@ -10,6 +10,7 @@
 - Thunar: Good file manager
 - qBittorrent: Good torrent client
 - kitty: Pretty cool terminal with good display capabilities
+- Samba: Nice SMB file sharing service
 
 ## Nice things to know
 
