@@ -771,6 +771,11 @@ local globalkeys = gears.table.join(
         { description = "show the run menu", group = "launcher" }
     ),
     awful.key(
+        { user.modkey }, "`",
+        function () awful.spawn("rofi -modi 'clipboard:greenclip print' -show clipboard") end,
+        { description = "show the clipboard manager", group = "launcher" }
+    ),
+    awful.key(
         { user.modkey }, "p",
         function () awful.spawn("rofi -show drun -show-icons true") end,
         { description = "show the application launcher", group = "launcher" }
@@ -829,30 +834,6 @@ local clientkeys = gears.table.join(
             c.minimized = true
         end ,
         { description = "minimize", group = "client" }
-    ),
-    awful.key(
-        { user.modkey }, "m",
-        function (c)
-            c.maximized = not c.maximized
-            c:raise()
-        end ,
-        { description = "(un)maximize", group = "client" }
-    ),
-    awful.key(
-        { user.modkey, "Control" }, "m",
-        function (c)
-            c.maximized_vertical = not c.maximized_vertical
-            c:raise()
-        end ,
-        { description = "(un)maximize vertically", group = "client" }
-    ),
-    awful.key(
-        { user.modkey, "Shift" }, "m",
-        function (c)
-            c.maximized_horizontal = not c.maximized_horizontal
-            c:raise()
-        end ,
-        { description = "(un)maximize horizontally", group = "client" }
     )
 )
 
@@ -971,11 +952,16 @@ client.connect_signal("manage", function (c)
     -- i.e. put it at the end of others instead of setting it master.
     -- if not awesome.startup then awful.client.setslave(c) end
     if awesome.startup
-      and not c.size_hints.user_position
-      and not c.size_hints.program_position then
-        -- Prevent clients from being unreachable after screen count changes.
-        awful.placement.no_offscreen(c)
+        and not c.size_hints.user_position
+        and not c.size_hints.program_position then
+            -- Prevent clients from being unreachable after screen count changes.
+            awful.placement.no_offscreen(c)
     end
+
+    -- Disable any type of maximization
+    c.maximized = false
+    c.maximized_horizontal = false
+    c.maximized_vertical = false
 
     -- Border Radius
     -- c.shape = function(cr, w, h)
@@ -1001,5 +987,11 @@ client.connect_signal("unfocus",
 -- Autostart Setup
 -- ===============
 
-awful.spawn.single_instance("picom -b")
-awful.spawn.single_instance("qbittorrent")
+-- Oh my god pgrep is so good
+awful.spawn.with_shell("pgrep solaar || solaar")
+awful.spawn.with_shell("pgrep picom || picom -b")
+awful.spawn.with_shell("pgrep discord || discord")
+awful.spawn.with_shell("pgrep redshift || redshift-gtk")
+awful.spawn.with_shell("pgrep qbittorrent || qbittorrent")
+awful.spawn.with_shell("pgrep greenclip || greenclip daemon")
+

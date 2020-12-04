@@ -18,21 +18,19 @@ let mapleader = "\<Space>"
 set ruler
 set spell
 set showcmd
+set path+=**
 set linebreak
-set autoindent
 set termguicolors
 set timeoutlen=500
 set ignorecase smartcase
 set relativenumber number
+set smartindent cindent indentexpr
 
 " Allow mouse usage
 set mouse=a
 
 " No need for two mode indicators (airline + vim)
 set noshowmode
-
-" Use system clipboard
-set clipboard=unnamedplus
 
 " Better searching
 set incsearch nohlsearch
@@ -47,7 +45,7 @@ nnoremap <Leader>v :vs<Enter>
 nnoremap <Leader>h :sp<Enter>
 
 " Enable syntax/indenting features
-syntax on
+syntax enable
 filetype plugin indent on
 
 " Display completion matches in a status line
@@ -82,5 +80,10 @@ autocmd BufReadPost *
   \ |   exe "normal! g`\""
   \ | endif
 
+" <Unused stuff>
+
 " Don't change cursor position on undo
 " nnoremap u m'u`'
+
+" Use system clipboard
+" set clipboard=unnamedplus
