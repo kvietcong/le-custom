@@ -16,13 +16,16 @@
 ## Nice things to know
 
 - Discord requires pulseaudio to work
-  - Most machines from what I researched have ALSA it is rec. to install
+  - Most machines from what I researched have ALSA it is recommended to install
   `pulseaudio` and `pulseaudio-alsa`
   - I also used `pulsemixer` to mix the sounds
   - `pavucontrol` is a nice GUI for pulseaudio
 
 - When using lightdm, it also requires some type of greeter like `lightdm-gtk-greeter`
   or `lightdm-webkit2-greeter`
+
+- If you use a custom kernel (i.e. `linux-zen`) remember to use `nvidia-dkms` rather
+  than just `nvidia`!!! Also get `nvidia-utils` and `nvidia-settings` while your at it
 
 - You cannot partition nested partitions (Useful when splitting drive
   between Windows and Linux)
@@ -70,8 +73,7 @@
 - To allow a script (usually `.sh` files) to execute, you must give them the proper flags with
   `chmod u+x <File Name>`
 
-- Adding `export TERM=<Value>` to your `.bashrc` or `.zshrc` seems to block mouse clicking
-  (confirmed in vim) (To solve)
+- When using kitty, leave `TERM=xterm-kitty`. Changing this seems to make things go wack
 
 - You can sync Linux and Windows time with `timedatectl set-local-rtc 1 --adjust-system-clock` on Linux
 
@@ -81,14 +83,29 @@
 - `picom` seems to have VSync enabled by default. Make sure you disable that if you have a dual
   monitor setup. (Or launch on a per monitor basis)
 
-- To use run React Scripts on Linux, it seems you have to install the module globally using
-  `npm install -g react-scripts`. For me, this required sudo so I am fairly sure this is jank 😂
+- `react-scripts` seems to not work natively on Arch. You can fix this by doing `npm i -g react-scripts`
+  but that is seems very jank b/c it requires sudo. You can also redirect the react-scripts to go
+  into `./node_modules/react-scripts/bin/react-scripts.js <COMMAND-NAME>`. I will need to research
+  why this behavior exists b/c it seems common given the stack overflow posts. No one really ever solves
+  the problem though
 
 - Remember to setup your new SSH keys for any git services you use.
   ([Github](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account))
 
 - `pgrep` is to retrieve the process ID of a program. REALLY useful to run programs dependent on
   if it is already running or not
+
+- If you want to use the settings sync in VSCode on Arch, you should install `gnome-keyring`
+  for secret storing
+
+- `xev` is a beautiful command that outputs any button you press, which you can then map using
+  some type of key manager
+
+- `xset -q | grep "Caps Lock:[ ]\+on" -c && xdotool key Caps_Lock; setxkbmap -option caps:escape`
+  - This shell command will disable your Caps Lock and then remap it to Escape
+
+- `rmmod hid_uclogic` and `echo "blacklist echo "blacklist hid_uclogic" | sudo tee -a /etc/modprobe.d/blacklist.conf`
+  - Disable default drivers for XP-Pen Tablets (To work with Open Tablet Driver)
 
 - Documentation is key!
 
