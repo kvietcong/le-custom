@@ -1,10 +1,8 @@
 ## Useful programs I use
 
 - Rofi: App launcher/Command Runner
-- Redshift: Blue light limiter for night time (f.lux but linux)
-- Ranger: Terminal file manager
+- Redshift: Color temperature for night time (f.lux but for Linux)
 - Solaar: Logitech Device Support
-- Font Manager: Good way to visualize/manage fonts
 - LXAppearance: Lighweight GTK Configurator
 - OpenTabletDriver: Pen Tablet Driver support (for osu! and art 😃)
 - Thunar: Graphical file manager
