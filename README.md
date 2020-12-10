@@ -8,13 +8,11 @@ Just a repo to store linux related things
     - Manjaro
     - Ubuntu
 
-- Window Managers
+- 🪟 Window Managers / 🖥 Desktop Environments
     - **AwesomeWM**
-    - Qtile
 
-- Compositor
+- 🎨 Compositor
     - **Picom**
-    - Compton
 
 ## 🎇 Check these things out
 
