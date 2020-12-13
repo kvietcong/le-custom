@@ -101,9 +101,16 @@
 
 - `xset -q | grep "Caps Lock:[ ]\+on" -c && xdotool key Caps_Lock; setxkbmap -option caps:escape`
   - This shell command will disable your Caps Lock and then remap it to Escape
+  - This works wonders with things like vim 😆
 
 - `rmmod hid_uclogic` and `echo "blacklist echo "blacklist hid_uclogic" | sudo tee -a /etc/modprobe.d/blacklist.conf`
   - Disable default drivers for XP-Pen Tablets (To work with Open Tablet Driver)
+
+- Want transparent and blurry discord? Check out [Glasscord](https://github.com/AryToNeX/Glasscord)!
+  - A personal favorite theme that takes advantage of it is [Nord Glasscord](https://github.com/YottaGitHub/Nord-Glasscord)
+
+- You can edit your `.desktop` file to make it so it opens a specific terminal. (Used to get Thunar
+  to always open with kitty)
 
 - Documentation is key!
 
