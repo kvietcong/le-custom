@@ -1,0 +1,22 @@
+{
+	"amounts": {
+		"maxDaysAgo": 0
+	},
+	"choices": {
+		"timestampLang": "$discord"
+	},
+	"formats": {
+		"ownFormat": "$hour: $minute: $second, $day.$month.$year"
+	},
+	"settings": {
+		"changeForChat": true,
+		"changeForEdit": true,
+		"cutSeconds": false,
+		"displayDate": true,
+		"displayTime": true,
+		"forceZeros": false,
+		"otherOrder": false,
+		"showInChat": true,
+		"showInEmbed": true
+	}
+}
