@@ -1,5 +1,0 @@
-prompt =
-clipboarder = xclip
-skin-tone = moderate
-insert-with-clipboard = true
-rofi-args = -font "Monaco\ 16"
