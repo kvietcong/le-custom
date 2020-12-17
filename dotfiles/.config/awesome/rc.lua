@@ -825,7 +825,10 @@ local globalkeys = gears.table.join(
     -- ),
     awful.key(
         {}, "XF86PowerOff",
-        function () awful.spawn("xset dpms force off") end,
+        function () 
+            awful.spawn.with_shell("dm-tool lock && "
+            .. "xset dpms force off")
+        end,
         { description = "turn off the display", group = "Screen" }
     ),
     awful.key({}, "XF86Explorer",
@@ -1044,7 +1047,7 @@ awful.rules.rules = {
     -- Enable titlebars to normal clients
     {
         rule_any = { type = { "normal" } },
-        except_any = { class = { "Steam" } },
+        except_any = { class = { "Steam", "Lutris" } },
         properties = { titlebars_enabled = true }
     },
 

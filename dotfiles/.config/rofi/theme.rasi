@@ -18,7 +18,7 @@ window {
     text-color:                     @fg;
 	border:							2px;
 	border-color:					@ac;
-    border-radius:                  0px;
+    border-radius:                  8px;
 	width:							50%;
     location:                       center;
     x-offset:                       0;

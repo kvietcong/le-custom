@@ -62,6 +62,7 @@ alias rm="rm -I"
 alias cp="cp -i"
 alias grep="grep --color=auto"
 alias vim="nvim"
+alias rice="cd ~/linux-things/dotfiles"
 
 source $HOME/.config/le-agnoster.zsh-theme
 
@@ -74,4 +75,3 @@ kitty + complete setup zsh | source /dev/stdin
 # Variables
 export EDITOR=nvim
 export VISUAL=nvim
-nf
