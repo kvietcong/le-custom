@@ -10,9 +10,10 @@ Just a repo to store linux related things
 
 - 🪟 Window Managers / 🖥 Desktop Environments
     - **AwesomeWM**
-
-- 🎨 Compositor
-    - **Picom**
+    - KDE
+    - GNOME
+    - XFCE
+    - MATE
 
 ## 🎇 Check these things out
 
