@@ -68,11 +68,11 @@ local lain = require("lain")
 
 user = {
     terminal = "kitty",
-    editor_cmd = "kitty --class editor -e vim",
+    editor_cmd = "kitty --class editor vim",
     editor = os.getenv("EDITOR") or "vim",
     browser = "google-chrome-stable",
     theme = "static",
-    modkey = "Mod1",
+    modkey = "Mod1", -- Alt keys
     torrent = "qbittorrent",
 }
 
@@ -395,6 +395,29 @@ local wibar_section = function(current_screen, args)
         args.widget
     }
 
+    -- Place to store custom functions
+    section.custom = {}
+
+    -- Custom timer to show a part temporarily
+    section.custom.temp_timer = gears.timer {
+        timeout = 3,
+        call_now = false,
+        autostart = false,
+        callback = function ()
+            section.visible = false
+            section.custom.temp_timer:stop()
+        end
+    }
+
+    section.custom.temp_show = function ()
+        if not section.visible then
+            section.visible = true
+            section.custom.temp_timer:start()
+        else
+            section.custom.temp_timer:again()
+        end
+    end
+
     return section
 end
 
@@ -454,8 +477,8 @@ awful.screen.connect_for_each_screen(function(current_screen)
                 }
             }
         },
-        x = 10,
-        y = current_screen.geometry.height - 40 - 10,
+        x = beautiful.useless_gap * 2,
+        y = current_screen.geometry.height - 40 - beautiful.useless_gap * 2,
         width = 165, height = 40,
     })
 
@@ -480,7 +503,7 @@ awful.screen.connect_for_each_screen(function(current_screen)
             },
         },
         x = current_screen.geometry.width / 2 - 350,
-        y = current_screen.geometry.height - 40 - 10,
+        y = current_screen.geometry.height - 40 - beautiful.useless_gap * 2,
         width = 700, height = 40,
     })
 
@@ -511,8 +534,8 @@ awful.screen.connect_for_each_screen(function(current_screen)
                 time,
             },
         },
-        x = current_screen.geometry.width - 240 - 10,
-        y = current_screen.geometry.height - 40 - 10,
+        x = current_screen.geometry.width - 240 - beautiful.useless_gap * 2,
+        y = current_screen.geometry.height - 40 - beautiful.useless_gap * 2,
         width = 240, height = 40,
     })
 
@@ -531,12 +554,6 @@ awful.screen.connect_for_each_screen(function(current_screen)
         },
     })
     current_screen.cal:attach(current_screen.wibar.third.widget, "cc")
-
-    current_screen.toggle_wibar = function ()
-        for _, section in pairs(current_screen.wibar) do
-            section.visible = not section.visible
-        end
-    end
 
     current_screen.disable_wibar = function ()
         for _, section in pairs(current_screen.wibar) do
@@ -572,29 +589,16 @@ awful.screen.connect_for_each_screen(function(current_screen)
     })
 
     current_screen.activation_zone:connect_signal("mouse::enter", function ()
-        current_screen.temp_timer:stop()
+        for _, section in pairs(current_screen.wibar) do
+            section.custom.temp_timer:stop()
+        end
         current_screen.enable_wibar()
     end)
 
     current_screen.disable_wibar()
 
-    current_screen.temp_timer = gears.timer {
-        timeout = 2,
-        call_now = false,
-        autostart = false,
-        callback = function ()
-            current_screen.disable_wibar()
-            current_screen.temp_timer:stop()
-        end
-    }
-
     current_screen.temp_show = function (section)
-        if not current_screen.wibar[section].visible then
-            current_screen.wibar[section].visible = true
-            current_screen.temp_timer:start()
-        else
-            current_screen.temp_timer:again()
-        end
+        current_screen.wibar[section].custom.temp_show()
     end
 end)
 
@@ -623,12 +627,10 @@ root.buttons(gears.table.join(
     awful.button({ }, 3, function () menu_root:toggle() end),
     awful.button({ }, 4, function ()
         awful.tag.viewnext()
-        awful.screen.focused().temp_show("first")
     end
     ),
     awful.button({ }, 5, function ()
         awful.tag.viewprev()
-        awful.screen.focused().temp_show("first")
     end)
 ))
 
@@ -826,8 +828,7 @@ local globalkeys = gears.table.join(
     awful.key(
         {}, "XF86PowerOff",
         function () 
-            awful.spawn.with_shell("dm-tool lock && "
-            .. "xset dpms force off")
+            awful.spawn.with_shell("xset dpms force off && slock")
         end,
         { description = "turn off the display", group = "Screen" }
     ),
@@ -940,6 +941,13 @@ local clientkeys = gears.table.join(
             c.minimized = true
         end ,
         { description = "minimize", group = "Client" }
+    ),
+    awful.key({ user.modkey }, "m",
+        function (c)
+            c.maximized = not c.maximized
+            c:raise()
+        end ,
+        {description = "toggle maximize", group = "Client"}
     )
 )
 
@@ -1040,14 +1048,15 @@ awful.rules.rules = {
             keys = clientkeys,
             buttons = clientbuttons,
             screen = awful.screen.preferred,
-            placement = awful.placement.no_overlap+awful.placement.no_offscreen
+            placement = awful.placement.no_overlap+awful.placement.no_offscreen,
+            maximized = false,
         }
     },
 
     -- Enable titlebars to normal clients
     {
         rule_any = { type = { "normal" } },
-        except_any = { class = { "Steam", "Lutris" } },
+        except_any = { class = { "Steam", "Lutris", "origin.exe" } },
         properties = { titlebars_enabled = true }
     },
 
@@ -1055,14 +1064,13 @@ awful.rules.rules = {
     {   
         rule_any = {
         role = {
-          "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
+          "pop-up", "dialogue",
         }
     }, properties = { floating = true } },
 
     -- Exceptions
-
     { rule = { class = "origin.exe" },
-    properties = { titlebars_enabled = false, floating = true } },
+    properties = { floating = true } },
 }
 
 -- Signal function to execute when a new client appears.

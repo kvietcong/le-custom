@@ -22,21 +22,16 @@ bindkey -v
 autoload edit-command-line; zle -N edit-command-line
 bindkey "^e" edit-command-line
 # Change cursor shape for different vi modes.
-function vi_mode_prompt_info() {
-  echo "${${KEYMAP/vicmd/[% NORMAL]%}/(main|viins)/[% INSERT]%}"
-}
 function zle-keymap-select {
   if [[ ${KEYMAP} == vicmd ]] ||
-     [[ $1 = "block" ]]; then
-    echo -ne "\e[1 q"
+     [[ $1 = 'block' ]]; then
+    echo -ne '\e[1 q'
   elif [[ ${KEYMAP} == main ]] ||
        [[ ${KEYMAP} == viins ]] ||
-       [[ ${KEYMAP} = "" ]] ||
-       [[ $1 = "beam" ]]; then
-    echo -ne "\e[5 q"
+       [[ ${KEYMAP} = '' ]] ||
+       [[ $1 = 'beam' ]]; then
+    echo -ne '\e[5 q'
   fi
-  zle reset-prompt
-  zle -R
 }
 zle -N zle-keymap-select
 zle-line-init() {
@@ -44,14 +39,10 @@ zle-line-init() {
     echo -ne "\e[5 q"
 }
 zle -N zle-line-init
-echo -ne "\e[5 q" # Use beam shape cursor on startup.
-preexec() { echo -ne "\e[5 q" ;} # Use beam shape cursor for each new prompt.
+echo -ne '\e[5 q' # Use beam shape cursor on startup.
+preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 bindkey -M menuselect "^P" vi-up-line-or-history
 bindkey -M menuselect "^N" vi-down-line-or-history
-
-# define right prompt, regardless of whether the theme defined it
-RPS1='$(vi_mode_prompt_info)'
-RPS2=$RPS1
 
 # Custom lines
 alias ls="ls --color=auto"

@@ -85,10 +85,11 @@ theme.menu_bg_focus = theme.bg_normal
 
 theme.hotkeys_font = theme.font
 theme.hotkeys_description_font = theme.font
+theme.hotkeys_border_width = dpi(2)
 theme.hotkeys_group_margin = dpi(10)
 theme.hotkeys_modifiers_fg = theme.fg_focus
 theme.hotkeys_border_color = theme.bg_focus
-theme.hotkeys_shape = gears.shape.rectangle
+theme.hotkeys_shape = gears.shape.rounded_rect
 
 theme.titlebar_bg_focus = theme.bg_minimize
 
