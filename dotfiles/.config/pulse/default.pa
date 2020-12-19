@@ -18,3 +18,5 @@ update-sink-proplist OBSSink device.description=OBSSink
 # Set `latency_msec` field to the lowest value, `1` (200 msec latency by default)
 # *Change `format` and `rate` field depending on your system*, or simply remove them
 load-module module-loopback source=OBSSink.monitor sink=alsa_output.pci-0000_00_1f.3.analog-stereo adjust_time=15 latency_msec=1
+
+load-module module-switch-on-connect

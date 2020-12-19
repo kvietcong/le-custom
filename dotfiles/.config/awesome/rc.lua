@@ -66,13 +66,17 @@ local lain = require("lain")
 -- User options
 -- ============
 
+alt = "Mod1"
+super = "Mod4"
+
 user = {
     terminal = "kitty",
     editor_cmd = "kitty --class editor vim",
     editor = os.getenv("EDITOR") or "vim",
     browser = "google-chrome-stable",
     theme = "static",
-    modkey = "Mod1", -- Alt keys
+    files = "thunar",
+    modkey = super,
     torrent = "qbittorrent",
 }
 
@@ -152,6 +156,7 @@ local menu_apps = {
 local menu_root = awful.menu({ items = {
     { "Awesome", menu_awesome, beautiful.awesome_icon },
     { "Apps", menu_apps },
+    { "Files", user.files },
     { "Terminal", user.terminal },
 }})
 
@@ -240,6 +245,31 @@ local taglist_buttons = gears.table.join(
         { }, 5,
         function(t) awful.tag.viewprev(t.screen) end
     )
+)
+
+-- Task List
+
+local tasklist_buttons = gears.table.join(
+    awful.button({ }, 1, function (c)
+      if c == client.focus then
+          c.minimized = true
+      else
+          c:emit_signal(
+              "request::activate",
+              "tasklist",
+              {raise = true}
+          )
+      end
+    end),
+    awful.button({ }, 3, function()
+      awful.menu.client_list({ theme = { width = 250 } })
+    end),
+    awful.button({ }, 4, function ()
+      awful.client.focus.byidx(1)
+    end),
+    awful.button({ }, 5, function ()
+      awful.client.focus.byidx(-1)
+    end)
 )
 
 -- (WIP) Power menu of some kind
@@ -370,18 +400,19 @@ local mem = wibox.widget {
 }
 
 -- Creates floating wibar sections
-local wibar_section = function(current_screen, args)
+local wibar_section = function(s, args)
     local section = wibox({
-        screen = current_screen,
+        screen = s,
         height = args.height, width = args.width,
         border_width = beautiful.border_width,
         border_color = beautiful.bg_focus,
-        x = current_screen.geometry.x + args.x,
-        y = current_screen.geometry.y + args.y,
+        x = s.geometry.x + args.x,
+        y = s.geometry.y + args.y,
         bg = beautiful.bg_normal, visible = true,
         ontop = true, shape = gears.shape.rectangle,
         input_passthrough = false, type = "dock",
     })
+
     -- Border Radius
     section.shape = function(cr, w, h)
         gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
@@ -427,16 +458,16 @@ systray.visible = true
 systray.forced_height = 25
 
 -- Add a widgets to each screen
-awful.screen.connect_for_each_screen(function(current_screen)
-    set_wallpaper(current_screen)
+awful.screen.connect_for_each_screen(function(s)
+    set_wallpaper(s)
 
-    awful.tag({ " ", " ", " ", " ", " " }, current_screen, awful.layout.layouts[1])
+    awful.tag({ " ", " ", " ", " ", " " }, s, awful.layout.layouts[1])
 
-    current_screen.systray = systray
+    s.systray = systray
 
     -- Imagebox which contains an icon indicating current layout
-    current_screen.layoutbox = awful.widget.layoutbox(current_screen)
-    current_screen.layoutbox:buttons(gears.table.join(
+    s.layoutbox = awful.widget.layoutbox(s)
+    s.layoutbox:buttons(gears.table.join(
         awful.button({ }, 1, function () awful.layout.inc( 1) end),
         awful.button({ }, 3, function () awful.layout.inc(-1) end),
         awful.button({ }, 4, function () awful.layout.inc( 1) end),
@@ -444,8 +475,8 @@ awful.screen.connect_for_each_screen(function(current_screen)
     ))
 
     -- Create a taglist widget
-    current_screen.taglist = awful.widget.taglist {
-        screen  = current_screen,
+    s.taglist = awful.widget.taglist {
+        screen  = s,
         filter  = awful.widget.taglist.filter.all,
         style = {
             shape = gears.shape.circle,
@@ -457,11 +488,25 @@ awful.screen.connect_for_each_screen(function(current_screen)
         },
         buttons = taglist_buttons,
     }
+
+    -- Create a tasklist widget
+    s.tasklist = awful.widget.tasklist {
+        screen  = s,
+        filter  = awful.widget.tasklist.filter.currenttags,
+        buttons = tasklist_buttons,
+        style = {
+            bg_focus = beautiful.bg_normal,
+            shape = function(cr, w, h)
+                gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
+            end,
+            spacing = beautiful.useless_gap
+        },
+    }
     
     -- Create a Wibar
-    current_screen.wibar = {}
+    s.wibar = {}
 
-    current_screen.wibar.first = wibar_section(current_screen, {
+    s.wibar.first = wibar_section(s, {
         widget = {
             layout = wibox.layout.fixed.horizontal,
             {
@@ -471,18 +516,18 @@ awful.screen.connect_for_each_screen(function(current_screen)
                     {
                             widget = wibox.container.margin,
                             right = 5, top = 5, bottom = 5,
-                            current_screen.layoutbox,
+                            s.layoutbox,
                     },
-                    current_screen.taglist,
+                    s.taglist,
                 }
             }
         },
         x = beautiful.useless_gap * 2,
-        y = current_screen.geometry.height - 40 - beautiful.useless_gap * 2,
+        y = s.geometry.height - 40 - beautiful.useless_gap * 2,
         width = 165, height = 40,
     })
 
-    current_screen.wibar.second = wibar_section(current_screen, {
+    s.wibar.second = wibar_section(s, {
         widget = {
             widget = wibox.container.place,
             halign = "center", forced_width = 700,
@@ -497,17 +542,17 @@ awful.screen.connect_for_each_screen(function(current_screen)
                     {
                         widget = wibox.container.margin,
                         left = 15,
-                        current_screen.systray,
+                        s.systray,
                     },
                 },
             },
         },
-        x = current_screen.geometry.width / 2 - 350,
-        y = current_screen.geometry.height - 40 - beautiful.useless_gap * 2,
+        x = s.geometry.width / 2 - 350,
+        y = s.geometry.height - 40 - beautiful.useless_gap * 2,
         width = 700, height = 40,
     })
 
-    current_screen.wibar.third = wibar_section(current_screen, {
+    s.wibar.third = wibar_section(s, {
         widget = {
             widget = wibox.container.margin,
             left = 15, top = 8, bottom = 8, {
@@ -534,13 +579,13 @@ awful.screen.connect_for_each_screen(function(current_screen)
                 time,
             },
         },
-        x = current_screen.geometry.width - 240 - beautiful.useless_gap * 2,
-        y = current_screen.geometry.height - 40 - beautiful.useless_gap * 2,
+        x = s.geometry.width - 240 - beautiful.useless_gap * 2,
+        y = s.geometry.height - 40 - beautiful.useless_gap * 2,
         width = 240, height = 40,
     })
 
-    current_screen.cal = awful.widget.calendar_popup.month({
-        margin = 0, screen = current_screen,
+    s.cal = awful.widget.calendar_popup.month({
+        margin = 0, screen = s,
         spacing = 10, week_numbers = true,
         style_focus = { fg_color = beautiful.fg_normal, border_width = 1 },
         style_weekday = { border_width = 0, bg_color = "#00000000" },
@@ -553,69 +598,123 @@ awful.screen.connect_for_each_screen(function(current_screen)
             border_width = 0,
         },
     })
-    current_screen.cal:attach(current_screen.wibar.third.widget, "cc")
+    s.cal:attach(s.wibar.third.widget, "cc")
 
-    current_screen.disable_wibar = function ()
-        for _, section in pairs(current_screen.wibar) do
+    s.disable_wibar = function ()
+        for _, section in pairs(s.wibar) do
             section.visible = false
         end
     end
 
-    current_screen.detect = gears.timer {
+    s.detect = gears.timer {
         timeout = 1.25,
         callback = function ()
-            if (mouse.screen ~= current_screen) or
-                (mouse.coords().y < current_screen.geometry.y + current_screen.geometry.height - 75)
+            if (mouse.screen ~= s) or
+                (mouse.coords().y < s.geometry.y + s.geometry.height - 75)
             then
-                current_screen.disable_wibar()
-                current_screen.detect:stop()
+                s.disable_wibar()
+                s.detect:stop()
             end
         end
     }
 
-    current_screen.enable_wibar = function ()
-        for _, section in pairs(current_screen.wibar) do
+    s.enable_wibar = function ()
+        for _, section in pairs(s.wibar) do
             section.visible = true
-            systray.set_screen(current_screen)
-            current_screen.detect:start()
+            systray.set_screen(s)
+            s.detect:start()
         end
     end
 
-    current_screen.activation_zone = wibox ({
-        x = current_screen.geometry.x, y = current_screen.geometry.y + current_screen.geometry.height - 2,
-        opacity = 0.0, width = current_screen.geometry.width, height = 2,
-        screen = current_screen, input_passthrough = false, visible = true,
+    s.activation_zone = wibox ({
+        x = s.geometry.x, y = s.geometry.y + s.geometry.height - 2,
+        opacity = 0.0, width = s.geometry.width, height = 2,
+        screen = s, input_passthrough = false, visible = true,
         ontop = false, type = "dock",
     })
 
-    current_screen.activation_zone:connect_signal("mouse::enter", function ()
-        for _, section in pairs(current_screen.wibar) do
+    s.activation_zone:connect_signal("mouse::enter", function ()
+        for _, section in pairs(s.wibar) do
             section.custom.temp_timer:stop()
         end
-        current_screen.enable_wibar()
+        s.enable_wibar()
     end)
 
-    current_screen.disable_wibar()
+    s.disable_wibar()
 
-    current_screen.temp_show = function (section)
-        current_screen.wibar[section].custom.temp_show()
+    s.temp_show = function (section)
+        s.wibar[section].custom.temp_show()
     end
+
+    -- Taskbar
+    s.taskbar_activation = wibox ({
+        x = s.geometry.x, y = s.geometry.y,
+        opacity = 0, width = s.geometry.width, height = 2,
+        screen = s, input_passthrough = false, visible = true,
+        ontop = false, type = "dock",
+    })
+
+    s.taskbar = wibox({
+        screen = s,
+        height = 40, width = s.geometry.width,
+        x = s.geometry.x + beautiful.useless_gap * 2,
+        y = s.geometry.y + beautiful.useless_gap * 2,
+        bg = "#00000000", visible = true, ontop = true,
+        input_passthrough = false, type = "dock",
+        shape = function(cr, w, h)
+            gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
+        end
+    })
+
+    s.disable_taskbar = function ()
+        s.taskbar.visible = false
+    end
+
+    s.taskbar_detect = gears.timer {
+        timeout = 1.25,
+        callback = function ()
+            if (mouse.screen ~= s) or
+                (mouse.coords().y > s.geometry.y + 75)
+            then
+                s.disable_taskbar()
+                s.taskbar_detect:stop()
+            end
+        end
+    }
+
+    s.enable_taskbar = function ()
+        s.taskbar.visible = true
+        s.taskbar_detect:start()
+    end
+
+
+    s.taskbar:setup {
+            widget = wibox.container.place,
+            halign = "center",
+            s.tasklist,
+    }
+
+    s.taskbar_activation:connect_signal("mouse::enter", function ()
+        s.enable_taskbar()
+    end)
+
+    s.disable_taskbar()
 end)
 
 -- Temporarily show tag indicator when changing tags
-screen.connect_signal("tag::history::update", function (current_screen)
-    current_screen.temp_show("first")
+screen.connect_signal("tag::history::update", function (s)
+    s.temp_show("first")
 end)
 
 -- Temporarily show layout indicator when changing layout
 -- Note: Why isn't this signal in the wiki :(
-tag.connect_signal("property::layout", function (current_tag)
-    current_tag.screen.temp_show("first")
+tag.connect_signal("property::layout", function (t)
+    t.screen.temp_show("first")
 end)
 
 -- Temporarily show layout indicator when there is an urgent tag
-tag.connect_signal("property::urgent", function (current_tag)
-    current_tag.screen.temp_show("first")
+tag.connect_signal("property::urgent", function (t)
+    t.screen.temp_show("first")
 end)
 
 -- ==================
@@ -731,11 +830,11 @@ local globalkeys = gears.table.join(
     awful.key(
         { user.modkey, "Control" }, "f",
         function ()
-            current_tag = awful.screen.focused().selected_tag
-            if current_tag.gap == 0 then
-                current_tag.gap = 8
+            t = awful.screen.focused().selected_tag
+            if t.gap == 0 then
+                t.gap = 8
             else
-                current_tag.gap = 0
+                t.gap = 0
             end
         end,
         { description = "toggle focus mode", group = "Layout" }
@@ -959,8 +1058,8 @@ for i = 1, 9 do
         awful.key(
             { user.modkey }, "#" .. i + 9,
             function ()
-                local current_screen = awful.screen.focused()
-                local tag = current_screen.tags[i]
+                local s = awful.screen.focused()
+                local tag = s.tags[i]
                 if tag then
                    tag:view_only()
                 end
@@ -972,8 +1071,8 @@ for i = 1, 9 do
         awful.key(
             { user.modkey, "Control" }, "#" .. i + 9,
             function ()
-                local current_screen = awful.screen.focused()
-                local tag = current_screen.tags[i]
+                local s = awful.screen.focused()
+                local tag = s.tags[i]
                 if tag then
                    awful.tag.viewtoggle(tag)
                 end
