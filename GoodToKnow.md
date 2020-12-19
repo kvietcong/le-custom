@@ -1,15 +1,28 @@
-## Useful programs I use
+## Things I use
 
-- Rofi: App launcher/Command Runner
-- Redshift: Color temperature for night time (f.lux but for Linux)
-- Solaar: Logitech Device Support
-- LXAppearance: Lighweight GTK Configurator
-- OpenTabletDriver: Pen Tablet Driver support (for osu! and art 😃)
-- Thunar: Graphical file manager
-- qBittorrent: GUI torrent client
-- kitty: Pretty cool terminal with good display capabilities
-- Samba: Nice SMB file sharing service
-- Flameshot: Powerful screen-shot tool
+- Distributions
+  - **Arch**
+  - Manjaro
+  - Ubuntu
+
+- 🪟 Window Managers / 🖥 Desktop Environments
+  - **AwesomeWM**
+  - KDE
+  - GNOME
+  - XFCE
+  - MATE
+
+- Programs
+  - Rofi: App launcher/Command Runner
+  - Redshift: Color temperature for night time (f.lux but for Linux)
+  - Solaar: Logitech Device Support
+  - LXAppearance: Lighweight GTK Configurator
+  - OpenTabletDriver: Pen Tablet Driver support (for osu! and art 😃)
+  - Thunar: Graphical file manager
+  - qBittorrent: GUI torrent client
+  - kitty: Pretty cool terminal with good display capabilities
+  - Samba: Nice SMB file sharing service
+  - Flameshot: Powerful screen-shot tool
 
 ## Nice things to know
 
