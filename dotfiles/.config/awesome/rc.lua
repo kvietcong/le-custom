@@ -60,6 +60,7 @@ local lain = require("lain")
 
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
+-- TODO: Fix issue on why it keeps displaying Tmux only
 -- require("awful.hotkeys_popup.keys")
 
 -- ============
