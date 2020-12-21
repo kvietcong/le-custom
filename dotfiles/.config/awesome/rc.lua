@@ -484,7 +484,7 @@ awful.screen.connect_for_each_screen(function(s)
             bg_focus = beautiful.fg_focus,
             bg_empty = beautiful.fg_minimize,
             bg_occupied = beautiful.fg_normal,
-            font = "Monaco 6"
+            font = "Monaco 8",
         },
         buttons = taglist_buttons,
     }
@@ -648,15 +648,15 @@ awful.screen.connect_for_each_screen(function(s)
 
     -- Taskbar
     s.taskbar_activation = wibox ({
-        x = s.geometry.x, y = s.geometry.y,
-        opacity = 0, width = s.geometry.width, height = 2,
+        x = s.geometry.x + s.geometry.width / 4, y = s.geometry.y,
+        opacity = 0, width = s.geometry.width / 2, height = 2,
         screen = s, input_passthrough = false, visible = true,
         ontop = false, type = "dock",
     })
 
     s.taskbar = wibox({
-        screen = s,
-        height = 40, width = s.geometry.width,
+        screen = s, width = s.geometry.width,
+        height = beautiful.get_font_height(beautiful.font) * 1.3,
         x = s.geometry.x + beautiful.useless_gap * 2,
         y = s.geometry.y + beautiful.useless_gap * 2,
         bg = "#00000000", visible = true, ontop = true,
@@ -674,7 +674,7 @@ awful.screen.connect_for_each_screen(function(s)
         timeout = 1.25,
         callback = function ()
             if (mouse.screen ~= s) or
-                (mouse.coords().y > s.geometry.y + 75)
+                (mouse.coords().y > s.geometry.y + 35)
             then
                 s.disable_taskbar()
                 s.taskbar_detect:stop()
@@ -712,9 +712,10 @@ tag.connect_signal("property::layout", function (t)
     t.screen.temp_show("first")
 end)
 
--- Temporarily show layout indicator when there is an urgent tag
+-- Temporarily show layout indicator and focus urgent tag
 tag.connect_signal("property::urgent", function (t)
     t.screen.temp_show("first")
+    awful.tag.viewmore({ t }, t.screen)
 end)
 
 -- ==================

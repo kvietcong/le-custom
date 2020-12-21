@@ -16,13 +16,13 @@ module.exports = (_ => {
 		"info": {
 			"name": "BDFDB",
 			"author": "DevilBro",
-			"version": "1.2.2",
+			"version": "1.2.3",
 			"description": "Give other plugins utility functions"
 		},
 		"rawUrl": "https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js",
 		"changeLog": {
 			"fixed": {
-				"New React Structure": "Fixed for new internal react structure"
+				"Small Fixes": ""
 			}
 		}
 	};
@@ -2507,14 +2507,14 @@ module.exports = (_ => {
 					let activity = BDFDB.UserUtils.getActivity(id);
 					return activity && activity.type == BDFDB.DiscordConstants.ActivityTypes.STREAMING ? "streaming" : LibraryModules.StatusMetaUtils.getStatus(id);
 				};
-				BDFDB.UserUtils.getStatusColor = function (status) {
+				BDFDB.UserUtils.getStatusColor = function (status, useColor) {
 					status = typeof status == "string" ? status.toLowerCase() : null;
 					switch (status) {
 						case "online": return BDFDB.DiscordConstants.Colors.STATUS_GREEN;
 						case "mobile": return BDFDB.DiscordConstants.Colors.STATUS_GREEN;
 						case "idle": return BDFDB.DiscordConstants.Colors.STATUS_YELLOW;
 						case "dnd": return BDFDB.DiscordConstants.Colors.STATUS_RED;
-						case "playing": return BDFDB.DiscordConstants.Colors.BRAND;
+						case "playing": return useColor ? BDFDB.DiscordConstants.Colors.BRAND : "var(--bdfdb-blurple)";
 						case "listening": return BDFDB.DiscordConstants.Colors.SPOTIFY;
 						case "streaming": return BDFDB.DiscordConstants.Colors.TWITCH;
 						default: return BDFDB.DiscordConstants.Colors.STATUS_GREY;
@@ -5977,7 +5977,7 @@ module.exports = (_ => {
 							},
 							children: this.props.items.map(item => BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Badges.TextBadge, {
 								className: BDFDB.disCN.inputlistitem,
-								color: BDFDB.DiscordConstants.Colors.BRAND,
+								color: "var(--bdfdb-blurple)",
 								style: {borderRadius: "3px"},
 								text: [
 									item,
@@ -6386,27 +6386,25 @@ module.exports = (_ => {
 					}
 				};
 				
-				InternalComponents.LibraryComponents.SettingsPanelInner = reactInitialized && class BDFDB_SettingsPanelInner extends LibraryModules.React.Component {
+				InternalComponents.LibraryComponents.SettingsPanelList = InternalComponents.LibraryComponents.SettingsPanelInner = reactInitialized && class BDFDB_SettingsPanelInner extends LibraryModules.React.Component {
 					render() {
-						return this.props.children ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Flex, {
-							className: this.props.className,
-							direction: InternalComponents.LibraryComponents.Flex.Direction.VERTICAL,
+						return this.props.children ? BDFDB.ReactUtils.createElement("div", {
+							className: BDFDB.DOMUtils.formatClassName(this.props.className, BDFDB.disCN.settingspanellistwrapper, this.props.mini && BDFDB.disCN.settingspanellistwrappermini),
 							children: [
-								!this.props.first ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.FormComponents.FormDivider, {
-									className: BDFDB.disCN.marginbottom8
+								this.props.dividerTop ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.FormComponents.FormDivider, {
+									className: this.props.mini ? BDFDB.disCN.marginbottom4 : BDFDB.disCN.marginbottom8
 								}) : null,
 								typeof this.props.title == "string" ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.FormComponents.FormTitle, {
 									className: BDFDB.disCN.marginbottom4,
 									tag: InternalComponents.LibraryComponents.FormComponents.FormTitle.Tags.H3,
 									children: this.props.title
 								}) : null,
-								BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Flex, {
+								BDFDB.ReactUtils.createElement("div", {
 									className: BDFDB.disCN.settingspanellist,
-									direction: InternalComponents.LibraryComponents.Flex.Direction.VERTICAL,
 									children: this.props.children
 								}),
-								!this.props.last ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.FormComponents.FormDivider, {
-									className: BDFDB.disCN.marginbottom20
+								this.props.dividerBottom ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.FormComponents.FormDivider, {
+									className: this.props.mini ? BDFDB.disCN.margintop4 : BDFDB.disCN.margintop8
 								}) : null
 							]
 						}) : null;
@@ -6863,7 +6861,7 @@ module.exports = (_ => {
 									})
 								]
 							}),
-							BDFDB.ReactUtils.createElement("input", {
+							BDFDB.ReactUtils.createElement("input", BDFDB.ObjectUtils.exclude(Object.assign({}, props, {
 								id: props.id,
 								type: "checkbox",
 								ref: ref,
@@ -6884,7 +6882,7 @@ module.exports = (_ => {
 								},
 								checked: props.value,
 								disabled: props.disabled
-							})
+							}), "uncheckedColor", "checkedColor", "size", "value"))
 						]
 					});
 				};
@@ -7345,9 +7343,20 @@ module.exports = (_ => {
 				};
 				
 				let MessageHeaderExport = BDFDB.ModuleUtils.findByProperties("MessageTimestamp", false);
-				if (MessageHeaderExport) InternalBDFDB.processMessage = function (e) {
-					if (BDFDB.ObjectUtils.get(e, "instance.props.childrenHeader.type.type.name") && BDFDB.ObjectUtils.get(e, "instance.props.childrenHeader.props.message")) {
+				InternalBDFDB.processMessage = function (e) {
+					if (MessageHeaderExport && BDFDB.ObjectUtils.get(e, "instance.props.childrenHeader.type.type.name") && BDFDB.ObjectUtils.get(e, "instance.props.childrenHeader.props.message")) {
 						e.instance.props.childrenHeader.type = MessageHeaderExport.exports.default;
+					}
+					if (e.returnvalue && e.returnvalue.props && e.returnvalue.props.children && e.returnvalue.props.children.props) {
+						let message;
+						for (let key in e.instance.props) {
+							let data = BDFDB.ObjectUtils.get(e.instance.props[key], "props.message");
+							if (data) {
+								message = data;
+								break;
+							}
+						}
+						if (message) e.returnvalue.props.children.props["user_by_BDFDB"] = message.author.id;
 					}
 				};
 
