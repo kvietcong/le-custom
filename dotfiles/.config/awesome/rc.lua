@@ -72,7 +72,6 @@ super = "Mod4"
 
 user = {
     terminal = "kitty",
-    editor_cmd = "kitty --class editor vim",
     editor = os.getenv("EDITOR") or "vim",
     browser = "google-chrome-stable",
     theme = "static",
@@ -142,7 +141,7 @@ local menu_awesome = {
        hotkeys_popup.show_help(nil, awful.screen.focused())
    end },
    { "Docs", user.browser .. " /usr/share/doc/awesome/doc/index.html" },
-   { "Config", user.editor_cmd .. " " .. awesome.conffile },
+   { "Config", user.terminal .. " " .. user.editor .. " " .. awesome.conffile },
    { "Restart", awesome.restart },
    { "Quit", function () awesome.quit() end },
 }
@@ -1162,7 +1161,7 @@ awful.rules.rules = {
     },
 
     -- Floating clients.
-    {   
+    {
         rule_any = {
         role = {
           "pop-up", "dialogue",
@@ -1172,6 +1171,15 @@ awful.rules.rules = {
     -- Exceptions
     { rule = { class = "origin.exe" },
     properties = { floating = true } },
+
+    {
+        rule = { instance = "Godot_Editor" },
+        properties = {
+            maximized = false,
+            maximized_horizontal = false,
+            maximized_vertical = false
+        }
+    },
 }
 
 -- Signal function to execute when a new client appears.

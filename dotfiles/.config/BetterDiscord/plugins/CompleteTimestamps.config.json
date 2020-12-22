@@ -3,10 +3,12 @@
 		"maxDaysAgo": 0
 	},
 	"choices": {
-		"timestampLang": "$discord"
+		"timestampLang": "$discord",
+		"timestampToolLang": "$discord"
 	},
 	"formats": {
-		"ownFormat": "$hour: $minute: $second, $day.$month.$year"
+		"ownFormat": "$hour: $minute: $second, $day.$month.$year",
+		"ownFormatTool": "$hour: $minute: $second, $day.$month.$year"
 	},
 	"settings": {
 		"changeForChat": true,

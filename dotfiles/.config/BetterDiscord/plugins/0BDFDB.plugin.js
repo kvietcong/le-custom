@@ -16,13 +16,13 @@ module.exports = (_ => {
 		"info": {
 			"name": "BDFDB",
 			"author": "DevilBro",
-			"version": "1.2.3",
+			"version": "1.2.5",
 			"description": "Give other plugins utility functions"
 		},
 		"rawUrl": "https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js",
 		"changeLog": {
-			"fixed": {
-				"Small Fixes": ""
+			"improved": {
+				"Languages": "Added support for all languages used by discord"
 			}
 		}
 	};
@@ -721,13 +721,6 @@ module.exports = (_ => {
 	};
 	BDFDB.PluginUtils.checkChangeLog = function (plugin) {
 		if (!BDFDB.ObjectUtils.is(plugin) || !BDFDB.ObjectUtils.is(plugin.changeLog)) return;
-		// REMOVE 14.11.2020
-		let changeLog = BDFDB.DataUtils.load(plugin, "changeLog");
-		if (changeLog && changeLog.version) {
-			BDFDB.DataUtils.remove(plugin, "changelog");
-			BDFDB.DataUtils.remove(plugin, "changeLog");
-			changeLogs[plugin.name] = changeLog.version;
-		}
 		if (!changeLogs[plugin.name] || BDFDB.NumberUtils.compareVersions(plugin.version, changeLogs[plugin.name])) {
 			changeLogs[plugin.name] = plugin.version;
 			BDFDB.DataUtils.save(changeLogs, BDFDB, "changeLogs");
@@ -3531,7 +3524,7 @@ module.exports = (_ => {
 					let modal, modalInstance, modalProps, cancels = [], closeModal = _ => {
 						if (BDFDB.ObjectUtils.is(modalProps) && typeof modalProps.onClose == "function") modalProps.onClose();
 					};
-					let headerChildren = [], contentChildren = [], footerChildren = [];
+					let titleChildren = [], headerChildren = [], contentChildren = [], footerChildren = [];
 					if (typeof config.text == "string") {
 						contentChildren.push(BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TextElement, {
 							children: config.text
@@ -3590,6 +3583,7 @@ module.exports = (_ => {
 						}
 					}
 					contentChildren = contentChildren.concat(config.contentChildren).filter(n => n && (typeof n == "string" || BDFDB.ReactUtils.isValidElement(n)));
+					titleChildren = titleChildren.concat(config.titleChildren).filter(n => n && (typeof n == "string" || BDFDB.ReactUtils.isValidElement(n)));
 					headerChildren = headerChildren.concat(config.headerChildren).filter(n => n && (typeof n == "string" || BDFDB.ReactUtils.isValidElement(n)));
 					footerChildren = footerChildren.concat(config.footerChildren).filter(n => n && (typeof n == "string" || BDFDB.ReactUtils.isValidElement(n)));
 					if (contentChildren.length) {
@@ -3624,10 +3618,11 @@ module.exports = (_ => {
 															})
 														]
 													}),
+													titleChildren,
 													BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.ModalComponents.ModalCloseButton, {
 														onClick: closeModal
 													})
-												]
+												].flat(10).filter(n => n)
 											}),
 											headerChildren.length ? BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Flex, {
 												grow: 0,
@@ -7791,6 +7786,81 @@ module.exports = (_ => {
 					};
 					BDFDB.DevUtils.listenStop = function () {
 						if (typeof BDFDB.DevUtils.listen.p == "function") BDFDB.DevUtils.listen.p();
+					};
+					BDFDB.DevUtils.generateLanguageStrings = function (strings, config = {}) {
+						const language = config.language || "en";
+						const languages = BDFDB.ArrayUtils.removeCopies(BDFDB.ArrayUtils.is(config.languages) ? config.languages : ["en"].concat(Object.keys(BDFDB.ObjectUtils.filter(BDFDB.LanguageUtils.languages, n => n.discord))).filter(n => !n.startsWith("en-") && !n.startsWith("$") && n != language)).sort();
+						let translations = {};
+						strings = BDFDB.ObjectUtils.sort(strings);
+						translations[language] = BDFDB.ObjectUtils.toArray(strings);
+						let text = Object.keys(translations[language]).map(k => translations[language][k]).join("\n\n");
+						
+						let gt = (lang, callback) => {
+							let googleTranslateWindow = BDFDB.WindowUtils.open(BDFDB, `https://translate.google.com/#${language}/${{"zh": "zh-CN", "pt-BR": "pt"}[lang] || lang}/${encodeURIComponent(text)}`, {
+								onLoad: _ => {
+									googleTranslateWindow.executeJavaScriptSafe(`
+										let count = 0, interval = setInterval(_ => {
+											count++;
+											let translation = Array.from(document.querySelectorAll("[data-language-to-translate-into] span:not([class])")).map(n => n.innerText).join("");
+											if (translation || count > 50) {
+												clearInterval(interval);
+												require("electron").ipcRenderer.sendTo(${BDFDB.LibraryRequires.electron.remote.getCurrentWindow().webContents.id}, "GTO-translation", [
+													translation,
+													(document.querySelector("h2 ~ [lang]") || {}).lang
+												]);
+											}
+										}, 100);
+									`);
+								}
+							});
+							BDFDB.WindowUtils.addListener(BDFDB, "GTO-translation", (event, messageData) => {
+								BDFDB.WindowUtils.close(googleTranslateWindow);
+								BDFDB.WindowUtils.removeListener(BDFDB, "GTO-translation");
+								callback(messageData[0]);
+							});
+						};
+						let gt2 = (lang, callback) => {
+							BDFDB.LibraryRequires.request(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${language}&tl=${lang}&dt=t&dj=1&source=input&q=${encodeURIComponent(text)}`, (error, response, result) => {
+								if (!error && result && response.statusCode == 200) {
+									try {callback(JSON.parse(result).sentences.map(n => n && n.trans).filter(n => n).join(""));}
+									catch (err) {callback("");}
+								}
+								else {
+									if (response.statusCode == 429) {
+										BDFDB.NotificationUtils.toast("Too many requests. Switching to backup.", {type: "error"});
+										config.useBackup = true;
+										BDFDB.DevUtils.generateLanguageStrings(strings, config);
+									}
+									else {
+										BDFDB.NotificationUtils.toast("Failed to translate text.", {type: "error"});
+										callback("");
+									}
+								}
+							});
+						};
+						let fails = 0, next = lang => {
+							if (!lang) {
+								let result = Object.keys(translations).filter(n => n != "en").sort().map(l => `\n\t\t\t\t\tcase "${l}":${l.length > 2 ? "\t" : "\t\t"}// ${BDFDB.LanguageUtils.languages[l].name}\n\t\t\t\t\t\treturn {${translations[l].map((s, i) => `\n\t\t\t\t\t\t\t${Object.keys(strings)[i]}:${"\t".repeat(10 - ((Object.keys(strings)[i].length + 2) / 4))}"${translations[language][i][0] == translations[language][i][0].toUpperCase() ? BDFDB.LibraryModules.StringUtils.upperCaseFirstChar(s) : s}"`).join(",")}\n\t\t\t\t\t\t};`).join("");
+								if (translations.en) result += `\n\t\t\t\t\tdefault:\t\t// English\n\t\t\t\t\t\treturn {${translations.en.map((s, i) => `\n\t\t\t\t\t\t\t${Object.keys(strings)[i]}:${"\t".repeat(10 - ((Object.keys(strings)[i].length + 2) / 4))}"${translations[language][i][0] == translations[language][i][0].toUpperCase() ? BDFDB.LibraryModules.StringUtils.upperCaseFirstChar(s) : s}"`).join(",")}\n\t\t\t\t\t\t};`
+								BDFDB.NotificationUtils.toast("Translation copied to clipboard.", {type: "success"});
+								BDFDB.LibraryRequires.electron.clipboard.write({text: result});
+							}
+							else (config.useBackup ? gt : gt2)(lang, translation => {
+								console.log(lang);
+								if (!translation) {
+									console.warn("no translation");
+									fails++;
+									if (fails > 10) console.error("skipped language");
+									else languages.unshift(lang);
+								}
+								else {
+									fails = 0;
+									translations[lang] = translation.split("\n\n");
+								}
+								next(languages.shift());
+							});
+						};
+						next(languages.shift());
 					};
 					BDFDB.DevUtils.req = InternalBDFDB.getWebModuleReq();
 					
