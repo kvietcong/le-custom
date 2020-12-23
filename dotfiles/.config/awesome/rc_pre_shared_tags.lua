@@ -211,27 +211,11 @@ local time = wibox.widget.textclock("%H:%M")
 date.align = "center"
 time.align = "center"
 
--- Helper function that facilitates shared tag switching
-local switch_to_tag = function (tag_target)
-    local s = awful.screen.focused()
-    local tag_other = s.selected_tag
-    if tag_target.screen ~= s and tag_target.screen.selected_tag == tag_target then
-        tag_other.screen = tag_target.screen
-        tag_other:view_only()
-        tag_other.name = tag_target.screen.index
-    else
-        tag_other.name = " "
-    end
-    tag_target.screen = s
-    tag_target.name = s.index
-    tag_target:view_only()
-end
-
 -- Taglist
 local taglist_buttons = gears.table.join(
     awful.button(
         { }, 1,
-        switch_to_tag
+        function(t) t:view_only() end
     ),
     awful.button(
         { user.modkey }, 1,
@@ -477,6 +461,8 @@ systray.forced_height = 25
 awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
+    awful.tag({ " ", " ", " ", " ", " " }, s, awful.layout.layouts[1])
+
     s.systray = systray
 
     -- Imagebox which contains an icon indicating current layout
@@ -489,28 +475,15 @@ awful.screen.connect_for_each_screen(function(s)
     ))
 
     -- Create a taglist widget
-    if s.index == 1 then
-        awful.tag({ " ", " ", " ", " ", " ", " ", " ", " ", " " }, s, awful.layout.layouts[1])
-    end
-
-    -- Make sure each screen has a tag and it is in focus
-    local all_tags = root.tags()
-    all_tags[gears.math.cycle(#all_tags, s.index)].screen = s.index
-    all_tags[s.index].name = s.index
-    all_tags[s.index]:view_only()
-
     s.taglist = awful.widget.taglist {
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
-        source = root.tags,
         style = {
             shape = gears.shape.circle,
             spacing = 5,
             bg_focus = beautiful.fg_focus,
             bg_empty = beautiful.fg_minimize,
             bg_occupied = beautiful.fg_normal,
-            fg_normal = "#000000",
-            fg_focus = "#000000",
             font = "Monaco 8",
         },
         buttons = taglist_buttons,
@@ -529,7 +502,7 @@ awful.screen.connect_for_each_screen(function(s)
             spacing = beautiful.useless_gap
         },
     }
-
+    
     -- Create a Wibar
     s.wibar = {}
 
@@ -551,7 +524,7 @@ awful.screen.connect_for_each_screen(function(s)
         },
         x = beautiful.useless_gap * 2,
         y = s.geometry.height - 40 - beautiful.useless_gap * 2,
-        width = #root.tags() * 28.5, height = 40,
+        width = 165, height = 40,
     })
 
     s.wibar.second = wibar_section(s, {
@@ -742,7 +715,7 @@ end)
 -- Temporarily show layout indicator and focus urgent tag
 tag.connect_signal("property::urgent", function (t)
     t.screen.temp_show("first")
-    switch_to_tag(t)
+    awful.tag.viewmore({ t }, t.screen)
 end)
 
 -- ==================
@@ -763,7 +736,7 @@ root.buttons(gears.table.join(
 
 local function global_next_client(direction)
     local next_client = awful.client.next(direction)
-local clients = awful.screen.focused():get_clients(false)
+    local clients = awful.screen.focused():get_clients(false)
 
     if direction == 1 and next_client == clients[1] then
         awful.screen.focus_relative(direction)
@@ -778,7 +751,7 @@ local clients = awful.screen.focused():get_clients(false)
     end
 
     if client.focus then
-        client.focus:raise()
+       client.focus:raise()
     end
 end
 
@@ -820,7 +793,7 @@ local globalkeys = gears.table.join(
         { user.modkey }, ",",
         function ()
             screen.primary.systray.visible =
-            not screen.primary.systray.visible
+                not screen.primary.systray.visible
         end,
         { description = "toggle system tray", group = "Awesome" }
     ),
@@ -954,13 +927,12 @@ local globalkeys = gears.table.join(
     -- ),
     awful.key(
         {}, "XF86PowerOff",
-        function ()
+        function () 
             awful.spawn.with_shell("xset dpms force off && slock")
         end,
         { description = "turn off the display", group = "Screen" }
     ),
-    awful.key(
-        {}, "XF86Explorer",
+    awful.key({}, "XF86Explorer",
         function () awful.spawn("pkill -USR1 '^redshift$'") end,
         { description = "toggle redshift (FN+F11)", group = "Screen" }
     ),
@@ -1010,7 +982,7 @@ local globalkeys = gears.table.join(
         function () awful.spawn("rofi -show window") end,
         { description = "open window list", group = "Launcher" }
     ),
-
+    
     -- System Controls
     awful.key(
         { "Control", user.modkey }, "Delete",
@@ -1037,9 +1009,9 @@ local clientkeys = gears.table.join(
         { description = "toggle fullscreen", group = "Client" }
     ),
     awful.key(
-            { user.modkey }, "c",
-            function (c) c:kill() end,
-            { description = "close", group = "Client" }
+        { user.modkey }, "c",
+        function (c) c:kill() end,
+        { description = "close", group = "Client" }
     ),
     awful.key(
         { user.modkey, "Control" }, "space",
@@ -1087,10 +1059,26 @@ for i = 1, 9 do
         awful.key(
             { user.modkey }, "#" .. i + 9,
             function ()
-                local t = root.tags()[i]
-                switch_to_tag(t)
+                local s = awful.screen.focused()
+                local tag = s.tags[i]
+                if tag then
+                   tag:view_only()
+                end
             end,
             {description = "view tag #"..i, group = "Tag" }
+        ),
+
+        -- Toggle tag display.
+        awful.key(
+            { user.modkey, "Control" }, "#" .. i + 9,
+            function ()
+                local s = awful.screen.focused()
+                local tag = s.tags[i]
+                if tag then
+                   awful.tag.viewtoggle(tag)
+                end
+            end,
+            {description = "toggle tag #" .. i, group = "Tag" }
         ),
 
         -- Move client to tag.
@@ -1098,13 +1086,26 @@ for i = 1, 9 do
             { user.modkey, "Shift" }, "#" .. i + 9,
             function ()
                 if client.focus then
-                    local tag = root.tags()[i]
-                    if tag then
+                    local tag = client.focus.screen.tags[i] if tag then
                         client.focus:move_to_tag(tag)
                     end
                 end
             end,
             {description = "move focused client to tag #"..i, group = "Tag" }
+        ),
+
+        -- Toggle tag on focused client.
+        awful.key(
+            { user.modkey, "Control", "Shift" }, "#" .. i + 9,
+            function ()
+                if client.focus then
+                    local tag = client.focus.screen.tags[i]
+                    if tag then
+                        client.focus:toggle_tag(tag)
+                    end
+                end
+            end,
+            {description = "toggle focused client on tag #" .. i, group = "Tag" }
         )
     )
 end
