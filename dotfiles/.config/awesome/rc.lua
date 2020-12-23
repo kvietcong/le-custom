@@ -218,9 +218,6 @@ local switch_to_tag = function (tag_target)
     if tag_target.screen ~= s and tag_target.screen.selected_tag == tag_target then
         tag_other.screen = tag_target.screen
         tag_other:view_only()
-        tag_other.name = tag_target.screen.index
-    else
-        tag_other.name = " "
     end
     tag_target.screen = s
     tag_target.name = s.index
@@ -509,9 +506,9 @@ awful.screen.connect_for_each_screen(function(s)
             bg_focus = beautiful.fg_focus,
             bg_empty = beautiful.fg_minimize,
             bg_occupied = beautiful.fg_normal,
-            fg_normal = "#000000",
-            fg_focus = "#000000",
-            font = "Monaco 8",
+            fg_normal = beautiful.bg_normal,
+            fg_focus = beautiful.bg_normal,
+            font = "IBM Plex Mono Bold 8",
         },
         buttons = taglist_buttons,
     }
@@ -728,9 +725,16 @@ awful.screen.connect_for_each_screen(function(s)
     s.disable_taskbar()
 end)
 
--- Temporarily show tag indicator when changing tags
+-- Temporarily show tag indicator and update tag names
 screen.connect_signal("tag::history::update", function (s)
     s.temp_show("first")
+    for _, t in pairs(root.tags()) do
+        if t.screen.selected_tag == t then
+            t.name = t.screen.index
+        else
+            t.name = " "
+        end
+    end
 end)
 
 -- Temporarily show layout indicator when changing layout
