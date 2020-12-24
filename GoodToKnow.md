@@ -23,6 +23,8 @@
   - kitty: Pretty cool terminal with good display capabilities
   - Samba: Nice SMB file sharing service
   - Flameshot: Powerful screen-shot tool
+  - NoiseTorch: Amazing microphone noise suppression tool
+  - NeoVim: Great text editing
 
 ## Nice things to know
 
@@ -124,6 +126,11 @@
 
 - You can edit your `.desktop` file to make it so it opens a specific terminal. (Used to get Thunar
   to always open with kitty)
+
+- Use GNU Stow to easily manage all your dotfiles!
+
+- Use [NoiseTorch](https://github.com/lawl/NoiseTorch) to automagically remove background
+  noise from your microphone. It actually is insane how well it works
 
 - Documentation is key!
 
