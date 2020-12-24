@@ -1,5 +1,5 @@
 prompt =
 clipboarder = xclip
-skin-tone = moderate
 insert-with-clipboard = true
-rofi-args = -font "Monaco\ 16"
+rofi-args = -font "monospace\ 16"
+files = [ emojis, emoticons, chess_symbols, currency_symbols, dingbats, geometric_shapes_extended, miscellaneous_symbols_and_pictographs, miscellaneous_symbols_and_arrows, miscellaneous_symbols, musical_symbols, number_forms, supplemental_mathematical_operators, mathematical_alphanumeric_symbols, mathematical_operators, katakana, hiragana ]

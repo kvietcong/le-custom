@@ -54,6 +54,7 @@ alias cp="cp -i"
 alias grep="grep --color=auto"
 alias vim="nvim"
 alias rice="cd ~/linux-things/dotfiles"
+alias compat="sudo mount --bind ~/.local/share/Steam/steamapps/compatdata/"
 
 source $HOME/.config/le-agnoster.zsh-theme
 
