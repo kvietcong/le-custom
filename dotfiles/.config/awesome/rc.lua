@@ -1159,7 +1159,9 @@ awful.rules.rules = {
     -- Enable titlebars to normal clients
     {
         rule_any = { type = { "normal" } },
-        except_any = { class = { "Steam", "Lutris", "origin.exe" } },
+        except_any = { class = {
+            "Steam", "Lutris", "origin.exe", "osu!"
+        } },
         properties = { titlebars_enabled = true }
     },
 
