@@ -150,7 +150,7 @@ local menu_apps = {
    { "Browser", user.browser },
    { "Torrents", user.torrent },
    { "Discord", "discord" },
-   { "Spotify", user.browser .. " https://open.spotify.com/" },
+   { "Spotify",  "spotify-tray" },
 }
 
 local menu_root = awful.menu({ items = {
@@ -1160,8 +1160,8 @@ awful.rules.rules = {
     {
         rule_any = { type = { "normal" } },
         except_any = { class = {
-            "Steam", "Lutris", "origin.exe", "osu!"
-        } },
+            "Steam", "Lutris", "origin.exe", "osu!", "Spotify"
+        }},
         properties = { titlebars_enabled = true }
     },
 
