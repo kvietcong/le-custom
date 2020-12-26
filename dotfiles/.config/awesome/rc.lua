@@ -67,8 +67,8 @@ local lain = require("lain")
 -- User options
 -- ============
 
-alt = "Mod1"
-super = "Mod4"
+local alt = "Mod1"
+local super = "Mod4"
 
 user = {
     terminal = "kitty",
@@ -137,20 +137,25 @@ end
 
 -- Create a launcher widget and a main menu
 local menu_awesome = {
-   { "Hotkeys", function ()
-       hotkeys_popup.show_help(nil, awful.screen.focused())
-   end },
-   { "Docs", user.browser .. " /usr/share/doc/awesome/doc/index.html" },
-   { "Config", user.terminal .. " " .. user.editor .. " " .. awesome.conffile },
-   { "Restart", awesome.restart },
-   { "Quit", function () awesome.quit() end },
+    { "Hotkeys", function ()
+        hotkeys_popup.show_help(nil, awful.screen.focused())
+    end },
+    { "Docs", user.browser .. " /usr/share/doc/awesome/doc/index.html" },
+    { "Config", user.terminal .. " " .. user.editor .. " " .. awesome.conffile },
+    { "Restart", awesome.restart },
+    { "Quit", awesome.quit },
 }
 
 local menu_apps = {
-   { "Browser", user.browser },
-   { "Torrents", user.torrent },
-   { "Discord", "discord" },
-   { "Spotify",  "spotify-tray" },
+    { "Browser", user.browser },
+    { "Torrents", user.torrent },
+    { "Discord", "discord" },
+    { "Spotify",  "spotify-tray" },
+    { "Steam",  "steam-runtime" },
+    -- TODO: Find out why rofi doesn't launch consistently
+    { "Launcher", function ()
+        awful.spawn("rofi -show drun -show-icons true")
+    end },
 }
 
 local menu_root = awful.menu({ items = {
@@ -295,7 +300,6 @@ power_button:buttons(awful.util.table.join(
     end)
 ))
 
-
 -- PulseAudio Volume Controller
 local volume_text = lain.widget.pulse {
     settings = function ()
@@ -390,6 +394,12 @@ local cpu = wibox.widget {
     cpu_text.widget,
 }
 
+cpu:buttons(awful.util.table.join(
+    awful.button({}, 1, function () -- left click
+        awful.spawn(user.terminal .. " htop")
+    end)
+))
+
 -- Memory Indicator
 local mem_text = lain.widget.mem({
     settings = function ()
@@ -411,6 +421,12 @@ local mem = wibox.widget {
     },
     mem_text.widget,
 }
+
+mem:buttons(awful.util.table.join(
+    awful.button({}, 1, function () -- left click
+        awful.spawn(user.terminal .. " htop")
+    end)
+))
 
 -- Creates floating wibar sections
 local wibar_section = function(s, args)
@@ -650,6 +666,17 @@ awful.screen.connect_for_each_screen(function(s)
         end
     end
 
+    s.toggle_wibar = function ()
+        local visible = false
+        for name, section in pairs(s.wibar) do
+            if name == "first" then
+                visible = not section.visible
+            end
+            section.visible = visible
+            systray.set_screen(s)
+        end
+    end
+
     s.activation_zone = wibox ({
         x = s.geometry.x, y = s.geometry.y + s.geometry.height - 2,
         opacity = 0.0, width = s.geometry.width, height = 2,
@@ -767,7 +794,7 @@ root.buttons(gears.table.join(
 
 local function global_next_client(direction)
     local next_client = awful.client.next(direction)
-local clients = awful.screen.focused():get_clients(false)
+    local clients = awful.screen.focused():get_clients(false)
 
     if direction == 1 and next_client == clients[1] then
         awful.screen.focus_relative(direction)
@@ -819,14 +846,6 @@ local globalkeys = gears.table.join(
     awful.key(
         { user.modkey, "Control" }, "r", awesome.restart,
         { description = "reload awesome", group = "Awesome" }
-    ),
-    awful.key(
-        { user.modkey }, ",",
-        function ()
-            screen.primary.systray.visible =
-            not screen.primary.systray.visible
-        end,
-        { description = "toggle system tray", group = "Awesome" }
     ),
     awful.key(
         { user.modkey, "Shift" }, "q", awesome.quit,
@@ -941,6 +960,13 @@ local globalkeys = gears.table.join(
     ),
 
     -- Screen Controls
+    awful.key(
+        { user.modkey }, ",",
+        function ()
+            awful.screen.focused().toggle_wibar()
+        end,
+        { description = "show help", group = "Awesome" }
+    ),
     awful.key(
         { user.modkey, "Control" }, "p",
         function () awful.spawn("killall picom") end,
