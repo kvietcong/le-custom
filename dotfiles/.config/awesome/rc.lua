@@ -150,7 +150,7 @@ local menu_apps = {
     { "Browser", user.browser },
     { "Torrents", user.torrent },
     { "Discord", "discord" },
-    { "Spotify",  "spotify-tray" },
+    { "Spotify",  function() awful.spawn.with_shell("LD_PRELOAD=/usr/local/lib/spotify-adblock.so spotify-tray") end },
     { "Steam",  "steam-runtime" },
     -- TODO: Find out why rofi doesn't launch consistently
     { "Launcher", function ()
@@ -546,7 +546,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create a Wibar
     s.wibar = {}
 
-    s.wibar.first = wibar_section(s, {
+    s.wibar[1] = wibar_section(s, {
         widget = {
             layout = wibox.layout.fixed.horizontal,
             {
@@ -567,7 +567,7 @@ awful.screen.connect_for_each_screen(function(s)
         width = #root.tags() * 28.5, height = 40,
     })
 
-    s.wibar.second = wibar_section(s, {
+    s.wibar[2] = wibar_section(s, {
         widget = {
             widget = wibox.container.place,
             halign = "center", forced_width = 700,
@@ -592,7 +592,7 @@ awful.screen.connect_for_each_screen(function(s)
         width = 700, height = 40,
     })
 
-    s.wibar.third = wibar_section(s, {
+    s.wibar[3] = wibar_section(s, {
         widget = {
             widget = wibox.container.margin,
             left = 15, top = 8, bottom = 8, {
@@ -638,7 +638,7 @@ awful.screen.connect_for_each_screen(function(s)
             border_width = 0,
         },
     })
-    s.cal:attach(s.wibar.third.widget, "cc")
+    s.cal:attach(s.wibar[3].widget, "cc")
 
     s.disable_wibar = function ()
         for _, section in pairs(s.wibar) do
@@ -667,9 +667,9 @@ awful.screen.connect_for_each_screen(function(s)
     end
 
     s.toggle_wibar = function ()
-        local visible = false
-        for name, section in pairs(s.wibar) do
-            if name == "first" then
+        local visible = true
+        for i, section in ipairs(s.wibar) do
+            if i == 1 then
                 visible = not section.visible
             end
             section.visible = visible
@@ -754,7 +754,7 @@ end)
 
 -- Temporarily show tag indicator and update tag names
 screen.connect_signal("tag::history::update", function (s)
-    s.temp_show("first")
+    s.temp_show(1)
     for _, t in pairs(root.tags()) do
         if t.screen.selected_tag == t then
             t.name = t.screen.index
@@ -767,12 +767,12 @@ end)
 -- Temporarily show layout indicator when changing layout
 -- Note: Why isn't this signal in the wiki :(
 tag.connect_signal("property::layout", function (t)
-    t.screen.temp_show("first")
+    t.screen.temp_show(1)
 end)
 
 -- Temporarily show layout indicator and focus urgent tag
 tag.connect_signal("property::urgent", function (t)
-    t.screen.temp_show("first")
+    t.screen.temp_show(1)
     switch_to_tag(t)
 end)
 
