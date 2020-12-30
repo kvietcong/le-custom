@@ -1,5 +1,5 @@
-[core]
-	autocrlf = true
 [user]
 	email = lecongkhoiviet@gmail.com
 	name = derpyasianpanda
+[pull]
+	rebase = false
