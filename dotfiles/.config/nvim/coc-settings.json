@@ -9,5 +9,6 @@
             ],
             "port": 6008
         }
-    }
+    },
+    "coc.preferences.enableFloatHighlight": false
 }

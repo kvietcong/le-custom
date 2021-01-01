@@ -27,15 +27,17 @@ let mapleader = "\<Space>"
 
 set ruler
 set spell
+set hidden
 set showcmd
 set path+=**
 set modeline
 set linebreak
 set scrolloff=2
+set nocompatible
 set termguicolors
-set timeoutlen=500
 set ignorecase smartcase
 set relativenumber number
+set timeoutlen=500 updatetime=500
 set smartindent cindent autoindent
 set expandtab tabstop=4 shiftwidth=4 smarttab
 
@@ -76,26 +78,23 @@ map <Leader>f :NERDTreeToggle<Enter>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
 
-" Banner comment with --
+" Banner comments
 nnoremap <buffer> <Leader>- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj
-" Banner comment with ==
 nnoremap <buffer> <Leader>= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj
-" Banner comment with //
 nnoremap <buffer> <Leader>/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj
 
-" When editing a file, always jump to the last known cursor position.
-" Don't do it when the position is invalid, when inside an event handler
-" (happens when dropping a file on gvim) and for a commit message (it's
-" likely a different one than last time).
+" Jump to the last known cursor position.
 autocmd BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
     \ |   exe "normal! g`\""
     \ | endif
 
+" VSCode specific configuration
 if exists("g:vscode")
     source $HOME/.config/nvim/vscode.vim
 endif
 
+" Godot Settings
 func! GodotSettings() abort
     " setlocal foldmethod=expr
     setlocal tabstop=4
@@ -107,6 +106,41 @@ endfunc
 augroup godot | au!
     au FileType gdscript call GodotSettings()
 augroup end
+
+" COC configuration
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+inoremap <silent><expr> <c-space> coc#refresh()
+
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif (coc#rpc#ready())
+    call CocActionAsync('doHover')
+  else
+    execute '!' . &keywordprg . " " . expand('<cword>')
+  endif
+endfunction
+
+nmap <F2> <Plug>(coc-rename)
+highlight CocFloating guibg=none ctermbg=none
 
 " <Unused stuff>
 
