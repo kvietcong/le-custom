@@ -201,9 +201,7 @@ local script_path = gears.filesystem.get_configuration_dir() .. "scripts/"
 if beautiful.dynamic_wallpaper then
     local bg_path = gears.filesystem.get_configuration_dir() ..
         "themes/" .. user.theme .. "/background.mp4"
-    awful.spawn.with_shell(script_path .. "setlivewallpaper.sh " .. bg_path)
-else
-    awful.spawn.with_shell(script_path .. "killlivewallpapers.sh")
+    awful.spawn(script_path .. "setlivewallpaper.sh " .. bg_path)
 end
 
 -- ==================
@@ -662,7 +660,9 @@ awful.screen.connect_for_each_screen(function(s)
         for _, section in pairs(s.wibar) do
             section.visible = true
             systray.set_screen(s)
-            s.detect:start()
+            if not s.detect.started then
+                s.detect:start()
+            end
         end
     end
 
@@ -686,7 +686,9 @@ awful.screen.connect_for_each_screen(function(s)
 
     s.activation_zone:connect_signal("mouse::enter", function ()
         for _, section in pairs(s.wibar) do
-            section.custom.temp_timer:stop()
+            if section.custom.temp_timer.started then
+                section.custom.temp_timer:stop()
+            end
         end
         s.enable_wibar()
     end)
@@ -735,7 +737,9 @@ awful.screen.connect_for_each_screen(function(s)
 
     s.enable_taskbar = function ()
         s.taskbar.visible = true
-        s.taskbar_detect:start()
+        if not s.taskbar_detect.started then
+            s.taskbar_detect:start()
+        end
     end
 
 
@@ -1099,13 +1103,6 @@ local clientkeys = gears.table.join(
             c.minimized = true
         end ,
         { description = "minimize", group = "Client" }
-    ),
-    awful.key({ user.modkey }, "m",
-        function (c)
-            c.maximized = not c.maximized
-            c:raise()
-        end ,
-        {description = "toggle maximize", group = "Client"}
     )
 )
 
@@ -1202,15 +1199,6 @@ awful.rules.rules = {
     -- Exceptions
     { rule = { class = "origin.exe" },
     properties = { floating = true } },
-
-    {
-        rule = { instance = "Godot_Editor" },
-        properties = {
-            maximized = false,
-            maximized_horizontal = false,
-            maximized_vertical = false
-        }
-    },
 }
 
 -- Signal function to execute when a new client appears.
@@ -1299,6 +1287,19 @@ client.connect_signal("property::geometry", function(c)
         end
     end
 end)
+
+-- Prevent maximized screens
+function disable_maximize(c)
+    c.maximized = false
+    c.maximized_horizontal = false
+    c.maximized_vertical = false
+end
+
+client.connect_signal("property::maximized", disable_maximize)
+
+client.connect_signal("property::maximized_horizontal", disable_maximize)
+
+client.connect_signal("property::maximized_vertical", disable_maximize)
 
 -- ===============
 -- Autostart Setup
