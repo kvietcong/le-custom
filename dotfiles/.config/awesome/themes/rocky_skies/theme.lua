@@ -37,14 +37,18 @@ local gears = require("gears")
 local gfs = require("gears.filesystem")
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
+local config_dir = gfs.get_configuration_dir()
 local xrdb = xresources.get_current_theme()
-local icon_dir = gfs.get_configuration_dir() .. "icons"
+local icon_dir = config_dir .. "icons"
+
 local default_theme_dir = gfs.get_themes_dir() .. "default"
 
 local transparent = "#00000000"
 local theme = {}
 
-theme.wallpaper = gfs.get_configuration_dir() .. "themes/static/background.png"
+theme.xrdb = xrdb
+
+theme.wallpaper = config_dir .. "themes/rocky_skies/background.png"
 
 theme.font          = "Monaco 10"
 
@@ -64,6 +68,8 @@ theme.tooltip_fg = theme.fg_normal
 theme.tooltip_bg = theme.bg_normal
 
 theme.taglist_bg_occupied = theme.bg_minimize
+
+theme.tasklist_plain_task_name = true
 
 theme.useless_gap   = dpi(4)
 theme.border_width  = dpi(0)
@@ -98,7 +104,7 @@ theme.awesome_icon = theme_assets.awesome_icon(
     theme.menu_height * 2, theme.bg_urgent, theme.fg_normal
 )
 
--- Titlebar Icons
+-- Titlebar Icons (From default)
 theme.titlebar_close_button_normal = default_theme_dir .. "/titlebar/close_normal.png"
 theme.titlebar_close_button_focus  = default_theme_dir .. "/titlebar/close_focus.png"
 
@@ -157,6 +163,5 @@ theme.layout_cornerse   = default_theme_dir .. "/layouts/cornersew.png"
 
 -- Recolor Layout Icons
 theme = theme_assets.recolor_layout(theme, theme.fg_normal)
-
 
 return theme
