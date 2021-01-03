@@ -23,7 +23,6 @@
   - kitty: Pretty cool terminal with good display capabilities
   - Samba: Nice SMB file sharing service
   - Flameshot: Powerful screen-shot tool
-  - NoiseTorch: Amazing microphone noise suppression tool
   - NeoVim: Great text editing
 
 ## Nice things to know
@@ -131,6 +130,8 @@
 
 - Use [NoiseTorch](https://github.com/lawl/NoiseTorch) to automagically remove background
   noise from your microphone. It actually is insane how well it works
+  - Want a better way? Load it directly into your pulseaudio configuration with a ladspa plugin
+    from [`noise-suppression-for-voice`](https://github.com/werman/noise-suppression-for-voice)
 
 - Steam for some reason keeps your screen awake when you use an external
   storage solution for your library
