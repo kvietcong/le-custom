@@ -132,6 +132,9 @@
 - Use [NoiseTorch](https://github.com/lawl/NoiseTorch) to automagically remove background
   noise from your microphone. It actually is insane how well it works
 
+- Steam for some reason keeps your screen awake when you use an external
+  storage solution for your library
+
 - Documentation is key!
 
 - I use Arch btw XD
