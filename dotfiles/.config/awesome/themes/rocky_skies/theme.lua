@@ -51,11 +51,12 @@ theme.xrdb = xrdb
 theme.wallpaper = config_dir .. "themes/rocky_skies/background.png"
 
 theme.font          = "Monaco 10"
+theme.transparency  = "CC"
 
-theme.bg_normal     = xrdb.color0 .. "CC"
-theme.bg_focus      = xrdb.color6 .. "CC"
-theme.bg_urgent     = xrdb.color5 .. "CC"
-theme.bg_minimize   = xrdb.color8 .. "CC"
+theme.bg_normal     = xrdb.color0
+theme.bg_focus      = xrdb.color6
+theme.bg_urgent     = xrdb.color5
+theme.bg_minimize   = xrdb.color8
 
 theme.fg_normal     = xrdb.color7
 theme.fg_focus      = xrdb.color6
@@ -63,6 +64,11 @@ theme.fg_minimize   = xrdb.color8
 theme.fg_urgent     = xrdb.color5
 
 theme.border_radius = dpi(8)
+theme.shape = function(cr, w, h)
+    gears.shape.rounded_rect(cr, w, h, theme.border_radius)
+end
+-- theme.shape = gears.shape.rectangle
+
 
 theme.tooltip_fg = theme.fg_normal
 theme.tooltip_bg = theme.bg_normal
@@ -73,21 +79,21 @@ theme.tasklist_plain_task_name = true
 
 theme.useless_gap   = dpi(4)
 theme.border_width  = dpi(0)
-theme.border_normal = theme.bg_minimize
+theme.border_normal = theme.bg_normal .. theme.transparency
 theme.border_focus  = theme.fg_focus
 theme.screen_margin  = theme.useless_gap
 
-theme.notification_border_width = theme.border_width
-theme.notification_border_color = theme.bg_focus
-theme.notification_margin = dpi(10)
-theme.notification_spacing = dpi(10)
+theme.notification_bg = theme.bg_normal .. theme.transparency
+theme.notification_shape = theme.shape
+-- TODO: Figure out why notification margins don't work
+theme.notication_margin = 2 * (theme.useless_gap + theme.border_width)
 
 theme.menu_height = dpi(25)
 theme.menu_width  = dpi(200)
-theme.menu_font = theme.font
 theme.menu_border_color = theme.bg_normal
-theme.menu_bg_normal = theme.bg_normal:sub(1, -3) .. "66"
-theme.menu_bg_focus = theme.bg_normal
+theme.menu_bg_normal = theme.bg_normal .. "99"
+theme.menu_fg_focus = theme.fg_normal
+theme.menu_bg_focus = theme.fg_urgent .. "99"
 
 theme.hotkeys_font = theme.font
 theme.hotkeys_description_font = theme.font
@@ -95,7 +101,7 @@ theme.hotkeys_border_width = dpi(2)
 theme.hotkeys_group_margin = dpi(10)
 theme.hotkeys_modifiers_fg = theme.fg_focus
 theme.hotkeys_border_color = theme.bg_focus
-theme.hotkeys_shape = gears.shape.rounded_rect
+theme.hotkeys_shape = theme.shape
 
 theme.titlebar_bg_focus = theme.bg_minimize
 
@@ -161,7 +167,9 @@ theme.layout_cornerne   = default_theme_dir .. "/layouts/cornernew.png"
 theme.layout_cornersw   = default_theme_dir .. "/layouts/cornersww.png"
 theme.layout_cornerse   = default_theme_dir .. "/layouts/cornersew.png"
 
--- Recolor Layout Icons
+-- Recolor Icons
 theme = theme_assets.recolor_layout(theme, theme.fg_normal)
+theme = theme_assets.recolor_titlebar(theme, theme.fg_normal, "normal", nil)
+theme = theme_assets.recolor_titlebar(theme, theme.fg_focus, "focus", "hover")
 
 return theme

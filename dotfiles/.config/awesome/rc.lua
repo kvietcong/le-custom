@@ -50,7 +50,6 @@ local beautiful = require("beautiful")
 
 -- Notification libraries
 local naughty = require("naughty")
-local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
 
 -- Pre-made widget library
@@ -72,13 +71,17 @@ local script_path = config_dir .. "scripts/"
 -- ============
 
 user = {
-    terminal = "kitty",
-    editor = os.getenv("EDITOR") or "vim",
-    browser = "google-chrome-stable",
     theme = "rocky_skies",
-    files = "thunar",
     modkey = super,
-    torrent = "qbittorrent",
+    apps = {
+        torrent = "qbittorrent",
+        files = "thunar",
+        browser = "google-chrome-stable",
+        terminal = "kitty",
+        editor = os.getenv("EDITOR") or "vim",
+        music = "LD_PRELOAD=/usr/local/lib/spotify-adblock.so spotify-tray",
+        communication = "discord",
+    },
     startup = {
         solaar = "",
         picom = " -b",
@@ -145,18 +148,18 @@ local menu_awesome = {
     { "Hotkeys", function ()
         hotkeys_popup.show_help(nil, awful.screen.focused())
     end },
-    { "Docs", user.browser .. " /usr/share/doc/awesome/doc/index.html" },
-    { "Config", user.terminal .. " " .. user.editor .. " " .. awesome.conffile },
+    { "Docs", user.apps.browser .. " /usr/share/doc/awesome/doc/index.html" },
+    { "Config", user.apps.terminal .. " " .. user.apps.editor .. " " .. awesome.conffile },
     { "Restart", awesome.restart },
     { "Quit", awesome.quit },
 }
 
 local menu_apps = {
-    { "Browser", user.browser },
-    { "Torrents", user.torrent },
-    { "Discord", "discord" },
-    { "Spotify",  function()
-        awful.spawn.with_shell("LD_PRELOAD=/usr/local/lib/spotify-adblock.so spotify-tray")
+    { "Browser", user.apps.browser },
+    { "Torrents", user.apps.torrent },
+    { "Communication", user.apps.communication },
+    { "Music",  function ()
+        awful.spawn.with_shell(user.apps.music .. " -m")
     end },
     { "Steam",  "steam-runtime" },
     -- TODO: Find out why rofi doesn't launch consistently
@@ -168,14 +171,12 @@ local menu_apps = {
 local menu_root = awful.menu({ items = {
     { "Awesome", menu_awesome, beautiful.awesome_icon },
     { "Apps", menu_apps },
-    { "Files", user.files },
-    { "Terminal", user.terminal },
+    { "Files", user.apps.files },
+    { "Terminal", user.apps.terminal },
 }})
 
 -- TODO: Figure out why this doesn't work
-menu_root.shape = function(cr, w, h)
-    gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
-end
+menu_root.shape = beautiful.shape
 
 awful.widget.launcher({
     image = beautiful.awesome_icon,
@@ -186,7 +187,7 @@ awful.widget.launcher({
 -- Wallpaper Setup
 -- ===============
 
-local function set_wallpaper(s)
+local set_wallpaper = function (s)
     -- Wallpaper
     if beautiful.wallpaper then
         local wallpaper = beautiful.wallpaper
@@ -245,7 +246,7 @@ local view_tag_dir = function (tag_current, direction)
         end
     end
     local tag_target = tags[gears.math.cycle(#tags, idx)]
-    -- Skip screens that are already occupied
+    -- Skip tags that are already shown
     for s in screen do
         if tag_target == s.selected_tag then
             idx = idx + direction
@@ -259,7 +260,7 @@ end
 local taglist_buttons = gears.table.join(
     awful.button({}, 1, switch_to_tag),
     awful.button({ user.modkey }, 1,
-        function(t)
+        function (t)
             if client.focus then
                 client.focus:move_to_tag(t)
             end
@@ -267,17 +268,17 @@ local taglist_buttons = gears.table.join(
     ),
     awful.button({}, 3, awful.tag.viewtoggle),
     awful.button({ user.modkey }, 3,
-        function(t)
+        function (t)
             if client.focus then
                 client.focus:toggle_tag(t)
             end
         end
     ),
     awful.button({}, 4,
-        function(t) view_tag_dir(t.screen.selected_tag, 1) end
+        function (t) view_tag_dir(t.screen.selected_tag, 1) end
     ),
     awful.button({}, 5,
-        function(t) view_tag_dir(t.screen.selected_tag, -1) end
+        function (t) view_tag_dir(t.screen.selected_tag, -1) end
     )
 )
 
@@ -294,7 +295,7 @@ local tasklist_buttons = gears.table.join(
             )
         end
     end),
-    awful.button({}, 3, function()
+    awful.button({}, 3, function ()
       awful.menu.client_list({ theme = { width = 250 } })
     end),
     awful.button({}, 4, function ()
@@ -400,7 +401,7 @@ local cpu = wibox.widget {
 
 cpu:buttons(awful.util.table.join(
     awful.button({}, 1, function ()
-        awful.spawn(user.terminal .. " htop")
+        awful.spawn(user.apps.terminal .. " htop")
     end)
 ))
 
@@ -428,12 +429,12 @@ local mem = wibox.widget {
 
 mem:buttons(awful.util.table.join(
     awful.button({}, 1, function ()
-        awful.spawn(user.terminal .. " htop")
+        awful.spawn(user.apps.terminal .. " htop")
     end)
 ))
 
 -- Creates floating wibar sections
-local wibar_section = function(s, args)
+local wibar_section = function (s, args)
     local section = wibox({
         screen = s,
         height = args.height, width = args.width,
@@ -447,9 +448,7 @@ local wibar_section = function(s, args)
     })
 
     -- Border Radius
-    section.shape = function(cr, w, h)
-        gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
-    end
+    section.shape = beautiful.shape
 
     -- Uncomment to change workspace area
     -- section:struts({ top = 0, bottom = 45 })
@@ -491,7 +490,7 @@ systray.visible = true
 systray.forced_height = 25
 
 -- Add a widgets to each screen
-awful.screen.connect_for_each_screen(function(s)
+awful.screen.connect_for_each_screen(function (s)
     set_wallpaper(s)
 
     s.systray = systray
@@ -534,13 +533,13 @@ awful.screen.connect_for_each_screen(function(s)
             forced_width = 20,
             shape = gears.shape.circle,
             widget = wibox.container.background,
-            update_callback = function(self, t, _index, _tags)
+            update_callback = function (self, t, _index, _tags)
                 if t.screen.selected_tag == t then
                     self.bg = colors[t.screen.index]
                 elseif #t:clients() > 0 then
                     self.bg = beautiful.fg_normal
                 else
-                    self.bg = beautiful.bg_normal
+                    self.bg = beautiful.bg_minimize
                 end
             end,
         },
@@ -552,10 +551,8 @@ awful.screen.connect_for_each_screen(function(s)
         filter  = awful.widget.tasklist.filter.currenttags,
         buttons = tasklist_buttons,
         style = {
+            shape = beautiful.shape,
             bg_focus = beautiful.bg_normal,
-            shape = function(cr, w, h)
-                gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
-            end,
             spacing = beautiful.useless_gap
         },
         widget_template = {
@@ -590,23 +587,23 @@ awful.screen.connect_for_each_screen(function(s)
 
     s.wibar[1] = wibar_section(s, {
         widget = {
-            layout = wibox.layout.fixed.horizontal,
+            widget = wibox.container.margin,
+            left = beautiful.useless_gap,
             {
-                widget = wibox.container.margin,
-                left = beautiful.useless_gap * 2, {
-                    layout = wibox.layout.fixed.horizontal,
-                    {
-                            widget = wibox.container.margin,
-                            right = 5, top = 5, bottom = 5,
-                            s.layoutbox,
-                    },
-                    s.taglist,
-                }
-            }
+                layout = wibox.layout.fixed.horizontal,
+                {
+                        widget = wibox.container.margin,
+                        forced_width = 40,
+                        forced_height = 40,
+                        margins = beautiful.useless_gap,
+                        s.layoutbox,
+                },
+                s.taglist,
+            },
         },
         x = beautiful.useless_gap * 2,
-        y = s.geometry.height - 40 - beautiful.useless_gap * 2,
-        width = #root.tags() * (20 + 2 * beautiful.useless_gap) + beautiful.useless_gap,
+        y = s.geometry.height - 40 - 2 * (beautiful.useless_gap + beautiful.border_width),
+        width = #root.tags() * (20 + beautiful.useless_gap) + 40 + 2 * beautiful.useless_gap,
         height = 40,
     })
 
@@ -631,7 +628,7 @@ awful.screen.connect_for_each_screen(function(s)
             },
         },
         x = s.geometry.width / 2 - 350,
-        y = s.geometry.height - 40 - beautiful.useless_gap * 2,
+        y = s.geometry.height - 40 - 2 * (beautiful.useless_gap + beautiful.border_width),
         width = 700, height = 40,
     })
 
@@ -662,8 +659,8 @@ awful.screen.connect_for_each_screen(function(s)
                 time,
             },
         },
-        x = s.geometry.width - 240 - beautiful.useless_gap * 2,
-        y = s.geometry.height - 40 - beautiful.useless_gap * 2,
+        x = s.geometry.width - 240 - 2 * (beautiful.useless_gap + beautiful.border_width),
+        y = s.geometry.height - 40 - 2 * (beautiful.useless_gap + beautiful.border_width),
         width = 240, height = 40,
     })
 
@@ -759,9 +756,7 @@ awful.screen.connect_for_each_screen(function(s)
         y = s.geometry.y + beautiful.useless_gap * 2,
         bg = "#00000000", visible = true, ontop = true,
         input_passthrough = false, type = "dock",
-        shape = function(cr, w, h)
-            gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
-        end
+        shape = beautiful.shape,
     })
 
     s.disable_taskbar = function ()
@@ -841,7 +836,7 @@ root.buttons(gears.table.join(
 ))
 
 -- Helper function to globally switch across screens
-local function global_next_client(direction)
+local global_next_client = function (direction)
     local next_client = awful.client.next(direction)
     local clients = awful.screen.focused():get_clients(false)
 
@@ -926,77 +921,69 @@ local globalkeys = gears.table.join(
         function () global_next_client(-1) end,
         { description = "focus previous by index", group = "Client" }
     ),
-    -- TODO: Make this better
+    -- TODO: Make alt-tabbing better
     awful.key({ alt }, "Tab",
         function () global_next_client(1) end,
         { description = "focus next by index", group = "Client" }
+    ),
+    awful.key(
+        { user.modkey }, "u",
+        awful.client.urgent.jumpto,
+        { description = "jump to urgent client", group = "Client" }
+    ),
+    awful.key(
+        { user.modkey, "Control" }, "n",
+        function ()
+            local c = awful.client.restore()
+            -- Focus restored client
+            if c then
+                c:emit_signal(
+                  "request::activate", "key.unminimize", { raise = true }
+                )
+            end
+        end,
+        { description = "restore minimized", group = "Client"}
+    ),
+    -- TODO: Find out how to make this more robust for shared tags
+    awful.key(
+        { user.modkey, "Shift" }, "j",
+        function ()
+            if client.focus then
+                local clients = client.focus.screen:get_clients(false)
+                if client.focus == clients[#clients] then
+                    client.focus:move_to_screen(client.focus.screen.index + 1)
+                else
+                    awful.client.swap.byidx(1)
+                end
+            end
+        end,
+        { description = "swap with next client", group = "Client" }
+    ),
+    awful.key(
+        { user.modkey, "Shift" }, "k",
+        function ()
+            if client.focus then
+                local clients = client.focus.screen:get_clients(false)
+                if client.focus == clients[1] then
+                    client.focus:move_to_screen(client.focus.screen.index - 1)
+                else
+                    awful.client.swap.byidx(-1)
+                end
+            end
+        end,
+        { description = "swap with previous client", group = "Client" }
     ),
     awful.key(
         { user.modkey, "Control" }, "f",
         function ()
             local t = awful.screen.focused().selected_tag
             if t.gap == 0 then
-                t.gap = 8
+                t.gap = beautiful.useless_gap
             else
                 t.gap = 0
             end
         end,
         { description = "toggle focus mode", group = "Layout" }
-    ),
-    -- TODO: Find out how to make this more robust for shared tags
-    awful.key(
-        { user.modkey, "Shift" }, "j",
-        function ()
-            awful.client.swap.byidx(1)
-
-            -- TODO: Make this work
-            -- if client.focus then
-            --     local clients = client.focus.screen:get_clients(false)
-            --     if client.focus == clients[#clients] then
-            --         client.focus:move_to_screen(client.focus.screen.index + 1)
-
-            --         clients = client.focus.screen:get_clients()
-            --         if #clients > 1 then
-            --             for _, c in ipairs(clients) do
-            --                 awful.client.setslave(c)
-            --             end
-            --         end
-            --         awful.client.setmaster(client.focus)
-            --     else
-            --         awful.client.swap.byidx(1)
-            --     end
-            -- end
-        end,
-        { description = "swap with next client by index", group = "Client" }
-    ),
-    awful.key(
-        { user.modkey, "Shift" }, "k",
-        function ()
-            awful.client.swap.byidx(-1)
-
-            -- TODO: Make this work
-            -- if client.focus then
-            --     local clients = client.focus.screen:get_clients(false)
-            --     if client.focus == clients[1] then
-            --         client.focus:move_to_screen(client.focus.screen.index - 1)
-
-            --         clients = client.focus.screen:get_clients()
-            --         if #clients == 1 then
-            --             awful.client.setmaster(client.focus)
-            --         else
-            --             awful.client.setslave(client.focus)
-            --         end
-            --     else
-            --         awful.client.swap.byidx(-1)
-            --     end
-            -- end
-        end,
-        { description = "swap with previous client by index", group = "Client" }
-    ),
-    awful.key(
-        { user.modkey }, "u",
-        awful.client.urgent.jumpto,
-        { description = "jump to urgent client", group = "Client" }
     ),
     awful.key(
         { user.modkey }, "l",
@@ -1009,16 +996,6 @@ local globalkeys = gears.table.join(
         { description = "decrease master width factor", group = "Layout" }
     ),
     awful.key(
-        { user.modkey, "Shift" }, "h",
-        function () awful.tag.incnmaster(1, nil, true) end,
-        {description = "increase the number of master clients", group = "Layout" }
-    ),
-    awful.key(
-        { user.modkey, "Shift" }, "l",
-        function () awful.tag.incnmaster(-1, nil, true) end,
-        { description = "decrease the number of master clients", group = "Layout" }
-    ),
-    awful.key(
         { user.modkey }, "space",
         function () awful.layout.inc(1) end,
         { description = "select next", group = "Layout" }
@@ -1027,19 +1004,6 @@ local globalkeys = gears.table.join(
         { user.modkey, "Shift" }, "space",
         function () awful.layout.inc(-1) end,
         { description = "select previous", group = "Layout" }
-    ),
-    awful.key(
-        { user.modkey, "Control" }, "n",
-        function ()
-            local c = awful.client.restore()
-            -- Focus restored client
-            if c then
-                c:emit_signal(
-                  "request::activate", "key.unminimize", {raise = true}
-                )
-            end
-        end,
-        { description = "restore minimized", group = "Client"}
     ),
 
     -- Screen Controls
@@ -1083,16 +1047,20 @@ local globalkeys = gears.table.join(
     -- Applications
     awful.key(
         { user.modkey }, "Return",
-        function () awful.spawn(user.terminal) end,
+        function () awful.spawn(user.apps.terminal) end,
         { description = "open a terminal", group = "Applications" }
     ),
     awful.key(
-        { user.modkey }, "b", function () awful.spawn(user.browser) end,
+        { user.modkey }, "b", function () awful.spawn(user.apps.browser) end,
         { description = "open browser", group = "Applications" }
     ),
     awful.key(
-        { user.modkey }, "d", function () awful.spawn("discord") end,
-        { description = "open discord", group = "Applications" }
+        { user.modkey }, "d", function () awful.spawn(user.apps.communication) end,
+        { description = "open communications app", group = "Applications" }
+    ),
+    awful.key(
+        { user.modkey }, "m", function () awful.spawn.with_shell(user.apps.music .. " -tm") end,
+        { description = "open music app", group = "Applications" }
     ),
     awful.key(
         {}, "Print", function () awful.spawn("flameshot gui") end,
@@ -1283,32 +1251,40 @@ client.connect_signal("manage", function (c)
 end)
 
 -- Enable titlebar
-client.connect_signal("request::titlebars", function(c)
+client.connect_signal("request::titlebars", function (c)
     local buttons = gears.table.join(
-        awful.button({}, 1, function()
-            c:emit_signal("request::activate", "titlebar", {raise = true})
+        awful.button({}, 1, function ()
+            c:emit_signal("request::activate", "titlebar", { raise = true })
             awful.mouse.client.move(c)
         end),
-        awful.button({}, 3, function()
-            c:emit_signal("request::activate", "titlebar", {raise = true})
+        awful.button({}, 3, function ()
+            c:emit_signal("request::activate", "titlebar", { raise = true })
             awful.mouse.client.resize(c)
         end)
     )
 
-    awful.titlebar(c, {
-        position = "top",
-        size = beautiful.get_font_height(beautiful.font) * 1.3
-    }):setup {
+    local titlebar = awful.titlebar(c, {
+        size = beautiful.get_font_height(beautiful.font) * 1.3,
+        bg_normal = beautiful.bg_normal .. beautiful.transparency,
+        bg_focus = beautiful.bg_normal .. beautiful.transparency,
+        fg_focus = beautiful.fg_normal,
+    })
+
+    titlebar:setup {
         {
             {
                 awful.titlebar.widget.iconwidget(c),
                 buttons = buttons,
                 layout  = wibox.layout.fixed.horizontal
             },
-            margins = 3, left = 5,
+            margins = 2, left = beautiful.useless_gap,
             widget = wibox.container.margin
         },
         {
+            {
+                align  = "center",
+                widget = awful.titlebar.widget.titlewidget(c)
+            },
             buttons = buttons,
             layout  = wibox.layout.flex.horizontal
         },
@@ -1317,42 +1293,81 @@ client.connect_signal("request::titlebars", function(c)
                 awful.titlebar.widget.stickybutton(c),
                 awful.titlebar.widget.floatingbutton (c),
                 awful.titlebar.widget.ontopbutton(c),
+                awful.titlebar.widget.minimizebutton(c),
                 awful.titlebar.widget.closebutton(c),
-                spacing = 5,
+                spacing = beautiful.useless_gap,
                 layout = wibox.layout.fixed.horizontal
             },
             margins = 3,
-            widget = wibox.container.margin
+            right = beautiful.useless_gap,
+            widget = wibox.container.margin,
         },
         layout = wibox.layout.align.horizontal
     }
 end)
 
-
 -- Sloppy/Lazy Focus (Focus follows mouse)
-client.connect_signal("mouse::enter",
-    function(c)
-        c:emit_signal("request::activate", "mouse_enter", {raise = false})
-    end
-)
-
-client.connect_signal("focus", function(c)
-    c.border_color = beautiful.border_focus
+client.connect_signal("mouse::enter", function (c)
+    c:emit_signal("request::activate", "mouse_enter", { raise = false })
 end)
 
+client.connect_signal("focus", function (c)
+    c.border_color = beautiful.border_focus
+    local titlebar = awful.titlebar(c, {
+        position = "top",
+        size = beautiful.get_font_height(beautiful.font) * 1.3,
+        bg_normal = beautiful.bg_normal .. beautiful.transparency,
+        bg_focus = beautiful.bg_normal .. beautiful.transparency,
+        fg_focus = beautiful.fg_normal,
+    })
+    if titlebar.widget then
+        titlebar.widget.children[2].opacity = 1
+        titlebar.widget.children[3].opacity = 1
+    else
+        awful.titlebar.hide(c)
+    end
+end)
+
+client.connect_signal("unfocus", function (c)
+    c.border_color = beautiful.border_normal
+    local titlebar = awful.titlebar(c, {
+        position = "top",
+        size = beautiful.get_font_height(beautiful.font) * 1.3,
+        bg_normal = beautiful.bg_normal .. beautiful.transparency,
+        bg_focus = beautiful.bg_normal .. beautiful.transparency,
+        fg_focus = beautiful.fg_normal,
+    })
+    if titlebar.widget then
+        titlebar.widget.children[2].opacity = 0
+        titlebar.widget.children[3].opacity = 0
+    else
+        awful.titlebar.hide(c)
+    end
+end)
+
+local is_fullscreen = function (c)
+	local fills_screen = function ()
+		local wa = c.screen.workarea
+		local cg = c:geometry()
+		return wa.x == cg.x and wa.y == cg.y and wa.width == cg.width and wa.height == cg.height
+	end
+	return c.maximized or fills_screen() or c.fullscreen
+end
+
 -- Remove rounded corners if in fullscreen
-client.connect_signal("property::geometry", function(c)
-    if c.fullscreen or c.maximized then
+client.connect_signal("property::geometry", function (c)
+    if
+        is_fullscreen(c) or
+        (c.screen.selected_tag and c.screen.selected_tag.gap == 0)
+    then
         c.shape = gears.shape.rectangle
     else
-        c.shape = function(cr, w, h)
-            gears.shape.rounded_rect(cr, w, h, beautiful.border_radius)
-        end
+        c.shape = beautiful.shape
     end
 end)
 
 -- Prevent maximized screens
-function disable_maximize(c)
+local disable_maximize = function (c)
     c.maximized = false
     c.maximized_horizontal = false
     c.maximized_vertical = false
@@ -1369,7 +1384,7 @@ client.connect_signal("property::maximized_vertical", disable_maximize)
 -- ===============
 
 -- Oh my god pgrep is so good
-function launch(program, extra)
+local launch = function (program, extra)
     awful.spawn.with_shell(
         "pgrep " .. program .. " || " .. program .. extra
     )
