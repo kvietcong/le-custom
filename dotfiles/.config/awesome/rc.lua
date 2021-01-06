@@ -86,7 +86,7 @@ user = {
         solaar = "",
         picom = " -b",
         discord = "",
-        udsikie = " -t",
+        udiskie = " -t",
         redshift = "-gtk",
         qbittorrent = "",
         greenclip = "",
@@ -750,7 +750,7 @@ awful.screen.connect_for_each_screen(function (s)
     })
 
     s.taskbar = wibox({
-        screen = s, width = s.geometry.width,
+        screen = s, width = s.geometry.width - 4 * beautiful.useless_gap,
         height = beautiful.get_font_height(beautiful.font) * 1.3,
         x = s.geometry.x + beautiful.useless_gap * 2,
         y = s.geometry.y + beautiful.useless_gap * 2,
@@ -823,6 +823,32 @@ end)
 -- Bindings/Shortcuts
 -- ==================
 
+
+local tb_wrapper = function (c)
+    local titlebar = awful.titlebar(c, {
+        position = "top",
+        size = beautiful.get_font_height(beautiful.font) * 1.3,
+        bg_normal = beautiful.bg_normal .. beautiful.transparency,
+        bg_focus = beautiful.bg_normal .. beautiful.transparency,
+        fg_focus = beautiful.fg_normal,
+    })
+
+    titlebar.hide = function () awful.titlebar.hide(c) end
+
+    if titlebar.widget then
+        titlebar.show = function () awful.titlebar.show(c) end
+    else
+        titlebar.show = function () end
+        titlebar.hide()
+    end
+
+    if c.first_tag and c.first_tag.useless_gap == 0 then
+        titlebar.hide()
+    end
+
+    return titlebar
+end
+
 -- Determine what mouse buttons do on root window
 root.buttons(gears.table.join(
     awful.button({}, 3, function () menu_root:toggle() end),
@@ -848,6 +874,8 @@ local global_next_client = function (direction)
         awful.screen.focus_relative(direction)
         clients = awful.screen.focused():get_clients(false)
         client.focus = clients[#clients]
+    elseif #clients <= 0 then
+        awful.screen.focus_relative(direction)
     else
         client.focus = next_client
     end
@@ -979,8 +1007,14 @@ local globalkeys = gears.table.join(
             local t = awful.screen.focused().selected_tag
             if t.gap == 0 then
                 t.gap = beautiful.useless_gap
+                for _, c in pairs(t:clients()) do
+                    tb_wrapper(c).show()
+                end
             else
                 t.gap = 0
+                for _, c in pairs(t:clients()) do
+                    tb_wrapper(c).hide()
+                end
             end
         end,
         { description = "toggle focus mode", group = "Layout" }
@@ -1201,10 +1235,11 @@ local clientbuttons = gears.table.join(
 -- Set keys
 root.keys(globalkeys)
 
--- Rules to apply to new clients (through the "manage" signal).
+-- Rules to apply to new clients
 awful.rules.rules = {
     -- All clients
-    { rule = {},
+    {
+        rule = {},
         properties = {
             border_width = beautiful.border_width,
             border_color = beautiful.border_normal,
@@ -1213,31 +1248,53 @@ awful.rules.rules = {
             keys = clientkeys,
             buttons = clientbuttons,
             screen = awful.screen.preferred,
-            placement = awful.placement.no_overlap+awful.placement.no_offscreen,
+            placement = awful.placement.no_overlap +
+                awful.placement.no_offscreen,
             maximized = false,
         }
     },
 
     -- Enable titlebars to normal clients
     {
-        rule_any = { type = { "normal" } },
-        except_any = { class = {
-            "Steam", "Lutris", "origin.exe", "osu!", "Spotify"
-        }},
+        rule_any = {
+            type = { "normal", "dialogue" }
+        },
+        except_any = {
+            class = {
+                "Steam", "Lutris",
+                "origin.exe", "osu!",
+                "Spotify", "csgo_linux64",
+            }
+        },
         properties = { titlebars_enabled = true }
     },
 
     -- Floating clients.
     {
         rule_any = {
-        role = {
-          "pop-up", "dialogue",
-        }
-    }, properties = { floating = true } },
+            role = {
+              "pop-up", "dialogue",
+            },
+            -- class = { "zoom" },
+        },
+        properties = { floating = true }
+    },
+
+    -- Auto-fullscreen
+    {
+        rule_any = {
+            class = {
+              "csgo_linux64",
+            }
+        },
+        properties = { floating = true }
+    },
 
     -- Exceptions
-    { rule = { class = "origin.exe" },
-    properties = { floating = true } },
+    {
+        rule = { class = "origin.exe" },
+        properties = { floating = true }
+    },
 }
 
 -- Signal function to execute when a new client appears.
@@ -1245,7 +1302,8 @@ client.connect_signal("manage", function (c)
     if awesome.startup
         and not c.size_hints.user_position
         and not c.size_hints.program_position then
-            -- Prevent clients from being unreachable after screen count changes.
+            -- Prevent clients from being unreachable
+            -- after screen count changes.
             awful.placement.no_offscreen(c)
     end
 end)
@@ -1313,35 +1371,19 @@ end)
 
 client.connect_signal("focus", function (c)
     c.border_color = beautiful.border_focus
-    local titlebar = awful.titlebar(c, {
-        position = "top",
-        size = beautiful.get_font_height(beautiful.font) * 1.3,
-        bg_normal = beautiful.bg_normal .. beautiful.transparency,
-        bg_focus = beautiful.bg_normal .. beautiful.transparency,
-        fg_focus = beautiful.fg_normal,
-    })
+    local titlebar = tb_wrapper(c)
     if titlebar.widget then
         titlebar.widget.children[2].opacity = 1
         titlebar.widget.children[3].opacity = 1
-    else
-        awful.titlebar.hide(c)
     end
 end)
 
 client.connect_signal("unfocus", function (c)
     c.border_color = beautiful.border_normal
-    local titlebar = awful.titlebar(c, {
-        position = "top",
-        size = beautiful.get_font_height(beautiful.font) * 1.3,
-        bg_normal = beautiful.bg_normal .. beautiful.transparency,
-        bg_focus = beautiful.bg_normal .. beautiful.transparency,
-        fg_focus = beautiful.fg_normal,
-    })
+    local titlebar = tb_wrapper(c)
     if titlebar.widget then
         titlebar.widget.children[2].opacity = 0
         titlebar.widget.children[3].opacity = 0
-    else
-        awful.titlebar.hide(c)
     end
 end)
 
@@ -1361,6 +1403,11 @@ client.connect_signal("property::geometry", function (c)
         (c.screen.selected_tag and c.screen.selected_tag.gap == 0)
     then
         c.shape = gears.shape.rectangle
+
+        -- Prevent fullscreen in focus mode
+        if c.screen.selected_tag.gap == 0 then
+            c.fullscreen = false
+        end
     else
         c.shape = beautiful.shape
     end
