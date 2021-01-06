@@ -1,7 +1,7 @@
 ## Things I use
 
 - Distributions
-  - **Arch**
+  - [**I use it btw 😢**](https://archlinux.org/)
   - Manjaro
   - Ubuntu
 
