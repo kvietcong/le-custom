@@ -21,6 +21,8 @@ compinit
 bindkey -v
 autoload edit-command-line; zle -N edit-command-line
 bindkey "^e" edit-command-line
+bindkey '^R' history-incremental-search-backward
+
 # Change cursor shape for different vi modes.
 function zle-keymap-select {
   if [[ ${KEYMAP} == vicmd ]] ||
