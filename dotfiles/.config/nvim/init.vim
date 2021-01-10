@@ -50,6 +50,12 @@ set noshowmode
 " Better searching
 set incsearch nohlsearch
 
+" Better wrap navigation
+nnoremap <expr> j v:count ? 'j' : 'gj'
+nnoremap <expr> k v:count ? 'k' : 'gk'
+noremap <silent> 0 g0
+noremap <silent> $ g$
+
 " Better split navigation
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
