@@ -11,6 +11,7 @@
   - GNOME
   - XFCE
   - MATE
+  - LxQt
 
 - Programs
   - Rofi: App launcher/Command Runner
@@ -24,6 +25,8 @@
   - Samba: Nice SMB file sharing service
   - Flameshot: Powerful screen-shot tool
   - NeoVim: Great text editing
+  - CopyQ: Clipboard manager
+  - Obsidian: Great note taking app
 
 ## Nice things to know
 
