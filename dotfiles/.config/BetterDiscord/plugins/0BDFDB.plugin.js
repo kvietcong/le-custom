@@ -16,10 +16,15 @@ module.exports = (_ => {
 		"info": {
 			"name": "BDFDB",
 			"author": "DevilBro",
-			"version": "1.2.6",
+			"version": "1.2.9",
 			"description": "Give other plugins utility functions"
 		},
-		"rawUrl": "https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js"
+		"rawUrl": "https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js",
+		"changeLog": {
+			"fixed": {
+				"New Pagination": "Fixed issues with the new pagination style and logic"
+			}
+		}
 	};
 	
 	const DiscordObjects = {};
@@ -59,11 +64,11 @@ module.exports = (_ => {
 	};
 	const Plugin = function(config) {
 		return class Plugin {
-			getName() {return config.info.name;}
-			getAuthor() {return config.info.author;}
-			getVersion() {return config.info.version;}
-			getDescription() {return config.info.description;}
-			load() {
+			getName () {return config.info.name;}
+			getAuthor () {return config.info.author;}
+			getVersion () {return config.info.version;}
+			getDescription () {return config.info.description;}
+			load () {
 				this.loaded = true;
 				if (window.BDFDB_Global.loading) {
 					if (!PluginStores.delayedLoad.includes(this)) PluginStores.delayedLoad.push(this);
@@ -77,7 +82,7 @@ module.exports = (_ => {
 					}, "Failed to load plugin!", config.info.name)();
 				}
 			}
-			start() {
+			start () {
 				if (!this.loaded) this.load();
 				if (window.BDFDB_Global.loading) {
 					if (!PluginStores.delayedStart.includes(this)) PluginStores.delayedStart.push(this);
@@ -92,7 +97,7 @@ module.exports = (_ => {
 					delete this.stopping;
 				}
 			}
-			stop() {
+			stop () {
 				if (this.stopping) return;
 				this.stopping = true;
 				BDFDB.TimeUtils.timeout(_ => {delete this.stopping;});
@@ -1216,6 +1221,7 @@ module.exports = (_ => {
 							let backgroundcolor = BDFDB.ColorUtils.convert(comp, "HEX");
 							let filter = comp[0] > 180 && comp[1] > 180 && comp[2] > 180 ? "brightness(0%)" : "brightness(100%)";
 							BDFDB.DOMUtils.appendLocalStyle("BDFDBcustomNotificationBarColorCorrection" + id, `${BDFDB.dotCN.noticewrapper}[notice-id="${id}"]{background-color: ${backgroundcolor} !important;}${BDFDB.dotCN.noticewrapper}[notice-id="${id}"] .notice-message {color: ${fontColor} !important;}${BDFDB.dotCN.noticewrapper}[notice-id="${id}"] ${BDFDB.dotCN.noticebutton} {color: ${fontColor} !important;border-color: ${BDFDB.ColorUtils.setAlpha(fontColor, 0.25, "RGBA")} !important;}${BDFDB.dotCN.noticewrapper}[notice-id="${id}"] ${BDFDB.dotCN.noticebutton}:hover {color: ${backgroundcolor} !important;background-color: ${fontColor} !important;}${BDFDB.dotCN.noticewrapper}[notice-id="${id}"] ${BDFDB.dotCN.noticedismiss} {filter: ${filter} !important;}`);
+							BDFDB.DOMUtils.addClass(notice, BDFDB.disCN.noticecustom);
 						}
 						else BDFDB.DOMUtils.addClass(notice, BDFDB.disCN.noticedefault);
 					}
@@ -1302,7 +1308,7 @@ module.exports = (_ => {
 					}
 					if (customBackgroundColor) BDFDB.DOMUtils.addClass(tooltip, BDFDB.disCN.tooltipcustom);
 					else if (options.color && BDFDB.disCN["tooltip" + options.color.toLowerCase()]) BDFDB.DOMUtils.addClass(tooltip, BDFDB.disCN["tooltip" + options.color.toLowerCase()]);
-					else BDFDB.DOMUtils.addClass(tooltip, BDFDB.disCN.tooltipblack);
+					else BDFDB.DOMUtils.addClass(tooltip, BDFDB.disCN.tooltipprimary);
 					
 					if (options.list || BDFDB.ObjectUtils.is(options.guild)) BDFDB.DOMUtils.addClass(tooltip, BDFDB.disCN.tooltiplistitem);
 
@@ -1813,7 +1819,7 @@ module.exports = (_ => {
 								}
 								else BDFDB.TimeUtils.suppress(data.callOriginalMethod, `originalMethod of ${methodName} in ${module.constructor ? module.constructor.displayName || module.constructor.name : "module"}`)();
 								callInstead = false, stopCall = false;
-								return methodName == "render" && data.returnValue === undefined ? null : data.returnValue;
+								return (methodName == "render" || methodName == "default") && data.returnValue === undefined ? null : data.returnValue;
 							};
 							for (let key of Object.keys(originalMethod)) module[methodName][key] = originalMethod[key];
 							if (!module[methodName].__originalFunction) {
@@ -3702,11 +3708,12 @@ module.exports = (_ => {
 				BDFDB.ContextMenuUtils.createItem = function (component, props = {}) {
 					if (!component) return null;
 					else {
-						if (props.persisting || BDFDB.ObjectUtils.is(props.popoutProps) || (typeof props.color == "string" && !DiscordClasses[`menu${props.color.toLowerCase()}`])) component = InternalComponents.MenuItem;
+						if (props.render || props.persisting || BDFDB.ObjectUtils.is(props.popoutProps) || (typeof props.color == "string" && !DiscordClasses[`menu${props.color.toLowerCase()}`])) component = InternalComponents.MenuItem;
 						if (BDFDB.ObjectUtils.toArray(RealMenuItems).some(c => c == component)) return BDFDB.ReactUtils.createElement(component, props);
 						else return BDFDB.ReactUtils.createElement(RealMenuItems.MenuItem, {
 							id: props.id,
 							disabled: props.disabled,
+							customItem: true,
 							render: menuItemProps => {
 								if (!props.state) props.state = BDFDB.ObjectUtils.extract(props, "checked", "value");
 								return BDFDB.ReactUtils.createElement(InternalComponents.CustomMenuItemWrapper, {
@@ -4402,7 +4409,7 @@ module.exports = (_ => {
 						let focused = !openedItem ? this.props.isFocused : openedItem == this.props.id;
 						let themeDark = BDFDB.DiscordUtils.getTheme() == BDFDB.disCN.themedark;
 						let item = BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, Object.assign({
-							className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.menuitem, BDFDB.disCN.menulabelcontainer, color && (isCustomColor ? BDFDB.disCN.menucolorcustom : BDFDB.disCN[`menu${color}`]), this.props.disabled && BDFDB.disCN.menudisabled, focused && BDFDB.disCN.menufocused),
+							className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.menuitem, (this.props.label || this.props.subtext) && BDFDB.disCN.menulabelcontainer, color && (isCustomColor ? BDFDB.disCN.menucolorcustom : BDFDB.disCN[`menu${color}`]), this.props.disabled && BDFDB.disCN.menudisabled, focused && BDFDB.disCN.menufocused),
 							style: {
 								color: isCustomColor ? ((focused || this.state.hovered) ? (BDFDB.ColorUtils.isBright(color) ? "#000000" : "#ffffff") : color) : (this.state.hovered ? "#ffffff" : null),
 								background: isCustomColor && (focused || this.state.hovered) && color
@@ -4413,14 +4420,17 @@ module.exports = (_ => {
 								this.props.action(e, this);
 							},
 							onMouseEnter: this.props.disabled ? null : e => {
+								if (typeof this.props.onMouseEnter == "function") this.props.onMouseEnter(e, this);
 								this.setState({hovered: true});
 							},
 							onMouseLeave: this.props.disabled ? null : e => {
+								if (typeof this.props.onMouseLeave == "function") this.props.onMouseLeave(e, this);
 								this.setState({hovered: false});
 							},
 							"aria-disabled": this.props.disabled,
 							children: [
-								BDFDB.ReactUtils.createElement("div", {
+								typeof this.props.render == "function" ? this.props.render(this) : this.props.render,
+								(this.props.label || this.props.subtext) && BDFDB.ReactUtils.createElement("div", {
 									className: BDFDB.disCN.menulabel,
 									children: [
 										typeof this.props.label == "function" ? this.props.label(this) : this.props.label,
@@ -4437,7 +4447,7 @@ module.exports = (_ => {
 								this.props.icon && BDFDB.ReactUtils.createElement("div", {
 									className: BDFDB.disCN.menuiconcontainer,
 									children: BDFDB.ReactUtils.createElement(this.props.icon, {
-										className: BDFDB.disCN.menuicon,
+										className: BDFDB.disCN.menuicon
 									})
 								}),
 								this.props.imageUrl && BDFDB.ReactUtils.createElement("div", {
@@ -4463,14 +4473,26 @@ module.exports = (_ => {
 						this.state = {hovered: false};
 					}
 					render() {
-						return BDFDB.ReactUtils.createElement("div", {
+						let isItem = this.props.children == InternalComponents.MenuItem;
+						let item = BDFDB.ReactUtils.createElement(this.props.children, Object.assign({}, this.props.childProps, {
+							onMouseEnter: isItem ? e => {
+								if (this.props.childProps && typeof this.props.childProps.onMouseEnter == "function") this.props.childProps.onMouseEnter(e, this);
+								this.setState({hovered: true});
+							} : this.props.childProps && this.props.childProps.onMouseEnter,
+							onMouseLeave: isItem ? e => {
+								if (this.props.childProps && typeof this.props.childProps.onMouseLeave == "function") this.props.childProps.onMouseLeave(e, this);
+								this.setState({hovered: false});
+							} : this.props.childProps && this.props.childProps.onMouseLeave,
+							isFocused: this.state.hovered && !this.props.disabled
+						}));
+						return isItem ? item : BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
 							onMouseEnter: e => {
 								this.setState({hovered: true});
 							},
 							onMouseLeave: e => {
 								this.setState({hovered: false});
 							},
-							children: BDFDB.ReactUtils.createElement(this.props.children, Object.assign({}, this.props.childProps, {isFocused: this.state.hovered && !this.props.disabled}))
+							children: item
 						});
 					}
 				};
@@ -5836,7 +5858,7 @@ module.exports = (_ => {
 				};
 				
 				InternalComponents.LibraryComponents.ListRow = reactInitialized && class BDFDB_ListRow extends LibraryModules.React.Component {
-					render () {
+					render() {
 						return BDFDB.ReactUtils.createElement("div", BDFDB.ObjectUtils.exclude(Object.assign({}, this.props, {
 							className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.listrowwrapper, this.props.className, BDFDB.disCN.listrow),
 							children: [
@@ -6081,99 +6103,33 @@ module.exports = (_ => {
 							offset: props.offset
 						};
 					}
-					jump(offset) {
+					handleJump(offset) {
 						if (offset > -1 && offset < Math.ceil(this.props.items.length/this.props.amount) && this.state.offset != offset) {
 							this.state.offset = offset;
 							if (typeof this.props.onJump == "function") this.props.onJump(offset, this);
 							BDFDB.ReactUtils.forceUpdate(this);
 						}
 					}
-					renderPagination() {
+					renderPagination(bottom) {
 						let maxOffset = Math.ceil(this.props.items.length/this.props.amount) - 1;
 						return this.props.items.length > this.props.amount && BDFDB.ReactUtils.createElement("nav", {
-							className: BDFDB.disCN.paginationlistpagination,
+							className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.pagination, bottom ? BDFDB.disCN.paginationbottom : BDFDB.disCN.paginationtop, this.props.mini && BDFDB.disCN.paginationmini),
 							children: [
-								this.props.first && BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TooltipContainer, {
-									text: BDFDB.LanguageUtils.LibraryStrings.first,
-									"aria-label": BDFDB.LanguageUtils.LibraryStrings.first,
-									tooltipConfig: {zIndex: 3001},
-									onClick: _ => {if (this.state.offset > 0) this.jump(0);},
-									children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
-										className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.searchresultspaginationbutton, this.state.offset <= 0 && BDFDB.disCN.searchresultspaginationdisabled),
-										children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.SvgIcon, {
-											className: BDFDB.disCN.searchresultspaginationicon,
-											name: InternalComponents.LibraryComponents.SvgIcon.Names.LEFT_DOUBLE_CARET
-										})
-									})
-								}),
-								BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TooltipContainer, {
-									text: BDFDB.LanguageUtils.LanguageStrings.PAGINATION_PREVIOUS,
-									"aria-label": BDFDB.LanguageUtils.LanguageStrings.PAGINATION_PREVIOUS,
-									tooltipConfig: {zIndex: 3001},
-									onClick: _ => {
-										if (this.state.offset > 0) this.jump(this.state.offset - 1);
-									},
-									children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
-										className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.searchresultspaginationbutton, this.state.offset <= 0 && BDFDB.disCN.searchresultspaginationdisabled),
-										children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.SvgIcon, {
-											className: BDFDB.disCN.searchresultspaginationicon,
-											name: InternalComponents.LibraryComponents.SvgIcon.Names.LEFT_CARET
-										})
-									})
-								}),
-								BDFDB.LanguageUtils.LanguageStringsFormat("PAGINATION_PAGE_OF", this.state.offset + 1, maxOffset + 1),
-								BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TooltipContainer, {
-									text: BDFDB.LanguageUtils.LanguageStrings.PAGINATION_NEXT,
-									"aria-label": BDFDB.LanguageUtils.LanguageStrings.PAGINATION_NEXT,
-									tooltipConfig: {zIndex: 3001},
-									onClick: _ => {if (this.state.offset < maxOffset) this.jump(this.state.offset + 1);},
-									children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
-										className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.searchresultspaginationbutton, this.state.offset >= maxOffset && BDFDB.disCN.searchresultspaginationdisabled),
-										children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.SvgIcon, {
-											className: BDFDB.disCN.searchresultspaginationicon,
-											name: InternalComponents.LibraryComponents.SvgIcon.Names.RIGHT_CARET
-										})
-									})
-								}),
-								this.props.last && BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TooltipContainer, {
-									text: BDFDB.LanguageUtils.LibraryStrings.last,
-									"aria-label": BDFDB.LanguageUtils.LibraryStrings.last,
-									tooltipConfig: {zIndex: 3001},
-									onClick: _ => {if (this.state.offset < maxOffset) this.jump(maxOffset);},
-									children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
-										className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.searchresultspaginationbutton, this.state.offset >= maxOffset && BDFDB.disCN.searchresultspaginationdisabled),
-										children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.SvgIcon, {
-											className: BDFDB.disCN.searchresultspaginationicon,
-											name: InternalComponents.LibraryComponents.SvgIcon.Names.RIGHT_DOUBLE_CARET
-										})
-									})
+								BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Paginator, {
+									totalCount: this.props.items.length,
+									currentPage: this.state.offset + 1,
+									pageSize: this.props.amount,
+									maxVisiblePages: this.props.maxVisiblePages,
+									onPageChange: page => {this.handleJump(isNaN(parseInt(page)) ? -1 : page - 1);}
 								}),
 								this.props.jump && BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TextInput, {
-									key: "pagination-list-jumpinput",
 									type: "number",
 									size: InternalComponents.LibraryComponents.TextInput.Sizes.MINI,
 									value: this.state.offset + 1,
 									min: 1,
 									max: maxOffset + 1,
-									onKeyDown: (event, instance) => {if (event.which == 13) this.jump(isNaN(parseInt(instance.props.value)) ? -1 : instance.props.value - 1);}
+									onKeyDown: (event, instance) => {if (event.which == 13) this.handleJump(isNaN(parseInt(instance.props.value)) ? -1 : instance.props.value - 1);}
 								}),
-								this.props.jump && BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TooltipContainer, {
-									text: BDFDB.LanguageUtils.LanguageStrings.JUMP,
-									"aria-label": BDFDB.LanguageUtils.LanguageStrings.JUMP,
-									tooltipConfig: {zIndex: 3001},
-									onClick: (event, instance) => {
-										let jumpInput = BDFDB.ReactUtils.findOwner(BDFDB.ObjectUtils.get(instance, `${BDFDB.ReactUtils.instanceKey}.return`), {key: "pagination-list-jumpinput"});
-										if (jumpInput) this.jump(isNaN(parseInt(jumpInput.props.value)) ? -1 : jumpInput.props.value - 1);
-									},
-									children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
-										className: BDFDB.disCN.searchresultspaginationbutton,
-										children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.SvgIcon, {
-											className: BDFDB.disCN.searchresultspaginationicon,
-											style: {transform: "rotate(90deg"},
-											name: InternalComponents.LibraryComponents.SvgIcon.Names.RIGHT_CARET
-										})
-									})
-								})
 							].filter(n => n)
 						});
 					}
@@ -6195,7 +6151,7 @@ module.exports = (_ => {
 							}
 						}
 						return typeof this.props.renderItem != "function" || !items.length ? null : BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Scrollers.Thin, {
-							className: BDFDB.DOMUtils.formatClassName(this.props.className, BDFDB.disCN.paginationlist, this.props.mini, BDFDB.disCN.paginationlistmini),
+							className: BDFDB.DOMUtils.formatClassName(this.props.className, BDFDB.disCN.paginationlist, this.props.mini && BDFDB.disCN.paginationlistmini),
 							fade: this.props.fade,
 							children: [
 								this.renderPagination(),
@@ -6203,7 +6159,7 @@ module.exports = (_ => {
 									className: BDFDB.disCN.paginationlistalphabet,
 									children: Object.keys(alphabet).map(key => BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.Clickable, {
 										className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.paginationlistalphabetchar, alphabet[key].disabled &&BDFDB.disCN.paginationlistalphabetchardisabled),
-										onClick: _ => {if (!alphabet[key].disabled) this.jump(Math.floor(items.indexOf(alphabet[key].items[0])/this.props.amount));},
+										onClick: _ => {if (!alphabet[key].disabled) this.handleJump(Math.floor(items.indexOf(alphabet[key].items[0])/this.props.amount));},
 										children: key
 									}))
 								}),
@@ -6212,12 +6168,12 @@ module.exports = (_ => {
 									className: BDFDB.disCN.paginationlistcontent,
 									children: items.slice(this.state.offset * this.props.amount, (this.state.offset + 1) * this.props.amount).map((data, i) => {return this.props.renderItem(data, i);}).flat(10).filter(n => n)
 								}),
-								this.props.copyToBottom && this.renderPagination()
+								this.props.copyToBottom && this.renderPagination(true)
 							].flat(10).filter(n => n)
 						});
 					}
 				};
-				InternalBDFDB.setDefaultProps(InternalComponents.LibraryComponents.PaginatedList, {amount: 50, offset: 0, jump: true, first: true, last: true, copyToBottom: false, fade: true});
+				InternalBDFDB.setDefaultProps(InternalComponents.LibraryComponents.PaginatedList, {amount: 50, offset: 0, mini: true, jump: true, maxVisiblePages: 7, copyToBottom: false, fade: true});
 				
 				InternalComponents.LibraryComponents.Popout = reactInitialized && class BDFDB_Popout extends LibraryModules.React.Component {
 					componentWillUnmount() {
@@ -8018,15 +7974,15 @@ module.exports = (_ => {
 			Object.assign(this, config.info, BDFDB.ObjectUtils.exclude(config, "info"));
 			if (!BDFDB.BDUtils.isPluginEnabled(config.info.name)) BDFDB.BDUtils.enablePlugin(config.info.name);
 		}
-		start() {}
-		stop() {
+		start () {}
+		stop () {
 			if (!BDFDB.BDUtils.isPluginEnabled(config.info.name)) BDFDB.BDUtils.enablePlugin(config.info.name);
 		}
 		
 		getSettingsPanel (collapseStates = {}) {
 			let settingsPanel;
 			let getString = (key, property) => {
-				return BDFDB.LanguageUtils.LibraryStringsCheck[`settings_${key}_${property}`] ? BDFDB.LanguageUtils.LibraryStringsFormat(`settings_${key}_${property}`, BDFDB.BDUtils.getSettingsProperty("name", BDFDB.BDUtils.settingsIds[key]) || BDFDB_Global.LibraryModules.StringUtils.upperCaseFirstChar(key.replace(/([A-Z])/g, " $1"))) : InternalBDFDB.defaults.settings[key][property];
+				return BDFDB.LanguageUtils.LibraryStringsCheck[`settings_${key}_${property}`] ? BDFDB.LanguageUtils.LibraryStringsFormat(`settings_${key}_${property}`, BDFDB.BDUtils.getSettingsProperty("name", BDFDB.BDUtils.settingsIds[key]) || BDFDB.LibraryModules.StringUtils.upperCaseFirstChar(key.replace(/([A-Z])/g, " $1"))) : InternalBDFDB.defaults.settings[key][property];
 			};
 			return settingsPanel = BDFDB.PluginUtils.createSettingsPanel(BDFDB, {
 				collapseStates: collapseStates,
@@ -8042,7 +7998,7 @@ module.exports = (_ => {
 							keys: ["settings", key],
 							label: getString(key, "description"),
 							note: (InternalBDFDB.defaults.settings[key].noteAlways || InternalBDFDB.defaults.settings[key].noteIfNative && nativeSetting) && getString(key, "note"),
-							value: settings[key] || key == "showToasts" && bdToastSetting
+							value: settings[key] || nativeSetting
 						}));
 					}
 					
