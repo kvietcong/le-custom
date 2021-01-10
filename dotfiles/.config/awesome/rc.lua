@@ -84,12 +84,12 @@ user = {
     },
     startup = {
         solaar = "",
-        picom = " -b",
+        copyq = "",
         discord = "",
+        picom = " -b",
         udiskie = " -t",
         redshift = "-gtk",
         qbittorrent = "",
-        greenclip = "",
         libinput = "-gestures-setup start",
     },
 }
@@ -258,33 +258,40 @@ end
 
 -- Tag List
 local taglist_buttons = gears.table.join(
-    awful.button({}, 1, switch_to_tag),
+    awful.button({ }, 1, switch_to_tag),
     awful.button({ user.modkey }, 1,
+        function (t)
+            for _, c in pairs(awful.screen.focused():get_clients()) do
+                c:move_to_tag(t)
+            end
+        end
+    ),
+    awful.button({ }, 3,
         function (t)
             if client.focus then
                 client.focus:move_to_tag(t)
             end
         end
     ),
-    awful.button({}, 3, awful.tag.viewtoggle),
-    awful.button({ user.modkey }, 3,
-        function (t)
-            if client.focus then
-                client.focus:toggle_tag(t)
-            end
-        end
-    ),
-    awful.button({}, 4,
+    -- awful.button({ }, 3, awful.tag.viewtoggle),
+    -- awful.button({ user.modkey }, 3,
+    --     function (t)
+    --         if client.focus then
+    --             client.focus:toggle_tag(t)
+    --         end
+    --     end
+    -- ),
+    awful.button({ }, 4,
         function (t) view_tag_dir(t.screen.selected_tag, 1) end
     ),
-    awful.button({}, 5,
+    awful.button({ }, 5,
         function (t) view_tag_dir(t.screen.selected_tag, -1) end
     )
 )
 
 -- Task List
 local tasklist_buttons = gears.table.join(
-    awful.button({}, 1, function (c)
+    awful.button({ }, 1, function (c)
         if c == client.focus then
             c.minimized = true
         else
@@ -295,13 +302,13 @@ local tasklist_buttons = gears.table.join(
             )
         end
     end),
-    awful.button({}, 3, function ()
+    awful.button({ }, 3, function ()
       awful.menu.client_list({ theme = { width = 250 } })
     end),
-    awful.button({}, 4, function ()
+    awful.button({ }, 4, function ()
       awful.client.focus.byidx(1)
     end),
-    awful.button({}, 5, function ()
+    awful.button({ }, 5, function ()
       awful.client.focus.byidx(-1)
     end)
 )
@@ -330,20 +337,20 @@ local volume = wibox.widget {
 }
 
 volume:buttons(awful.util.table.join(
-    awful.button({}, 1, function () awful.spawn("pavucontrol") end),
-    awful.button({}, 3, function ()
+    awful.button({ }, 1, function () awful.spawn("pavucontrol") end),
+    awful.button({ }, 3, function ()
         os.execute(
             string.format("pactl set-sink-mute %s toggle", volume_text.device)
         )
         volume_text.update()
     end),
-    awful.button({}, 4, function ()
+    awful.button({ }, 4, function ()
         os.execute(
             string.format("pactl set-sink-volume %s +1%%", volume_text.device)
         )
         volume_text.update()
     end),
-    awful.button({}, 5, function ()
+    awful.button({ }, 5, function ()
         os.execute(
             string.format("pactl set-sink-volume %s -1%%", volume_text.device)
         )
@@ -400,7 +407,7 @@ local cpu = wibox.widget {
 }
 
 cpu:buttons(awful.util.table.join(
-    awful.button({}, 1, function ()
+    awful.button({ }, 1, function ()
         awful.spawn(user.apps.terminal .. " htop")
     end)
 ))
@@ -428,7 +435,7 @@ local mem = wibox.widget {
 }
 
 mem:buttons(awful.util.table.join(
-    awful.button({}, 1, function ()
+    awful.button({ }, 1, function ()
         awful.spawn(user.apps.terminal .. " htop")
     end)
 ))
@@ -459,7 +466,7 @@ local wibar_section = function (s, args)
     }
 
     -- Place to store custom functions
-    section.custom = {}
+    section.custom = { }
 
     -- Custom timer to show a part temporarily
     section.custom.temp_timer = gears.timer {
@@ -498,10 +505,10 @@ awful.screen.connect_for_each_screen(function (s)
     -- Imagebox which contains an icon indicating current layout
     s.layoutbox = awful.widget.layoutbox(s)
     s.layoutbox:buttons(gears.table.join(
-        awful.button({}, 1, function () awful.layout.inc( 1) end),
-        awful.button({}, 3, function () awful.layout.inc(-1) end),
-        awful.button({}, 4, function () awful.layout.inc( 1) end),
-        awful.button({}, 5, function () awful.layout.inc(-1) end)
+        awful.button({ }, 1, function () awful.layout.inc( 1) end),
+        awful.button({ }, 3, function () awful.layout.inc(-1) end),
+        awful.button({ }, 4, function () awful.layout.inc( 1) end),
+        awful.button({ }, 5, function () awful.layout.inc(-1) end)
     ))
 
     -- Create a taglist widget
@@ -583,7 +590,7 @@ awful.screen.connect_for_each_screen(function (s)
     }
 
     -- Create a Wibar
-    s.wibar = {}
+    s.wibar = { }
 
     s.wibar[1] = wibar_section(s, {
         widget = {
@@ -687,7 +694,7 @@ awful.screen.connect_for_each_screen(function (s)
     end
 
     s.detect = gears.timer {
-        timeout = 1.25,
+        timeout = 0.35,
         callback = function ()
             if (mouse.screen ~= s) or
                 (mouse.coords().y < s.geometry.y + s.geometry.height - 75)
@@ -720,10 +727,10 @@ awful.screen.connect_for_each_screen(function (s)
     end
 
     s.activation_zone = wibox ({
-        x = s.geometry.x, y = s.geometry.y + s.geometry.height - 2,
-        opacity = 0.0, width = s.geometry.width, height = 2,
+        x = s.geometry.x, y = s.geometry.y + s.geometry.height - 1,
+        opacity = 0.0, width = s.geometry.width, height = 1,
         screen = s, input_passthrough = false, visible = true,
-        ontop = false, type = "dock",
+        ontop = true, type = "dock",
     })
 
     s.activation_zone:connect_signal("mouse::enter", function ()
@@ -743,10 +750,10 @@ awful.screen.connect_for_each_screen(function (s)
 
     -- Taskbar
     s.taskbar_activation = wibox ({
-        x = s.geometry.x + s.geometry.width / 4, y = s.geometry.y,
-        opacity = 0, width = s.geometry.width / 2, height = 2,
+        x = s.geometry.x + s.geometry.width / 3, y = s.geometry.y,
+        opacity = 0.0, width = s.geometry.width / 3, height = 1,
         screen = s, input_passthrough = false, visible = true,
-        ontop = false, type = "dock",
+        ontop = true, type = "dock",
     })
 
     s.taskbar = wibox({
@@ -764,10 +771,10 @@ awful.screen.connect_for_each_screen(function (s)
     end
 
     s.taskbar_detect = gears.timer {
-        timeout = 1.25,
+        timeout = 0.25,
         callback = function ()
             if (mouse.screen ~= s) or
-                (mouse.coords().y > s.geometry.y + 35)
+                (mouse.coords().y > s.geometry.y + 40)
             then
                 s.disable_taskbar()
                 s.taskbar_detect:stop()
@@ -842,7 +849,7 @@ local tb_wrapper = function (c)
         titlebar.hide()
     end
 
-    if c.first_tag and c.first_tag.useless_gap == 0 then
+    if c.first_tag and c.first_tag.gap == 0 then
         titlebar.hide()
     end
 
@@ -851,12 +858,12 @@ end
 
 -- Determine what mouse buttons do on root window
 root.buttons(gears.table.join(
-    awful.button({}, 3, function () menu_root:toggle() end),
-    awful.button({}, 4, function ()
+    awful.button({ }, 3, function () menu_root:toggle() end),
+    awful.button({ }, 4, function ()
         view_tag_dir(awful.screen.focused().selected_tag, 1)
     end
     ),
-    awful.button({}, 5, function ()
+    awful.button({ }, 5, function ()
         view_tag_dir(awful.screen.focused().selected_tag, -1)
     end)
 ))
@@ -889,19 +896,44 @@ end
 local globalkeys = gears.table.join(
     -- Audio Controls
     awful.key(
-        {}, "XF86AudioMute",
+        { }, "XF86AudioMute",
         function () awful.spawn("pactl set-sink-mute 0 toggle") end,
         { description = "toggle mute", group = "Audio" }
     ),
     awful.key(
-        {}, "XF86AudioRaiseVolume",
+        { }, "XF86AudioRaiseVolume",
         function () awful.spawn("pactl set-sink-volume 0 +10%") end,
         { description = "raise volume", group = "Audio" }
     ),
     awful.key(
-        {}, "XF86AudioLowerVolume",
+        { }, "XF86AudioLowerVolume",
         function () awful.spawn("pactl set-sink-volume 0 -10%") end,
         { description = "lower volume", group = "Audio" }
+    ),
+    awful.key(
+        { }, "XF86AudioPlay",
+        function () awful.spawn("playerctl --player=spotify play-pause") end,
+        { description = "play/pause Spotify", group = "Audio" }
+    ),
+    awful.key(
+        { }, "XF86AudioPause",
+        function () awful.spawn("playerctl --player=spotify play-pause") end,
+        { description = "play/pause Spotify", group = "Audio" }
+    ),
+    awful.key(
+        { }, "XF86AudioStop",
+        function () awful.spawn("playerctl --player=spotify pause") end,
+        { description = "pause Spotify", group = "Audio" }
+    ),
+    awful.key(
+        { }, "XF86AudioNext",
+        function () awful.spawn("playerctl --player=spotify next") end,
+        { description = "go to next track in Spotify", group = "Audio" }
+    ),
+    awful.key(
+        { }, "XF86AudioPrev",
+        function () awful.spawn("playerctl --player=spotify previous") end,
+        { description = "go to previous track in Spotify", group = "Audio" }
     ),
 
     -- Awesome Controls
@@ -1053,7 +1085,6 @@ local globalkeys = gears.table.join(
         function () awful.spawn("killall picom") end,
         { description = "kill picom", group = "Screen" }
     ),
-    -- TODO: Debate removing these 👇
     awful.key(
         { user.modkey, "Control" }, "j",
         function () awful.screen.focus_relative(1) end,
@@ -1064,21 +1095,25 @@ local globalkeys = gears.table.join(
         function () awful.screen.focus_relative(-1) end,
         { description = "focus the previous screen", group = "Screen" }
     ),
-    -- TODO: Debate removing these 👆
     awful.key(
-        {}, "XF86PowerOff",
+        { }, "XF86PowerOff",
         function ()
             awful.spawn.with_shell("xset dpms force off && slock")
         end,
         { description = "turn off the display", group = "Screen" }
     ),
     awful.key(
-        {}, "XF86Explorer",
+        { }, "XF86Explorer",
         function () awful.spawn("pkill -USR1 '^redshift$'") end,
         { description = "toggle redshift (FN+F11)", group = "Screen" }
     ),
 
     -- Applications
+    awful.key(
+        { alt }, "F4",
+        function () awful.spawn("xkill") end,
+        { description = "kill and app", group = "Applications" }
+    ),
     awful.key(
         { user.modkey }, "Return",
         function () awful.spawn(user.apps.terminal) end,
@@ -1097,7 +1132,7 @@ local globalkeys = gears.table.join(
         { description = "open music app", group = "Applications" }
     ),
     awful.key(
-        {}, "Print", function () awful.spawn("flameshot gui") end,
+        { }, "Print", function () awful.spawn("flameshot gui") end,
         { description = "open flameshot (Screnshot tool)", group = "Applications" }
     ),
 
@@ -1109,7 +1144,7 @@ local globalkeys = gears.table.join(
     ),
     awful.key(
         { user.modkey }, "`",
-        function () awful.spawn("rofi -modi 'clipboard:greenclip print' -show clipboard") end,
+        function () awful.spawn.with_shell("~/.local/bin/rofi-copyq") end,
         { description = "show the clipboard manager", group = "Launcher" }
     ),
     awful.key(
@@ -1211,7 +1246,7 @@ end
 
 local clientbuttons = gears.table.join(
     awful.button(
-        {}, 1,
+        { }, 1,
         function (c)
             c:emit_signal("request::activate", "mouse_click", { raise = true })
         end
@@ -1239,7 +1274,7 @@ root.keys(globalkeys)
 awful.rules.rules = {
     -- All clients
     {
-        rule = {},
+        rule = { },
         properties = {
             border_width = beautiful.border_width,
             border_color = beautiful.border_normal,
@@ -1264,6 +1299,7 @@ awful.rules.rules = {
                 "Steam", "Lutris",
                 "origin.exe", "osu!",
                 "Spotify", "csgo_linux64",
+                "obsidian",
             }
         },
         properties = { titlebars_enabled = true }
@@ -1311,11 +1347,11 @@ end)
 -- Enable titlebar
 client.connect_signal("request::titlebars", function (c)
     local buttons = gears.table.join(
-        awful.button({}, 1, function ()
+        awful.button({ }, 1, function ()
             c:emit_signal("request::activate", "titlebar", { raise = true })
             awful.mouse.client.move(c)
         end),
-        awful.button({}, 3, function ()
+        awful.button({ }, 3, function ()
             c:emit_signal("request::activate", "titlebar", { raise = true })
             awful.mouse.client.resize(c)
         end)
@@ -1400,16 +1436,22 @@ end
 client.connect_signal("property::geometry", function (c)
     if
         is_fullscreen(c) or
-        (c.screen.selected_tag and c.screen.selected_tag.gap == 0)
+        (c.first_tag and c.first_tag.gap == 0)
     then
         c.shape = gears.shape.rectangle
 
         -- Prevent fullscreen in focus mode
-        if c.screen.selected_tag.gap == 0 then
+        if c.first_tag and c.first_tag.gap == 0 then
             c.fullscreen = false
         end
+
+        -- Prevent notifications
+        naughty.suspend()
     else
         c.shape = beautiful.shape
+
+        -- Resume notifications
+        naughty.resume()
     end
 end)
 

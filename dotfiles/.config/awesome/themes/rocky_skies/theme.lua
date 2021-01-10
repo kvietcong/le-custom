@@ -101,6 +101,7 @@ theme.hotkeys_border_width = dpi(2)
 theme.hotkeys_group_margin = dpi(10)
 theme.hotkeys_modifiers_fg = theme.fg_focus
 theme.hotkeys_border_color = theme.bg_focus
+theme.hotkeys_bg = theme.bg_normal .. theme.transparency
 theme.hotkeys_shape = theme.shape
 
 theme.titlebar_bg_focus = theme.bg_minimize
