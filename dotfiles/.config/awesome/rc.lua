@@ -157,6 +157,7 @@ local menu_awesome = {
 local menu_apps = {
     { "Browser", user.apps.browser },
     { "Torrents", user.apps.torrent },
+    { "Obsidian", "obsidian" },
     { "Communication", user.apps.communication },
     { "Music",  function ()
         awful.spawn.with_shell(user.apps.music .. " -m")
