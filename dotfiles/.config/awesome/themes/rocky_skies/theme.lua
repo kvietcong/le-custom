@@ -60,7 +60,7 @@ theme.bg_minimize   = xrdb.color8
 
 theme.fg_normal     = xrdb.color7
 theme.fg_focus      = xrdb.color6
-theme.fg_minimize   = xrdb.color8
+theme.fg_minimize   = xrdb.color15
 theme.fg_urgent     = xrdb.color5
 
 theme.border_radius = dpi(8)
