@@ -1099,6 +1099,7 @@ local globalkeys = gears.table.join(
     awful.key(
         { }, "XF86PowerOff",
         function ()
+            awful.spawn.with_shell("pgrep steam && steam -shutdown")
             awful.spawn.with_shell("xset dpms force off && slock")
         end,
         { description = "turn off the display", group = "Screen" }
@@ -1300,10 +1301,17 @@ awful.rules.rules = {
                 "Steam", "Lutris",
                 "origin.exe", "osu!",
                 "Spotify", "csgo_linux64",
-                "obsidian",
             }
         },
         properties = { titlebars_enabled = true }
+    },
+
+    -- On Top clients.
+    {
+        rule_any = {
+            class = { "Thunar" },
+        },
+        properties = { ontop = true }
     },
 
     -- Floating clients.
@@ -1312,9 +1320,13 @@ awful.rules.rules = {
             role = {
               "pop-up", "dialogue",
             },
-            -- class = { "zoom" },
+            class = { "Thunar", "imv", "copyq" },
         },
-        properties = { floating = true }
+        properties = {
+            floating = true,
+            border_width = 2,
+            border_color = beautiful.border_normal,
+        }
     },
 
     -- Auto-fullscreen
@@ -1324,7 +1336,10 @@ awful.rules.rules = {
               "csgo_linux64",
             }
         },
-        properties = { floating = true }
+        properties = {
+            floating = true,
+            fullscreen = true,
+        }
     },
 
     -- Exceptions
