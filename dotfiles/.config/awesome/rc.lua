@@ -1099,7 +1099,9 @@ local globalkeys = gears.table.join(
     awful.key(
         { }, "XF86PowerOff",
         function ()
+            -- Makes sure Steam is shutdown so it doesn't wake screen
             awful.spawn.with_shell("pgrep steam && steam -shutdown")
+            -- Turns off and locks
             awful.spawn.with_shell("xset dpms force off && slock")
         end,
         { description = "turn off the display", group = "Screen" }
