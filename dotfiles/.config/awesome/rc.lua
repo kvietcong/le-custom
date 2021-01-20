@@ -694,6 +694,16 @@ awful.screen.connect_for_each_screen(function (s)
         end
     end
 
+    s.set_struts = function (is_spaced)
+        for _, section in ipairs(s.wibar) do
+            if is_spaced then
+                section:struts({ top = 0, bottom = 45 })
+            else
+                section:struts({ top = 0, bottom = 0 })
+            end
+        end
+    end
+
     s.detect = gears.timer {
         timeout = 0.35,
         callback = function ()
@@ -1172,6 +1182,16 @@ local globalkeys = gears.table.join(
         { "Control", user.modkey }, "Delete",
         function () awful.spawn("reboot") end,
         { description = "reboot computer", group = "System" }
+    ),
+    awful.key(
+        { user.modkey }, "Prior",
+        function () awful.spawn("setxkbmap us") end,
+        { description = "Set to QWERTY layout", group = "System" }
+    ),
+    awful.key(
+        { user.modkey }, "Next",
+        function () awful.spawn("setxkbmap us -variant colemak") end,
+        { description = "Set to Colemak layout", group = "System" }
     )
 )
 
