@@ -27,7 +27,7 @@
 -- ===============================================================
 --
 -- Hello and welcome to derpyasianpanda's rc.lua for the "Awesome"
--- window manager. I hope you enjoy your stay!
+-- window manager! Sorry for the absolute mess this config is
 --
 -- ===============================================================
 -- ===============================================================
@@ -1112,7 +1112,7 @@ local globalkeys = gears.table.join(
             -- Makes sure Steam is shutdown so it doesn't wake screen
             awful.spawn.with_shell("pgrep steam && steam -shutdown")
             -- Turns off and locks
-            awful.spawn.with_shell("xset dpms force off && slock")
+            awful.spawn.with_shell("xset dpms force off")
         end,
         { description = "turn off the display", group = "Screen" }
     ),
@@ -1186,7 +1186,13 @@ local globalkeys = gears.table.join(
     awful.key(
         { user.modkey }, "Prior",
         function () awful.spawn("setxkbmap us") end,
-        { description = "Set to QWERTY layout", group = "System" }
+        { description = "set to QWERTY layout", group = "System" }
+    ),
+    awful.key(
+        { "Shift", user.modkey }, "l",function ()
+            awful.spawn.with_shell("xset dpms force off && slock")
+        end,
+        { description = "lock computer", group = "System" }
     ),
     awful.key(
         { user.modkey }, "Next",
@@ -1342,7 +1348,10 @@ awful.rules.rules = {
             role = {
               "pop-up", "dialogue",
             },
-            class = { "Thunar", "imv", "copyq" },
+            class = {
+                "Thunar", "imv", "copyq", "file-roller",
+                "File-roller",
+            },
         },
         properties = {
             floating = true,

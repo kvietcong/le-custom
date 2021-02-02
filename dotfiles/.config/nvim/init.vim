@@ -19,7 +19,6 @@ call plug#begin()
 
     Plug 'habamax/vim-godot'
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 call plug#end()
 
 let g:airline_theme = "deus"

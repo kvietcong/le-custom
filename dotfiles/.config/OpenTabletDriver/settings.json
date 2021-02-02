@@ -1,6 +1,6 @@
 {
   "OutputMode": {
-    "Path": "OpenTabletDriver.Desktop.Output.LinuxArtistMode",
+    "Path": "OpenTabletDriver.Desktop.Output.AbsoluteMode",
     "Settings": [],
     "Enable": true
   },
@@ -12,10 +12,10 @@
   "DisplayHeight": 1080.0,
   "DisplayXOffset": 960.0,
   "DisplayYOffset": 540.0,
-  "TabletWidth": 160.0,
-  "TabletHeight": 100.0,
-  "TabletXOffset": 80.0,
-  "TabletYOffset": 50.0,
+  "TabletWidth": 60.0,
+  "TabletHeight": 33.75,
+  "TabletXOffset": 100.0,
+  "TabletYOffset": 55.0,
   "TabletRotation": 0.0,
   "EnableClipping": true,
   "EnableAreaLimiting": false,
@@ -24,34 +24,37 @@
   "YSensitivity": 10.0,
   "RelativeRotation": 0.0,
   "RelativeResetDelay": "00:00:00.1000000",
-  "TipActivationPressure": 10.0,
+  "TipActivationPressure": 0.0,
   "TipButton": {
     "Path": "OpenTabletDriver.Desktop.Binding.MouseBinding",
     "Settings": [
       {
         "Property": "Property",
-        "Value": "Left"
+        "Value": "Left",
+        "HasValue": true
       }
     ],
     "Enable": true
   },
   "PenButtons": [
     {
-      "Path": "OpenTabletDriver.Desktop.Binding.KeyBinding",
+      "Path": "OpenTabletDriver.Desktop.Binding.MouseBinding",
       "Settings": [
         {
           "Property": "Property",
-          "Value": "Down"
+          "Value": "Right",
+          "HasValue": true
         }
       ],
       "Enable": true
     },
     {
-      "Path": "OpenTabletDriver.Desktop.Binding.KeyBinding",
+      "Path": "OpenTabletDriver.Desktop.Binding.MouseBinding",
       "Settings": [
         {
           "Property": "Property",
-          "Value": "Up"
+          "Value": "Right",
+          "HasValue": true
         }
       ],
       "Enable": true
