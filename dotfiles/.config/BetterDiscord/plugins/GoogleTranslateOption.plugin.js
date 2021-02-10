@@ -14,12 +14,12 @@ module.exports = (_ => {
 		"info": {
 			"name": "GoogleTranslateOption",
 			"author": "DevilBro",
-			"version": "2.1.5",
+			"version": "2.1.6",
 			"description": "Add a Google Translate option to your context menu, which shows a preview of the translated text and on click will open the selected text in Google Translate. Also adds a translation button to your textareas, which will automatically translate the text for you before it is being send"
 		},
 		"changeLog": {
-			"improved": {
-				"New Toast API": ""
+			"fixed": {
+				"Exceptions": "Fixed issues where spaces infront of exceptions would get removed sometimes"
 			}
 		}
 	};
@@ -28,7 +28,14 @@ module.exports = (_ => {
 		getName () {return config.info.name;}
 		getAuthor () {return config.info.author;}
 		getVersion () {return config.info.version;}
-		getDescription () {return `The Library Plugin needed for ${config.info.name} is missing. Open the Plugin Settings to download it.\n\n${config.info.description}`;}
+		getDescription () {return `The Library Plugin needed for ${config.info.name} is missing. Open the Plugin Settings to download it. \n\n${config.info.description}`;}
+		
+		downloadLibrary () {
+			require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
+				if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => BdApi.showToast("Finished downloading BDFDB Library", {type: "success"}));
+				else BdApi.alert("Error", "Could not download BDFDB Library Plugin, try again later or download it manually from GitHub: https://github.com/mwittrien/BetterDiscordAddons/tree/master/Library/");
+			});
+		}
 		
 		load () {
 			if (!window.BDFDB_Global || !Array.isArray(window.BDFDB_Global.pluginQueue)) window.BDFDB_Global = Object.assign({}, window.BDFDB_Global, {pluginQueue: []});
@@ -40,10 +47,7 @@ module.exports = (_ => {
 					onCancel: _ => {delete window.BDFDB_Global.downloadModal;},
 					onConfirm: _ => {
 						delete window.BDFDB_Global.downloadModal;
-						require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-							if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => {});
-							else BdApi.alert("Error", "Could not download BDFDB Library Plugin, try again later or download it manually from GitHub: https://github.com/mwittrien/BetterDiscordAddons/tree/master/Library/");
-						});
+						this.downloadLibrary();
 					}
 				});
 			}
@@ -54,12 +58,7 @@ module.exports = (_ => {
 		getSettingsPanel () {
 			let template = document.createElement("template");
 			template.innerHTML = `<div style="color: var(--header-primary); font-size: 16px; font-weight: 300; white-space: pre; line-height: 22px;">The Library Plugin needed for ${config.info.name} is missing.\nPlease click <a style="font-weight: 500;">Download Now</a> to install it.</div>`;
-			template.content.firstElementChild.querySelector("a").addEventListener("click", _ => {
-				require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-					if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => {});
-					else BdApi.alert("Error", "Could not download BDFDB Library Plugin, try again later or download it manually from GitHub: https://github.com/mwittrien/BetterDiscordAddons/tree/master/Library/");
-				});
-			});
+			template.content.firstElementChild.querySelector("a").addEventListener("click", this.downloadLibrary);
 			return template.content.firstElementChild;
 		}
 	} : (([Plugin, BDFDB]) => {
@@ -254,8 +253,9 @@ module.exports = (_ => {
 								let item = BDFDB.DOMUtils.getParent(BDFDB.dotCN.menuitem, event.target);
 								if (item) {
 									let createTooltip = _ => {
-										BDFDB.TooltipUtils.create(item, `From ${foundInput.name}:\n${text}\n\nTo ${foundOutput.name}:\n${foundTranslation}`, {
+										BDFDB.TooltipUtils.create(item, `${BDFDB.LanguageUtils.LibraryStrings.from} ${foundInput.name}:\n${text}\n\n${BDFDB.LanguageUtils.LibraryStrings.to} ${foundOutput.name}:\n${foundTranslation}`, {
 											type: "right",
+											color: "brand",
 											className: "googletranslate-tooltip"
 										});
 									};
@@ -453,7 +453,7 @@ module.exports = (_ => {
 				if (e.instance.props.message) {
 					let translation = translatedMessages[e.instance.props.message.id];
 					if (translation) e.returnvalue.props.children.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.TooltipContainer, {
-						text: `From: ${this.getLanguageName(translation.input)}\nTo: ${this.getLanguageName(translation.output)}`,
+						text: `${BDFDB.LanguageUtils.LibraryStrings.from}: ${this.getLanguageName(translation.input)}\n${BDFDB.LanguageUtils.LibraryStrings.to}: ${this.getLanguageName(translation.output)}`,
 						tooltipConfig: {style: "max-width: 400px"},
 						children: BDFDB.ReactUtils.createElement("time", {
 							className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.messageedited, BDFDB.disCN._googletranslateoptiontranslated),
@@ -474,7 +474,7 @@ module.exports = (_ => {
 						else {
 							let [children, index] = BDFDB.ReactUtils.findParent(e.returnvalue, {props: [["className", BDFDB.disCN.embeddescription]]});
 							if (index > -1) children[index].props.children.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.TooltipContainer, {
-								text: `From: ${this.getLanguageName(translation.input)}\nTo: ${this.getLanguageName(translation.output)}`,
+								text: `${BDFDB.LanguageUtils.LibraryStrings.from}: ${this.getLanguageName(translation.input)}\n${BDFDB.LanguageUtils.LibraryStrings.to}: ${this.getLanguageName(translation.output)}`,
 								tooltipConfig: {style: "max-width: 400px"},
 								children: BDFDB.ReactUtils.createElement("time", {
 									className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.messageedited, BDFDB.disCN._googletranslateoptiontranslated),
@@ -661,7 +661,7 @@ module.exports = (_ => {
 					let currentLoadingString = loadingString;
 					toast = BDFDB.NotificationUtils.toast(loadingString, {
 						timeout: 0,
-						orientation: "center",
+						position: "center",
 						onClose: _ => {BDFDB.TimeUtils.clear(toastInterval);}
 					});
 					toastInterval = BDFDB.TimeUtils.interval(_ => {
@@ -669,7 +669,7 @@ module.exports = (_ => {
 							finishTranslation("");
 							BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed} - ${this.labels.toast_translating_tryanother}`, {
 								type: "danger",
-								orientation: "center"
+								position: "center"
 							});
 						}
 						else {
@@ -743,11 +743,11 @@ module.exports = (_ => {
 					else {
 						if (response.statusCode == 429) BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed}. ${this.labels.toast_translating_tryanother}. Request Limit per Hour is reached.`, {
 							type: "danger",
-							orientation: "center"
+							position: "center"
 						});
 						else BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed}. ${this.labels.toast_translating_tryanother}. Translation Server might be down.`, {
 							type: "danger",
-							orientation: "center"
+							position: "center"
 						});
 						callback("");
 					}
@@ -786,7 +786,7 @@ module.exports = (_ => {
 						else {
 							BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed}. ${this.labels.toast_translating_tryanother}. Translation Server is down or API-key outdated.`, {
 								type: "danger",
-								orientation: "center"
+								position: "center"
 							});
 							callback("");
 						}
@@ -825,14 +825,14 @@ module.exports = (_ => {
 					if (result && result.indexOf('code="408"') > -1) {
 						BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed}. ${this.labels.toast_translating_tryanother}. Monthly rate limit reached.`, {
 							type: "danger",
-							orientation: "center"
+							position: "center"
 						});
 						callback("");
 					}
 					else {
 						BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed}. ${this.labels.toast_translating_tryanother}. Translation Server is down or API-key outdated.`, {
 							type: "danger",
-							orientation: "center"
+							position: "center"
 						});
 						callback("");
 					}
@@ -863,7 +863,7 @@ module.exports = (_ => {
 					else {
 						BDFDB.NotificationUtils.toast(`${this.labels.toast_translating_failed}. ${this.labels.toast_translating_tryanother}. Translation Server is down, daily limited reached or API-key outdated.`, {
 							type: "danger",
-							orientation: "center"
+							position: "center"
 						});
 						callback("");
 					}
@@ -911,21 +911,21 @@ module.exports = (_ => {
 				let string = "";
 				binary = binary.replace(/\n/g, "00001010").replace(/\r/g, "00001101").replace(/\t/g, "00001001").replace(/\s/g, "");
 				if (/^[0-1]*$/.test(binary)) {
-					let eightdigits = "";
+					let eightDigits = "";
 					let counter = 0;
 					for (let digit of binary) {
-						eightdigits += digit;
+						eightDigits += digit;
 						counter++;
 						if (counter > 7) {
-							string += String.fromCharCode(parseInt(eightdigits,2).toString(10));
-							eightdigits = "";
+							string += String.fromCharCode(parseInt(eightDigits, 2).toString(10));
+							eightDigits = "";
 							counter = 0;
 						}
 					}
 				}
 				else BDFDB.NotificationUtils.toast("Invalid binary format. Only use 0s and 1s.", {
 					type: "danger",
-					orientation: "center"
+					position: "center"
 				});
 				return string;
 			}
@@ -948,9 +948,9 @@ module.exports = (_ => {
 			addExceptions (string, excepts) {
 				for (let count in excepts) {
 					let exception = BDFDB.ArrayUtils.is(exceptions.wordStart) && exceptions.wordStart.some(n => excepts[count].indexOf(n) == 0) ? excepts[count].slice(1) : excepts[count];
-					let newstring = string.replace(new RegExp(`\[/////[ ]*${count}\]`), exception);
-					if (newstring == string) string = newstring + " " + exception;
-					else string = newstring;
+					let newString = string.replace(new RegExp(BDFDB.StringUtils.regEscape(`{{${count}}}`)), exception);
+					if (newString == string) string = newString + " " + exception;
+					else string = newString;
 				}
 				return string;
 			}
@@ -966,7 +966,7 @@ module.exports = (_ => {
 					});
 					for (let j in text) {
 						if (text[j].indexOf("<") == 0) {
-							newString.push(`[/////${count}]`);
+							newString.push(`{{${count}}}`);
 							excepts[count] = text[j];
 							count++;
 						}
@@ -977,7 +977,7 @@ module.exports = (_ => {
 					let usedExceptions = BDFDB.ArrayUtils.is(exceptions.wordStart) ? exceptions.wordStart : [];
 					string.split(" ").forEach(word => {
 						if (word.indexOf("<@!") == 0 || word.indexOf("<#") == 0 || word.indexOf(":") == 0 || word.indexOf("<:") == 0 || word.indexOf("<a: ") == 0 || word.indexOf("@") == 0 || word.indexOf("#") == 0 || usedExceptions.some(n => word.indexOf(n) == 0 && word.length > 1)) {
-							newString.push(`[/////${count}]`);
+							newString.push(`{{${count}}}`);
 							excepts[count] = word;
 							count++;
 						}

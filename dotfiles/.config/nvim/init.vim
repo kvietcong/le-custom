@@ -18,6 +18,7 @@ call plug#begin()
     Plug 'tpope/vim-repeat'
 
     Plug 'habamax/vim-godot'
+    Plug 'ActivityWatch/aw-watcher-vim'
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
 call plug#end()
 
@@ -43,7 +44,7 @@ set expandtab tabstop=4 shiftwidth=4 smarttab
 " Allow mouse usage
 set mouse=a
 
-" No need for two mode indicators (airline + vim)
+" Disable native mode indicator (No need for two)
 set noshowmode
 
 " Better searching

@@ -91,6 +91,7 @@ user = {
         redshift = "-gtk",
         qbittorrent = "",
         libinput = "-gestures-setup start",
+        safeeyes = "",
     },
 }
 
@@ -1494,11 +1495,17 @@ client.connect_signal("property::geometry", function (c)
 
         -- Prevent notifications
         naughty.suspend()
+
+        -- Prevent Stretchly from overlaying
+        awful.spawn("stretchly pause")
     else
         c.shape = beautiful.shape
 
         -- Resume notifications
         naughty.resume()
+
+        -- Re-enable Stretchly
+        awful.spawn("stretchly resume")
     end
 end)
 
