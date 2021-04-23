@@ -40,7 +40,7 @@
   or `lightdm-webkit2-greeter`
 
 - If you use a custom kernel (i.e. `linux-zen`) remember to use `nvidia-dkms` rather
-  than just `nvidia`!!! Also get `nvidia-utils` and `nvidia-settings` while your at it
+  than just `nvidia`!!! Also get `nvidia-utils` and `nvidia-settings` while you're at it
 
 - You cannot partition nested partitions (Useful when splitting drive
   between Windows and Linux)
