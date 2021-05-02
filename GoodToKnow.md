@@ -103,6 +103,10 @@
   into `./node_modules/react-scripts/bin/react-scripts.js <COMMAND-NAME>`. I will need to research
   why this behavior exists b/c it seems common given the stack overflow posts. No one really ever solves
   the problem though
+    - Found out the problem. My projects were on a different NTFS drive and so when attempted to use
+      `react-scripts` it doesn't work due to pathing erros. This also seems to be the case for things like
+      `java` and other command line tools that are in your PATH. A way to fix this is to bind mount your
+      NTFS drives onto your main one and this solves that issue
 
 - Remember to setup your new SSH keys for any git services you use.
   ([Github](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account))
