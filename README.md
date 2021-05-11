@@ -1,7 +1,7 @@
-# linux-things
-Just a repo to store linux related things
+# le-custom
+Just a repo to store my customizations
 
 ## 🎇 Check these things out
 
-- [Some good* tips?](GoodToKnow.md)
+- [Some good(?) Linux tips](GoodToKnowLinux.md)
 - [My Dot Files](dotfiles/)
