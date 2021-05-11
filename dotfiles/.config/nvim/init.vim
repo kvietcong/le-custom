@@ -10,6 +10,7 @@ call plug#begin()
     Plug 'lewis6991/gitsigns.nvim'
     Plug 'vim-airline/vim-airline'
     Plug 'tjdevries/colorbuddy.nvim'
+    Plug 'neovimhaskell/haskell-vim'
     Plug 'akinsho/nvim-bufferline.lua'
     Plug 'norcalli/nvim-colorizer.lua'
     Plug 'kyazdani42/nvim-web-devicons'
@@ -23,6 +24,7 @@ call plug#begin()
 
     " Other Utility Plugins
     Plug 'vimwiki/vimwiki'
+    Plug 'tpope/vim-repeat'
     Plug 'tpope/vim-surround'
     Plug 'b3nj5m1n/kommentary'
     Plug 'nvim-lua/popup.nvim'
@@ -42,17 +44,21 @@ if exists('g:neovide')
     let g:neovide_cursor_antialiasing=v:true
 elseif exists('g:fvim_loaded')
     FVimBackgroundComposition 'blur'
-    FVimBackgroundOpacity 0.85
-    FVimBackgroundAltOpacity 0.85
+    FVimBackgroundOpacity 0.75
+    FVimBackgroundAltOpacity 0.75
     FVimFontAntialias v:true
     FVimUIMultiGrid v:false
 else
+    " Transparent background in terminals
     autocmd ColorScheme * highlight! Normal ctermbg=NONE guibg=NONE
 endif
 
 " ================
 " General Settings
 " ================
+let g:vimsyn_embed = 'l' " Lua syntax highlighting in vimscript
+let g:nord_spell = 'underline' " Underlined misspelled words
+
 syntax on " Enable syntax highlighting
 set spell " Spellcheck
 set hidden " Allow you to change buffers without saving
@@ -85,6 +91,7 @@ nnoremap <expr> k v:count ? 'k' : 'gk'
 noremap <silent> 0 g0
 noremap <silent> $ g$
 
+
 " Better split navigation
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
@@ -97,25 +104,28 @@ nnoremap <Leader>hs :sp<Enter>
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
 
 " Banner comments
-nnoremap <buffer> <Leader>- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj
-nnoremap <buffer> <Leader>= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj
-nnoremap <buffer> <Leader>/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj
+nnoremap <buffer> <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj
+nnoremap <buffer> <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj
+nnoremap <buffer> <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj
 
 " Telescope bindings
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-
-" Buffer commands
-nnoremap <silent><leader>bd :bd<CR>
-nnoremap <silent><leader>bn :BufferLineCycleNext<CR>
-nnoremap <silent><leader>bp :BufferLineCyclePrev<CR>
-nnoremap <silent><leader>BN :BufferLineMoveNext<CR>
-nnoremap <silent><leader>BP :BufferLineMovePrev<CR>
+nnoremap <leader>fb :Telescope buffers<cr>
+nnoremap <leader>fg :Telescope live_grep<cr>
+nnoremap <leader>fr :Telescope registers<cr>
+nnoremap <leader>fh :Telescope help_tags<cr>
+nnoremap <leader>ff :Telescope find_files<cr>
+nnoremap <leader>fs :Telescope spell_suggest<cr>
+nnoremap <leader>/  :Telescope current_buffer_fuzzy_find<cr>
 
 " Nerd Tree
 nnoremap <leader>fe :NvimTreeToggle<CR>
+
+" Buffer commands
+nnoremap <leader>bd :bd<CR>
+nnoremap <leader>bn :BufferLineCycleNext<CR>
+nnoremap <leader>bp :BufferLineCyclePrev<CR>
+nnoremap <leader>BN :BufferLineMoveNext<CR>
+nnoremap <leader>BP :BufferLineMovePrev<CR>
 
 " Jump to the last known cursor position.
 autocmd BufReadPost *
@@ -192,3 +202,15 @@ let g:nvim_tree_indent_markers = 1
 let g:nvim_tree_git_hl = 1
 let g:nvim_tree_add_trailing = 1
 let g:nvim_tree_special_files = [ 'README.md', 'Makefile', 'MAKEFILE' ]
+
+" Vim Wiki
+let g:vimwiki_list = [{'path': 'D:/Documents/Obsidian/', 'syntax': 'markdown', 'ext': '.md'}]
+
+" Haskell Vim
+let g:haskell_enable_quantification = 1   " to enable highlighting of `forall`
+let g:haskell_enable_recursivedo = 1      " to enable highlighting of `mdo` and `rec`
+let g:haskell_enable_arrowsyntax = 1      " to enable highlighting of `proc`
+let g:haskell_enable_pattern_synonyms = 1 " to enable highlighting of `pattern`
+let g:haskell_enable_typeroles = 1        " to enable highlighting of type roles
+let g:haskell_enable_static_pointers = 1  " to enable highlighting of `static`
+let g:haskell_backpack = 1                " to enable highlighting of backpack keywords
