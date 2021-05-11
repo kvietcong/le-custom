@@ -35,15 +35,15 @@ call plug#end()
 " GUI Vim settings
 " ================
 if exists('g:neovide')
-    let g:neovide_transparency=0.85
+    let g:neovide_transparency=0.95
     let g:neovide_refresh_rate=144
     let g:neovide_cursor_trail_length=0.5
     let g:neovide_cursor_animation_length=0.1
     let g:neovide_cursor_antialiasing=v:true
 elseif exists('g:fvim_loaded')
     FVimBackgroundComposition 'blur'
-    FVimBackgroundOpacity 0.75
-    FVimBackgroundAltOpacity 0.75
+    FVimBackgroundOpacity 0.85
+    FVimBackgroundAltOpacity 0.85
     FVimFontAntialias v:true
     FVimUIMultiGrid v:false
 else
@@ -84,7 +84,6 @@ nnoremap <expr> j v:count ? 'j' : 'gj'
 nnoremap <expr> k v:count ? 'k' : 'gk'
 noremap <silent> 0 g0
 noremap <silent> $ g$
-
 
 " Better split navigation
 nnoremap <C-h> <C-w>h
@@ -193,4 +192,3 @@ let g:nvim_tree_indent_markers = 1
 let g:nvim_tree_git_hl = 1
 let g:nvim_tree_add_trailing = 1
 let g:nvim_tree_special_files = [ 'README.md', 'Makefile', 'MAKEFILE' ]
-
