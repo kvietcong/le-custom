@@ -5,9 +5,10 @@
 " TODO
 " Which Key Setup
 " Move to Lua configs (Packer, etc)
-" 
 
-" Vim Plug manager configuration
+" ====================================
+" == Vim Plug manager configuration ==
+" ====================================
 call plug#begin()
     " Colorscheme/UI Plugins
     Plug 'luochen1990/rainbow'
@@ -90,20 +91,23 @@ set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 " ==============
 " == Mappings ==
 " ==============
-let mapleader = "," " Set the leader key
-set timeoutlen=250 " Delay for things to happen with multi key bindings
+let mapleader = "\<Space>" " Set the leader key
+set timeoutlen=350 " Delay for things to happen with multi key bindings
 
 " General Shortcuts
 " Move to the start of the line
-nnoremap <leader>, ^
+nnoremap <Leader>, ^
 " Move to the end of the line
-nnoremap <leader>. $
+nnoremap <Leader>. $
 " New write command for sudo writing
 command! SudoWrite w !sudo tee > /dev/null %
 " Saving :)
-nnoremap <c-s> :w<Enter>
-" Redoing
+nnoremap <C-s> :w<Enter>
+" Redoing (For some reason I can't remap <C-y>)
 nnoremap <C-Z> <C-r>
+nnoremap <C-y> <C-r>
+" Global substitution for things selected in visual mode
+xnoremap gs y:%s/<C-r>"//g<Left><Left>
 
 " Git
 noremap <Leader>gh :Gitsigns next_hunk<Enter>
@@ -120,11 +124,9 @@ nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
+" Vertical and Horizontal Split respectively
 nnoremap <Leader>vs :vs<Enter>
 nnoremap <Leader>hs :sp<Enter>
-
-" Global substitution for things selected in visual mode
-xnoremap gs y:%s/<C-r>"//g<Left><Left>
 
 " Banner comments
 nnoremap <buffer> <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
@@ -142,10 +144,11 @@ nnoremap <Leader>su zug
 " Telescope
 nnoremap <Leader>fb :Telescope buffers<Enter>
 nnoremap <Leader>fg :Telescope live_grep<Enter>
-nnoremap <Leader>fr :Telescope registers<Enter>
-nnoremap <Leader>fh :Telescope help_tags<Enter>
+nnoremap <Leader>ft :Telescope help_tags<Enter>
+nnoremap <Leader>fm :Telescope man_pages<Enter>
 nnoremap <Leader>ff :Telescope find_files<Enter>
-nnoremap <Leader>fs :Telescope spell_suggest<Enter>
+" This replaces the old spell checker interface
+nnoremap z=         :Telescope spell_suggest<Enter>
 nnoremap <Leader>/  :Telescope current_buffer_fuzzy_find<Enter>
 
 " Nerd Tree

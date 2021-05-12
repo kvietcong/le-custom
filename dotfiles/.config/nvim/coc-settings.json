@@ -1,14 +1,10 @@
 {
-    "languageserver": {
-        "godot": {
-            "host": "127.0.0.1",
-            "filetypes": [
-                "gdscript3",
-                "gdscript",
-                "gd"
-            ],
-            "port": 6008
-        }
-    },
-    "coc.preferences.enableFloatHighlight": false
+  "languageserver": {
+    "haskell": {
+      "command": "haskell-language-server-wrapper",
+      "args": ["--lsp"],
+      "rootPatterns": ["*.cabal", "stack.yaml", "cabal.project", "package.yaml", "hie.yaml"],
+      "filetypes": ["haskell", "lhaskell"]
+    }
+  }
 }
