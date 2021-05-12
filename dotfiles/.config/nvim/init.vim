@@ -44,14 +44,14 @@ call plug#end()
 " =====================
 " == UI Vim settings ==
 " =====================
-if exists('g:neovide')
+if exists("g:neovide")
     let g:neovide_transparency=0.95
     let g:neovide_refresh_rate=144
     let g:neovide_cursor_trail_length=0.5
     let g:neovide_cursor_animation_length=0.1
     let g:neovide_cursor_antialiasing=v:true
-elseif exists('g:fvim_loaded')
-    FVimBackgroundComposition 'blur'
+elseif exists("g:fvim_loaded")
+    FVimBackgroundComposition "blur"
     FVimBackgroundOpacity 0.75
     FVimBackgroundAltOpacity 0.75
     FVimFontAntialias v:true
@@ -64,10 +64,6 @@ endif
 " ======================
 " == General Settings ==
 " ======================
-let g:vimsyn_embed = 'l' " Lua syntax highlighting in vimscript
-let g:nord_italic = v:false " Disable italics because it's weird in Windows Terminal ☹
-let g:nord_spell = 'underline' " Underlined misspelled words
-
 syntax on " Enable syntax highlighting
 set spell " Spellcheck
 set hidden " Allow you to change buffers without saving
@@ -114,8 +110,8 @@ noremap <Leader>gh :Gitsigns next_hunk<Enter>
 noremap <Leader>gH :Gitsign prev_hunk<Enter>
 
 " Better wrap navigation
-nnoremap <silent><expr> j v:count ? 'j' : 'gj'
-nnoremap <silent><expr> k v:count ? 'k' : 'gk'
+nnoremap <silent><expr> j v:count ? "j" : "gj"
+nnoremap <silent><expr> k v:count ? "k" : "gk"
 noremap <silent> 0 g0
 noremap <silent> $ g$
 
@@ -167,12 +163,12 @@ nnoremap <Down>     :BufferLineMovePrev<Enter>
 
 " Jump to the last known cursor position.
 autocmd BufReadPost *
-    \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
+    \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"
     \ |   exe "normal! g`\""
     \ | endif
 
 " COC configuration
-autocmd CursorHold * silent call CocActionAsync('highlight')
+autocmd CursorHold * silent call CocActionAsync("highlight")
 
 inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
@@ -182,8 +178,8 @@ inoremap <silent><expr> <TAB>
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
 function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
+  let col = col(".") - 1
+  return !col || getline(".")[col - 1]  =~# "\s"
 endfunction
 
 inoremap <silent><expr> <c-space> coc#refresh()
@@ -196,11 +192,11 @@ nmap <silent> gr <Plug>(coc-references)
 nnoremap <silent> K :call <SID>show_documentation()<Enter>
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
+    execute "h ".expand("<cword>")
   elseif (coc#rpc#ready())
-    call CocActionAsync('doHover')
+    call CocActionAsync("doHover")
   else
-    execute '!' . &keywordprg . " " . expand('<cword>')
+    execute "!" . &keywordprg . " " . expand("<cword>")
   endif
 endfunction
 
@@ -209,49 +205,55 @@ nmap <F2> <Plug>(coc-rename)
 " =============
 " == Configs ==
 " =============
-lua require('gitsigns').setup() -- "Git Signs on the side"
-lua require('kommentary.config').setup() -- "Kommentary (Commenting)"
-lua require('bufferline').setup() -- "Bufferline (File tabs)"
-lua require('neoscroll').setup() -- "NeoScroll (Smoth scrolling for window movement)"
-lua require('colorizer').setup() -- "Color highlighter"
-lua require('nvim-treesitter.configs')
-    \.setup{highlight={enable=true},indent={enable=true}} -- "Better Language Parsing"
+lua << EOF
+-- Lua based plugin configuration
+vim.g.vimsyn_embed = "lPr" -- Lua syntax highlighting in vimscript
+vim.g.nord_italic = false -- Disable italics because it's weird in Windows Terminal ☹
+vim.g.nord_spell = "underline" -- Underlined misspelled words
+vim.g.airline_theme = "deus"
+vim.g.vimwiki_list = {{
+    path = "D:/documents/obsidian/",
+    syntax = "markdown",
+    ext = ".md"
+}}
 
-let g:airline_theme = "deus" " Set Vim Airline (status bar) theme
+--  Configuration for colorful matching brackets
+vim.g.rainbow_active = 1
+vim.g.rainbow_conf = {
+	guifgs = {"Cyan1", "PaleGreen1", "Magenta1", "Gold1"},
+	ctermfgs = { 51, 121, 201, 220 }
+}
 
-" Configuration for colorful matching brackets
-let g:rainbow_conf = {
-\	'guifgs': ['Cyan1', 'PaleGreen1', 'Magenta1', 'Gold1'],
-\	'ctermfgs': [51, 121, 201, 220],
-\	'separately': {
-\		'haskell': {
-\			'parentheses': ['start=/(/ end=/)/ fold',
-                           \'start=/\[/ end=/\]/ fold',
-                           \'start=/\v\{\ze[^-]/ end=/}/ fold'],
-\		},
-\	}
-\}
+-- Neovim tree (File explorer)
+vim.g.nvim_tree_ignore = { ".git", "node_modules", ".cache" }
+vim.g.nvim_tree_indent_markers = 1
+vim.g.nvim_tree_git_hl = 1
+vim.g.nvim_tree_add_trailing = 1
+vim.g.nvim_tree_special_files = { "README.md", "Makefile", "MAKEFILE" }
 
-let g:rainbow_active = 1 " Enable colored brackets
+-- Haskell Vim
+vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
+vim.g.haskell_enable_recursivedo = 1      -- to enable highlighting of `mdo` and `rec`
+vim.g.haskell_enable_arrowsyntax = 1      -- to enable highlighting of `proc`
+vim.g.haskell_enable_pattern_synonyms = 1 -- to enable highlighting of `pattern`
+vim.g.haskell_enable_typeroles = 1        -- to enable highlighting of type roles
+vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
+vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
 
-" Neovim tree (File explorer)
-let g:nvim_tree_ignore = [ '.git', 'node_modules', '.cache' ]
-let g:nvim_tree_indent_markers = 1
-let g:nvim_tree_git_hl = 1
-let g:nvim_tree_add_trailing = 1
-let g:nvim_tree_special_files = [ 'README.md', 'Makefile', 'MAKEFILE' ]
+require("gitsigns").setup() -- Git Signs on the side
+require("kommentary.config").setup() -- Kommentary (Commenting)
+require("bufferline").setup() -- Bufferline (File tabs)
+require("neoscroll").setup() -- NeoScroll (Smoth scrolling for window movement)
+require("colorizer").setup() -- Color highlighter
+require("which-key").setup() -- Which Key setup
 
-" Vim Wiki
-let g:vimwiki_list = [{'path': 'D:/Documents/Obsidian/', 'syntax': 'markdown', 'ext': '.md'}]
-
-" Which Key
-lua require("which-key").setup()
-
-" Haskell Vim
-let g:haskell_enable_quantification = 1   " to enable highlighting of `forall`
-let g:haskell_enable_recursivedo = 1      " to enable highlighting of `mdo` and `rec`
-let g:haskell_enable_arrowsyntax = 1      " to enable highlighting of `proc`
-let g:haskell_enable_pattern_synonyms = 1 " to enable highlighting of `pattern`
-let g:haskell_enable_typeroles = 1        " to enable highlighting of type roles
-let g:haskell_enable_static_pointers = 1  " to enable highlighting of `static`
-let g:haskell_backpack = 1                " to enable highlighting of backpack keywords
+ -- "Better Language Parsing"
+require("nvim-treesitter.configs").setup {
+    highlight = {
+        enable = jtrue
+    },
+    indent = {
+        enable = true
+    }
+}
+EOF
