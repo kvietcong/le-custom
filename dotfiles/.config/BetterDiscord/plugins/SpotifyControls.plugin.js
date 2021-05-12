@@ -1,12 +1,15 @@
 /**
  * @name SpotifyControls
+ * @author DevilBro
  * @authorId 278543574059057154
+ * @version 1.1.5
+ * @description Adds a Control Panel while listening to Spotify on a connected Account
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
  * @patreon https://www.patreon.com/MircoWittrien
- * @website https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/SpotifyControls
- * @source https://raw.githubusercontent.com/mwittrien/BetterDiscordAddons/master/Plugins/SpotifyControls/SpotifyControls.plugin.js
- * @updateUrl https://raw.githubusercontent.com/mwittrien/BetterDiscordAddons/master/Plugins/SpotifyControls/SpotifyControls.plugin.js
+ * @website https://mwittrien.github.io/
+ * @source https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/SpotifyControls/
+ * @updateUrl https://mwittrien.github.io/BetterDiscordAddons/Plugins/SpotifyControls/SpotifyControls.plugin.js
  */
 
 module.exports = (_ => {
@@ -14,12 +17,12 @@ module.exports = (_ => {
 		"info": {
 			"name": "SpotifyControls",
 			"author": "DevilBro",
-			"version": "1.1.1",
-			"description": "Add a control panel to discord when listening to spotify"
+			"version": "1.1.5",
+			"description": "Adds a Control Panel while listening to Spotify on a connected Account"
 		},
 		"changeLog": {
 			"improved": {
-				"Canary Changes": "Preparing Plugins for the changes that are already done on Discord Canary"
+				"Volume Slider": "Now updates live without having to release the Slider"
 			}
 		}
 	};
@@ -28,7 +31,14 @@ module.exports = (_ => {
 		getName () {return config.info.name;}
 		getAuthor () {return config.info.author;}
 		getVersion () {return config.info.version;}
-		getDescription () {return `The Library Plugin needed for ${config.info.name} is missing. Open the Plugin Settings to download it.\n\n${config.info.description}`;}
+		getDescription () {return `The Library Plugin needed for ${config.info.name} is missing. Open the Plugin Settings to download it. \n\n${config.info.description}`;}
+		
+		downloadLibrary () {
+			require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
+				if (!e && b && r.statusCode == 200) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => BdApi.showToast("Finished downloading BDFDB Library", {type: "success"}));
+				else BdApi.alert("Error", "Could not download BDFDB Library Plugin. Try again later or download it manually from GitHub: https://mwittrien.github.io/downloader/?library");
+			});
+		}
 		
 		load () {
 			if (!window.BDFDB_Global || !Array.isArray(window.BDFDB_Global.pluginQueue)) window.BDFDB_Global = Object.assign({}, window.BDFDB_Global, {pluginQueue: []});
@@ -40,10 +50,7 @@ module.exports = (_ => {
 					onCancel: _ => {delete window.BDFDB_Global.downloadModal;},
 					onConfirm: _ => {
 						delete window.BDFDB_Global.downloadModal;
-						require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-							if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => {});
-							else BdApi.alert("Error", "Could not download BDFDB Library Plugin, try again later or download it manually from GitHub: https://github.com/mwittrien/BetterDiscordAddons/tree/master/Library/");
-						});
+						this.downloadLibrary();
 					}
 				});
 			}
@@ -54,19 +61,15 @@ module.exports = (_ => {
 		getSettingsPanel () {
 			let template = document.createElement("template");
 			template.innerHTML = `<div style="color: var(--header-primary); font-size: 16px; font-weight: 300; white-space: pre; line-height: 22px;">The Library Plugin needed for ${config.info.name} is missing.\nPlease click <a style="font-weight: 500;">Download Now</a> to install it.</div>`;
-			template.content.firstElementChild.querySelector("a").addEventListener("click", _ => {
-				require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-					if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => {});
-					else BdApi.alert("Error", "Could not download BDFDB Library Plugin, try again later or download it manually from GitHub: https://github.com/mwittrien/BetterDiscordAddons/tree/master/Library/");
-				});
-			});
+			template.content.firstElementChild.querySelector("a").addEventListener("click", this.downloadLibrary);
 			return template.content.firstElementChild;
 		}
 	} : (([Plugin, BDFDB]) => {
 		var _this;
-		var controls, starting, lastSong, currentVolume, lastVolume, stopTime, previousIsClicked, previousDoubleTimeout, timelineTimeout, timelineDragging, updateInterval;
+		var controls;
+		var starting, lastSong, currentVolume, lastVolume, stopTime, previousIsClicked, previousDoubleTimeout;
+		var timelineTimeout, timelineDragging, updateInterval;
 		var playbackState = {};
-		var settings = {}, buttonConfigs = {};
 		
 		const repeatStates = [
 			"off",
@@ -132,8 +135,9 @@ module.exports = (_ => {
 					stopTime = new Date();
 				}
 				if (!lastSong) return null;
-				currentVolume = socketDevice.device.volume_percent;
+				currentVolume = this.props.draggingVolume ? currentVolume : socketDevice.device.volume_percent;
 				let playerSize = this.props.maximized ? "big" : "small";
+				let coverSrc = BDFDB.LibraryModules.AssetUtils.getAssetImage(lastSong.application_id, lastSong.assets.large_image);
 				return BDFDB.ReactUtils.createElement("div", {
 					className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN._spotifycontrolscontainer, this.props.maximized && BDFDB.disCN._spotifycontrolscontainermaximized, this.props.timeline && BDFDB.disCN._spotifycontrolscontainerwithtimeline),
 					children: [
@@ -152,9 +156,14 @@ module.exports = (_ => {
 										else BDFDB.ReactUtils.forceUpdate(this);
 									},
 									children: [
-										BDFDB.ReactUtils.createElement("img", {
+										coverSrc ? BDFDB.ReactUtils.createElement("img", {
 											className: BDFDB.disCN._spotifycontrolscover,
-											src: BDFDB.LibraryModules.AssetUtils.getAssetImage(lastSong.application_id, lastSong.assets.large_image)
+											src: coverSrc
+										}) : BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SvgIcon, {
+											className: BDFDB.disCN._spotifycontrolscover,
+											width: "100%",
+											height: "100%",
+											name: BDFDB.LibraryComponents.SvgIcon.Names.QUESTIONMARK_ACTIVITY
 										}),
 										BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SvgIcon, {
 											className: BDFDB.disCN._spotifycontrolscovermaximizer,
@@ -218,7 +227,7 @@ module.exports = (_ => {
 												playerSize: playerSize,
 												disabled: socketDevice.device.is_restricted,
 												onClick: _ => {
-													if (previousIsClicked || !settings.doubleBack) {
+													if (previousIsClicked || !_this.settings.general.doubleBack) {
 														previousIsClicked = false;
 														this.request(socketDevice.socket, socketDevice.device, "previous");
 													}
@@ -291,6 +300,7 @@ module.exports = (_ => {
 													}
 												},
 												renderPopout: instance => {
+													let changeTimeout;
 													return BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Slider, {
 														className: BDFDB.disCN._spotifycontrolsvolumeslider,
 														defaultValue: currentVolume,
@@ -298,9 +308,16 @@ module.exports = (_ => {
 														barStyles: {height: 6, top: 3},
 														fillStyles: {backgroundColor: BDFDB.DiscordConstants.Colors.SPOTIFY},
 														onValueRender: value => {
+															this.props.draggingVolume = true;
+															currentVolume = value;
+															BDFDB.TimeUtils.clear(changeTimeout);
+															changeTimeout = BDFDB.TimeUtils.timeout(_ => this.props.draggingVolume && this.request(socketDevice.socket, socketDevice.device, "volume", {
+																volume_percent: currentVolume
+															}), 500);
 															return value + "%";
 														},
 														onValueChange: value => {
+															this.props.draggingVolume = false;
 															currentVolume = value;
 															this.request(socketDevice.socket, socketDevice.device, "volume", {
 																volume_percent: currentVolume
@@ -326,12 +343,12 @@ module.exports = (_ => {
 		};
 		const SpotifyControlsButtonComponent = class SpotifyControlsButton extends BdApi.React.Component {
 			render() {
-				if (!this.props.playerSize || !buttonConfigs[this.props.type] || !buttonConfigs[this.props.type][this.props.playerSize]) return null;
+				if (!this.props.playerSize || !_this.settings.buttons[this.props.type] || !_this.settings.buttons[this.props.type][this.props.playerSize]) return null;
 				let button = BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Button, BDFDB.ObjectUtils.exclude(Object.assign({}, this.props, {
 					className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.accountinfobutton, this.props.disabled ? BDFDB.disCN.accountinfobuttondisabled : BDFDB.disCN.accountinfobuttonenabled, this.props.active && BDFDB.disCN._spotifycontrolsbuttonactive),
 					look: BDFDB.LibraryComponents.Button.Looks.BLANK,
 					size: BDFDB.LibraryComponents.Button.Sizes.NONE,
-					children: _this.defaults.buttonConfigs[this.props.type] && _this.defaults.buttonConfigs[this.props.type].icons ? (_this.defaults.buttonConfigs[this.props.type].icons[this.props.icon] || _this.defaults.buttonConfigs[this.props.type].icons[0]) : "?",
+					children: _this.defaults.buttons[this.props.type] && _this.defaults.buttons[this.props.type].icons ? (_this.defaults.buttons[this.props.type].icons[this.props.icon] || _this.defaults.buttons[this.props.type].icons[0]) : "?",
 					onClick: this.props.disabled ? _ => {} : this.props.onClick,
 					onContextMenu: this.props.disabled ? _ => {} : this.props.onContextMenu,
 				}), "active", "disabled", "renderPopout", "icon", "type", "playerSize"));
@@ -415,11 +432,11 @@ module.exports = (_ => {
 				_this = this;
 				
 				this.defaults = {
-					settings: {
+					general: {
 						addTimeline: 		{value: true,		description: "Show the Song Timeline in the Controls"},
 						doubleBack: 		{value: true,       description: "Requires the User to press the Back Button twice to go to previous Track"}
 					},
-					buttonConfigs: {
+					buttons: {
 						share: 				{value: {small: false, big: true},		icons: [""],						description: "Share"},
 						shuffle: 			{value: {small: false, big: true},		icons: [""],						description: "Shuffle"},
 						previous: 			{value: {small: true, big: true},		icons: [""],						description: "Previous"},
@@ -518,6 +535,7 @@ module.exports = (_ => {
 						display: block;
 						width: 100%;
 						height: 100%;
+						color: var(--header-primary);
 						object-fit: cover;
 					}
 					${BDFDB.dotCN._spotifycontrolscovermaximizer} {
@@ -602,10 +620,38 @@ module.exports = (_ => {
 					${BDFDB.dotCN._spotifycontrolssettingslabel} {
 						margin-left: 10px;
 					}
+					${BDFDB.dotCNS._bdminimalmode + BDFDB.dotCN._spotifycontrolsbar} {
+						height: 3px;
+					}
+					${BDFDB.dotCNS._bdminimalmode + BDFDB.dotCNS._spotifycontrolscontainer + BDFDB.dotCN.accountinfobutton} {
+						width: 26px;
+						height: 26px;
+					}
+					${BDFDB.dotCNS._bdminimalmode + BDFDB.dotCNS._spotifycontrolscontainer + BDFDB.dotCN.size14} {
+						font-size: 13px;
+						line-height: 13px;
+					}
+					${BDFDB.dotCNS._bdminimalmode + BDFDB.dotCNS._spotifycontrolscontainer + BDFDB.dotCN.size12} {
+						font-size: 11px;
+						line-height: 11px;
+					}
 				`;
 			}
 			
 			onStart () {
+				// REMOVE 24.04.2021
+				let oldData = BDFDB.DataUtils.load(this);
+				if (oldData.settings) {
+					this.settings.general = oldData.settings;
+					BDFDB.DataUtils.save(this.settings.general, this, "general");
+					BDFDB.DataUtils.remove(this, "settings");
+				}
+				if (oldData.buttonConfigs) {
+					this.settings.buttons = oldData.buttonConfigs;
+					BDFDB.DataUtils.save(this.settings.buttons, this, "buttons");
+					BDFDB.DataUtils.remove(this, "buttonConfigs");
+				}
+				
 				BDFDB.PatchUtils.patch(this, BDFDB.LibraryModules.SpotifyTrackUtils, "getActivity", {after: e => {
 					if (e.methodArguments[0] !== false) {
 						if (e.returnValue && e.returnValue.name == "Spotify") this.updatePlayer(e.returnValue);
@@ -621,21 +667,6 @@ module.exports = (_ => {
 					return false;
 				}});
 				
-				if (!BDFDB.LibraryModules.SpotifyTrackUtils.hasConnectedAccount()) BDFDB.ModalUtils.open(this, {
-					size: "SMALL",
-					header: `${this.name}: ${this.labels.noaccount_header}...`,
-					subHeader: this.labels.noaccount_subheader,
-					text: this.labels.noaccount_text,
-					buttons: [{
-						contents: BDFDB.LanguageUtils.LanguageStrings.CONNECT,
-						color: "BRAND",
-						close: true,
-						onClick: modal => {
-							BDFDB.LibraryModules.UserSettingsUtils.open(BDFDB.DiscordConstants.UserSettingsSections.CONNECTIONS)
-						}
-					}]
-				});
-				
 				this.forceUpdateAll();
 			}
 			
@@ -643,64 +674,83 @@ module.exports = (_ => {
 				this.forceUpdateAll();
 			}
 
-			getSettingsPanel (collapseStates = {}) {
-				let settingsPanel, settingsItems = [];
-				
-				settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-					title: "Settings",
+			getSettingsPanel (collapseStates = {}) {				
+				let settingsPanel;
+				return settingsPanel = BDFDB.PluginUtils.createSettingsPanel(this, {
 					collapseStates: collapseStates,
-					children: Object.keys(settings).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
-						type: "Switch",
-						plugin: this,
-						keys: ["settings", key],
-						label: this.defaults.settings[key].description,
-						value: settings[key]
-					}))
-				}));
-				
-				settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-					title: "Button Settings",
-					collapseStates: collapseStates,
-					children: [BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormTitle, {
-						className: BDFDB.disCN.marginbottom4,
-						tag: BDFDB.LibraryComponents.FormComponents.FormTitle.Tags.H3,
-						children: "Add control buttons in small and/or big player version: "
-					})].concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsList, {
-						settings: Object.keys(this.defaults.buttonConfigs[Object.keys(this.defaults.buttonConfigs)[0]].value),
-						data: Object.keys(buttonConfigs).map(key => Object.assign({}, buttonConfigs[key], {
-							key: key,
-							label: this.defaults.buttonConfigs[key].description,
-							icons: this.defaults.buttonConfigs[key].icons
-						})),
-						noRemove: true,
-						renderLabel: data => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
-							align: BDFDB.LibraryComponents.Flex.Align.CENTER,
-							children: [
-								BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
-									justify: BDFDB.LibraryComponents.Flex.Justify.CENTER,
-									wrap: BDFDB.LibraryComponents.Flex.Wrap.WRAP,
-									basis: 50,
-									grow: 0,
-									children: data.icons.map(icon => BDFDB.ReactUtils.createElement("div", {
-										className: BDFDB.disCN._spotifycontrolssettingsicon,
-										children: icon
-									}))
+					children: _ => {
+						let settingsItems = [];
+						
+						if (!BDFDB.LibraryModules.SpotifyTrackUtils.hasConnectedAccount()) BDFDB.ModalUtils.open(this, {
+							size: "SMALL",
+							header: `${this.name}: ${this.labels.noaccount_header}...`,
+							subHeader: this.labels.noaccount_subheader,
+							text: this.labels.noaccount_text,
+							buttons: [{
+								contents: BDFDB.LanguageUtils.LanguageStrings.CONNECT,
+								color: "BRAND",
+								close: true,
+								onClick: _ => BDFDB.LibraryModules.UserSettingsUtils.open(BDFDB.DiscordConstants.UserSettingsSections.CONNECTIONS)
+							}]
+						});
+						
+						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
+							title: "Settings",
+							collapseStates: collapseStates,
+							children: Object.keys(this.defaults.general).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
+								type: "Switch",
+								plugin: this,
+								keys: ["general", key],
+								label: this.defaults.general[key].description,
+								value: this.settings.general[key]
+							}))
+						}));
+						
+						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
+							title: "Button Settings",
+							collapseStates: collapseStates,
+							children: [BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormTitle, {
+								className: BDFDB.disCN.marginbottom4,
+								tag: BDFDB.LibraryComponents.FormComponents.FormTitle.Tags.H3,
+								children: "Add control Buttons in small and/or big Player Version: "
+							})].concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsList, {
+								settings: Object.keys(this.defaults.buttons[Object.keys(this.defaults.buttons)[0]].value),
+								data: Object.keys(this.defaults.buttons).map(key => Object.assign({}, this.settings.buttons[key], {
+									key: key,
+									label: this.defaults.buttons[key].description,
+									icons: this.defaults.buttons[key].icons
+								})),
+								noRemove: true,
+								renderLabel: data => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
+									align: BDFDB.LibraryComponents.Flex.Align.CENTER,
+									children: [
+										BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
+											justify: BDFDB.LibraryComponents.Flex.Justify.CENTER,
+											wrap: BDFDB.LibraryComponents.Flex.Wrap.WRAP,
+											basis: 50,
+											grow: 0,
+											children: data.icons.map(icon => BDFDB.ReactUtils.createElement("div", {
+												className: BDFDB.disCN._spotifycontrolssettingsicon,
+												children: icon
+											}))
+										}),
+										BDFDB.ReactUtils.createElement("div", {
+											className: BDFDB.disCN._spotifycontrolssettingslabel,
+											children: data.label
+										})
+									]
 								}),
-								BDFDB.ReactUtils.createElement("div", {
-									className: BDFDB.disCN._spotifycontrolssettingslabel,
-									children: data.label
-								})
-							]
-						}),
-						onCheckboxChange: (value, instance) => {
-							buttonConfigs[instance.props.cardId][instance.props.settingId] = value;
-							BDFDB.DataUtils.save(buttonConfigs, this, "buttonConfigs");
-							this.SettingsUpdated = true;
-						}
-					}))
-				}));
-				
-				return settingsPanel = BDFDB.PluginUtils.createSettingsPanel(this, settingsItems);
+								onCheckboxChange: (value, instance) => {
+									this.settings.buttons[instance.props.cardId][instance.props.settingId] = value;
+									BDFDB.DataUtils.save(this.settings.buttons, this, "buttons");
+									this.SettingsUpdated = true;
+								}
+							}))
+						}));
+						
+						return settingsItems;
+					}
+				});
 			}
 
 			onSettingsClosed () {
@@ -710,21 +760,34 @@ module.exports = (_ => {
 				}
 			}
 		
-			forceUpdateAll () {
-				settings = BDFDB.DataUtils.get(this, "settings");
-				buttonConfigs = BDFDB.DataUtils.get(this, "buttonConfigs");
-				
+			forceUpdateAll () {				
 				BDFDB.PatchUtils.forceAllUpdates(this);
 				BDFDB.DiscordUtils.rerenderAll();
 			}
 
 			processAppView (e) {
-				let [children, index] = BDFDB.ReactUtils.findParent(e.returnvalue, {props: [["section", BDFDB.DiscordConstants.AnalyticsSections.ACCOUNT_PANEL]]});
+				let injected = this.injectPlayer(e.returnvalue);
+				if (!injected) {
+					let channels = BDFDB.ReactUtils.findChild(e.returnvalue, {name: "ChannelSidebar"});
+					if (channels) {
+						let type = channels.type;
+						channels.type = (...args) => {
+							let appliedType = type(...args);
+							this.injectPlayer(appliedType);
+							return appliedType;
+						};
+					}
+				}
+			}
+			
+			injectPlayer (parent) {
+				let [children, index] = BDFDB.ReactUtils.findParent(parent, {props: [["section", BDFDB.DiscordConstants.AnalyticsSections.ACCOUNT_PANEL]]});
 				if (index > -1) children.splice(index - 1, 0, BDFDB.ReactUtils.createElement(SpotifyControlsComponent, {
 					song: BDFDB.LibraryModules.SpotifyTrackUtils.getActivity(false),
 					maximized: BDFDB.DataUtils.load(this, "playerState", "maximized"),
-					timeline: settings.addTimeline
+					timeline: this.settings.general.addTimeline
 				}, true));
+				return index > -1;
 			}
 			
 			updatePlayer (song) {

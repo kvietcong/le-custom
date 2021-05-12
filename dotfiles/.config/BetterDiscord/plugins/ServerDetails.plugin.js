@@ -1,12 +1,15 @@
 /**
  * @name ServerDetails
+ * @author DevilBro
  * @authorId 278543574059057154
+ * @version 1.0.5
+ * @description Shows Server Details in the Server List Tooltip
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
  * @patreon https://www.patreon.com/MircoWittrien
- * @website https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/ServerDetails
- * @source https://raw.githubusercontent.com/mwittrien/BetterDiscordAddons/master/Plugins/ServerDetails/ServerDetails.plugin.js
- * @updateUrl https://raw.githubusercontent.com/mwittrien/BetterDiscordAddons/master/Plugins/ServerDetails/ServerDetails.plugin.js
+ * @website https://mwittrien.github.io/
+ * @source https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/ServerDetails/
+ * @updateUrl https://mwittrien.github.io/BetterDiscordAddons/Plugins/ServerDetails/ServerDetails.plugin.js
  */
 
 module.exports = (_ => {
@@ -14,12 +17,12 @@ module.exports = (_ => {
 		"info": {
 			"name": "ServerDetails",
 			"author": "DevilBro",
-			"version": "1.0.4",
-			"description": "Show details of a server when you hover over the icon in the server list"
+			"version": "1.0.5",
+			"description": "Shows Server Details in the Server List Tooltip"
 		},
 		"changeLog": {
-			"fixed": {
-				"New React Structure": "Fixed for new internal react structure"
+			"improved": {
+				"New Settings": "Changed the Settings Panel for the Plugin, some Settings got reset sowwy ~w~"
 			}
 		}
 	};
@@ -28,43 +31,41 @@ module.exports = (_ => {
 		getName () {return config.info.name;}
 		getAuthor () {return config.info.author;}
 		getVersion () {return config.info.version;}
-		getDescription () {return config.info.description;}
+		getDescription () {return `The Library Plugin needed for ${config.info.name} is missing. Open the Plugin Settings to download it. \n\n${config.info.description}`;}
 		
-		load() {
+		downloadLibrary () {
+			require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
+				if (!e && b && r.statusCode == 200) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => BdApi.showToast("Finished downloading BDFDB Library", {type: "success"}));
+				else BdApi.alert("Error", "Could not download BDFDB Library Plugin. Try again later or download it manually from GitHub: https://mwittrien.github.io/downloader/?library");
+			});
+		}
+		
+		load () {
 			if (!window.BDFDB_Global || !Array.isArray(window.BDFDB_Global.pluginQueue)) window.BDFDB_Global = Object.assign({}, window.BDFDB_Global, {pluginQueue: []});
 			if (!window.BDFDB_Global.downloadModal) {
 				window.BDFDB_Global.downloadModal = true;
-				BdApi.showConfirmationModal("Library Missing", `The library plugin needed for ${config.info.name} is missing. Please click "Download Now" to install it.`, {
+				BdApi.showConfirmationModal("Library Missing", `The Library Plugin needed for ${config.info.name} is missing. Please click "Download Now" to install it.`, {
 					confirmText: "Download Now",
 					cancelText: "Cancel",
 					onCancel: _ => {delete window.BDFDB_Global.downloadModal;},
 					onConfirm: _ => {
 						delete window.BDFDB_Global.downloadModal;
-						require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-							if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => {});
-							else BdApi.alert("Error", "Could not download BDFDB library plugin, try again some time later.");
-						});
+						this.downloadLibrary();
 					}
 				});
 			}
 			if (!window.BDFDB_Global.pluginQueue.includes(config.info.name)) window.BDFDB_Global.pluginQueue.push(config.info.name);
 		}
-		start() {this.load();}
-		stop() {}
-		getSettingsPanel() {
+		start () {this.load();}
+		stop () {}
+		getSettingsPanel () {
 			let template = document.createElement("template");
-			template.innerHTML = `<div style="color: var(--header-primary); font-size: 16px; font-weight: 300; white-space: pre; line-height: 22px;">The library plugin needed for ${config.info.name} is missing.\nPlease click <a style="font-weight: 500;">Download Now</a> to install it.</div>`;
-			template.content.firstElementChild.querySelector("a").addEventListener("click", _ => {
-				require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-					if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => {});
-					else BdApi.alert("Error", "Could not download BDFDB library plugin, try again some time later.");
-				});
-			});
+			template.innerHTML = `<div style="color: var(--header-primary); font-size: 16px; font-weight: 300; white-space: pre; line-height: 22px;">The Library Plugin needed for ${config.info.name} is missing.\nPlease click <a style="font-weight: 500;">Download Now</a> to install it.</div>`;
+			template.content.firstElementChild.querySelector("a").addEventListener("click", this.downloadLibrary);
 			return template.content.firstElementChild;
 		}
 	} : (([Plugin, BDFDB]) => {
-		var _this, languages;
-		var settings = {}, colors = {}, choices = {}, formats = {}, amounts = {};
+		var _this;
 	
 		const GuildDetailsComponent = class GuildDetails extends BdApi.React.Component {
 			constructor(props) {
@@ -72,20 +73,18 @@ module.exports = (_ => {
 				this.state = {fetchedOwner: false, delayed: false, repositioned: false};
 			}
 			componentDidUpdate() {
-				if (amounts.tooltipDelay && this.state.delayed && !this.state.repositioned) {
+				if (_this.settings.amounts.tooltipDelay && this.state.delayed && !this.state.repositioned) {
 					this.state.repositioned = true;
-					let tooltip = BDFDB.DOMUtils.getParent(BDFDB.dotCN.tooltip, BDFDB.ObjectUtils.get(this, `${BDFDB.ReactUtils.instanceKey}.return.return.stateNode.containerInfo`));
-					if (tooltip) tooltip.update();
+					if (this.props.tooltipContainer && this.props.tooltipContainer.tooltip) this.props.tooltipContainer.tooltip.update();
 				}
 			}
 			render() {
-				if (amounts.tooltipDelay && !this.state.delayed) {
+				if (_this.settings.amounts.tooltipDelay && !this.state.delayed) {
 					BDFDB.TimeUtils.timeout(_ => {
 						this.state.delayed = true;
-						let tooltip = BDFDB.DOMUtils.getParent(BDFDB.dotCN.tooltip, BDFDB.ObjectUtils.get(this, `${BDFDB.ReactUtils.instanceKey}.return.return.stateNode.containerInfo`));
-						if (tooltip) BDFDB.DOMUtils.addClass(tooltip, BDFDB.disCN._serverdetailstooltip);
+						if (this.props.tooltipContainer && this.props.tooltipContainer.tooltip) BDFDB.DOMUtils.addClass(this.props.tooltipContainer.tooltip.firstElementChild, BDFDB.disCN._serverdetailstooltip);
 						BDFDB.ReactUtils.forceUpdate(this);
-					}, amounts.tooltipDelay * 1000);
+					}, _this.settings.amounts.tooltipDelay * 1000);
 					return null;
 				}
 				let owner = BDFDB.LibraryModules.UserStore.getUser(this.props.guild.ownerId);
@@ -94,47 +93,46 @@ module.exports = (_ => {
 					BDFDB.LibraryModules.UserFetchUtils.getUser(this.props.guild.ownerId).then(_ => BDFDB.ReactUtils.forceUpdate(this));
 				}
 				let src = this.props.guild.getIconURL(BDFDB.LibraryModules.IconUtils.hasAnimatedGuildIcon(this.props.guild) ? "gif" : "png");
-				let ownerString = `${owner ? owner.username : "Unknown"}#${owner ? owner.discriminator : "0000"}`;
 				return BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
 					direction: BDFDB.LibraryComponents.Flex.Direction.VERTICAL,
 					align: BDFDB.LibraryComponents.Flex.Align.CENTER,
 					children: [
-						settings.addIcon && (src ? BDFDB.ReactUtils.createElement("img", {
+						_this.settings.items.icon && (src ? BDFDB.ReactUtils.createElement("img", {
 							className: BDFDB.disCN._serverdetailsicon,
 							src: src.replace(/\?size\=\d+$/, "?size=4096").replace(/[\?\&](height|width)=\d+/g, "")
 						}) : BDFDB.ReactUtils.createElement("div", {
 							className: BDFDB.disCN._serverdetailsicon,
 							children: this.props.guild.acronym
 						})),
-						settings.addOwner && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+						_this.settings.items.owner && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
 							prefix: BDFDB.LanguageUtils.LanguageStrings.GUILD_OWNER,
 							string: `${owner ? owner.username : "Unknown"}#${owner ? owner.discriminator : "0000"}`
 						}),
-						settings.addCreation && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
-							prefix: _this.labels.creationdate_text,
-							string: _this.getTimestamp(languages[choices.timeLang].id, BDFDB.LibraryModules.TimestampUtils.extractTimestamp(this.props.guild.id))
+						_this.settings.items.creationDate && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+							prefix: _this.labels.creation_date,
+							string: BDFDB.LibraryComponents.DateInput.format(_this.settings.dates.tooltipDates, BDFDB.LibraryModules.TimestampUtils.extractTimestamp(this.props.guild.id))
 						}),
-						settings.addJoin && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
-							prefix: _this.labels.joindate_text,
-							string: _this.getTimestamp(languages[choices.timeLang].id, this.props.guild.joinedAt)
+						_this.settings.items.joinDate && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+							prefix: _this.labels.join_date,
+							string: BDFDB.LibraryComponents.DateInput.format(_this.settings.dates.tooltipDates, this.props.guild.joinedAt)
 						}),
-						settings.addMembers && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+						_this.settings.items.members && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
 							prefix: BDFDB.LanguageUtils.LanguageStrings.MEMBERS,
 							string: BDFDB.LibraryModules.MemberCountUtils.getMemberCount(this.props.guild.id)
 						}),
-						settings.addChannels && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+						_this.settings.items.boosters && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+							prefix: _this.labels.boosters,
+							string: this.props.guild.premiumSubscriberCount
+						}),
+						_this.settings.items.channels && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
 							prefix: BDFDB.LanguageUtils.LanguageStrings.CHANNELS,
 							string: BDFDB.LibraryModules.GuildChannelStore.getChannels(this.props.guild.id).count
 						}),
-						settings.addRoles && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+						_this.settings.items.roles && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
 							prefix: BDFDB.LanguageUtils.LanguageStrings.ROLES,
 							string: Object.keys(this.props.guild.roles).length
 						}),
-						settings.addBoosters && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
-							prefix: BDFDB.LanguageUtils.LanguageStrings.SUBSCRIPTIONS_TITLE,
-							string: this.props.guild.premiumSubscriberCount
-						}),
-						settings.addRegion && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
+						_this.settings.items.region && BDFDB.ReactUtils.createElement(GuildDetailsRowComponent, {
 							prefix: BDFDB.LanguageUtils.LanguageStrings.REGION,
 							string: this.props.guild.region
 						})
@@ -145,7 +143,7 @@ module.exports = (_ => {
 		
 		const GuildDetailsRowComponent = class GuildDetailsRow extends BdApi.React.Component {
 			render() {
-				return (this.props.prefix.length + this.props.string.length) > Math.round(34 * (amounts.tooltipWidth/300)) ? [
+				return (this.props.prefix.length + this.props.string.length) > Math.round(34 * (_this.settings.amounts.tooltipWidth/300)) ? [
 					BDFDB.ReactUtils.createElement("div", {
 						children: `${this.props.prefix}:`
 					}),
@@ -159,37 +157,30 @@ module.exports = (_ => {
 		};
 		
 		return class ServerDetails extends Plugin {
-			onLoad() {
+			onLoad () {
 				_this = this;
 				
 				this.defaults = {
-					settings: {
-						cutSeconds:			{value: false, 		cat: "settings",	description: "Cut off seconds of the time"},
-						forceZeros:			{value: false, 		cat: "settings",	description: "Force leading zeros"},
-						otherOrder:			{value: false, 		cat: "settings",	description: "Show the time before the date"},
-						addIcon:			{value: true, 		cat: "tooltip",	description: "GUILD_CREATE_UPLOAD_ICON_LABEL"},
-						addOwner:			{value: true, 		cat: "tooltip",	description: "GUILD_OWNER"},
-						addCreation:		{value: true, 		cat: "tooltip",	description: "creationdate_text"},
-						addJoin:			{value: true, 		cat: "tooltip",	description: "joindate_text"},
-						addMembers:			{value: true, 		cat: "tooltip",	description: "MEMBERS"},
-						addChannels:		{value: true, 		cat: "tooltip",	description: "CHANNELS"},
-						addRoles:			{value: true, 		cat: "tooltip",	description: "ROLES"},
-						addBoosters:		{value: true, 		cat: "tooltip",	description: "SUBSCRIPTIONS_TITLE"},
-						addRegion:			{value: true, 		cat: "tooltip",	description: "REGION"}
+					items: {
+						icon:				{value: true, 	description: "GUILD_CREATE_UPLOAD_ICON_LABEL"},
+						owner:				{value: true, 	description: "GUILD_OWNER"},
+						creationDate:		{value: true, 	description: "creation_date"},
+						joinDate:			{value: true, 	description: "join_date"},
+						members:			{value: true, 	description: "MEMBERS"},
+						channels:			{value: true, 	description: "CHANNELS"},
+						roles:				{value: true, 	description: "ROLES"},
+						boosters:			{value: true, 	description: "boosters"},
+						region:				{value: true, 	description: "REGION"}
+					},
+					dates: {
+						tooltipDates:		{value: {}, 	description: "Tooltip Dates"}
 					},
 					colors: {
-						tooltipColor:		{value: "", 					description: "Tooltip Color"}
-					},
-					choices: {
-						timeLang:			{value: "$discord", 			description: "Date Format"}
-					},
-					formats: {
-						ownFormat:			{value: "$hour: $minute: $second, $day.$month.$year", 	description: "Own Format"}
+						tooltipColor:		{value: "", 	description: "Tooltip Color"}
 					},
 					amounts: {
-						tooltipDelay:		{value: 0,	cat: "tooltip",	 min: 0,		max: 10,		digits: 1,	unit: "s",	description: "Details Tooltip Delay"},
-						tooltipWidth:		{value: 300,	cat: "tooltip",	 min: 200,	max: 600,	digits: 0,	unit: "px",	description: "Details Tooltip Width"},
-						maxDaysAgo:			{value: 0,	cat: "format",	 min: 0,		description: "Maximum count of days displayed in the $daysago placeholder",	note: "0 equals no limit"}
+						tooltipDelay:		{value: 0,		min: 0,		max: 10,	digits: 1,	unit: "s",	description: "Tooltip Delay"},
+						tooltipWidth:		{value: 300,	min: 200,	max: 600,	digits: 0,	unit: "px",	description: "Tooltip Width"}
 					}
 				};
 			
@@ -224,22 +215,15 @@ module.exports = (_ => {
 				`;
 			}
 			
-			onStart() {
+			onStart () {
 				BDFDB.PatchUtils.patch(this, BDFDB.LibraryComponents.GuildComponents.Guild.prototype, "render", {after: e => {
 					this.processGuild({instance: e.thisObject, returnvalue: e.returnValue, methodname: "render"});
 				}});
 
-				languages = BDFDB.ObjectUtils.deepAssign({
-					own: {
-						name: "Own",
-						id: "own"
-					}
-				}, BDFDB.LanguageUtils.languages);
-
 				this.forceUpdateAll();
 			}
 			
-			onStop() {
+			onStop () {
 				this.forceUpdateAll();
 				
 				BDFDB.DOMUtils.removeLocalStyle(this.name + "TooltipWidth");
@@ -253,37 +237,30 @@ module.exports = (_ => {
 						let settingsItems = [];
 						
 						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-							title: "Settings",
+							title: "Tooltip Items",
 							collapseStates: collapseStates,
-							children: Object.keys(settings).map(key => this.defaults.settings[key].cat == "settings" && BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
+							children: Object.keys(this.defaults.items).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
 								type: "Switch",
 								plugin: this,
-								keys: ["settings", key],
-								label: this.defaults.settings[key].description,
-								value: settings[key],
-								onChange: (value, instance) => {
-									settings[key] = value;
-									BDFDB.ReactUtils.forceUpdate(BDFDB.ReactUtils.findOwner(BDFDB.ReactUtils.findOwner(instance, {name: "BDFDB_SettingsPanel", up: true}), {name: "BDFDB_Select", all: true, noCopies: true}));
-								}
+								keys: ["items", key],
+								label: this.labels[this.defaults.items[key].description] || BDFDB.LanguageUtils.LanguageStrings[this.defaults.items[key].description],
+								value: this.settings.items[key]
 							}))
 						}));
 						
 						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-							title: "Tooltip Settings",
+							title: "Tooltip Format",
 							collapseStates: collapseStates,
-							children: [BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormTitle, {
-								className: BDFDB.disCN.marginbottom4,
-								tag: BDFDB.LibraryComponents.FormComponents.FormTitle.Tags.H3,
-								children: "Add additional details in the server tooltip for: "
-							})].concat(Object.keys(settings).map(key => this.defaults.settings[key].cat == "tooltip" && BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
-								type: "Switch",
-								plugin: this,
-								keys: ["settings", key],
-								label: this.labels[this.defaults.settings[key].description] || BDFDB.LanguageUtils.LanguageStrings[this.defaults.settings[key].description],
-								value: settings[key]
+							children: Object.keys(this.defaults.dates).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.DateInput, Object.assign({}, this.settings.dates[key], {
+								label: this.defaults.dates[key].description,
+								onChange: valueObj => {
+									this.SettingsUpdated = true;
+									this.settings.dates[key] = valueObj;
+									BDFDB.DataUtils.save(this.settings.dates, this, "dates");
+								}
 							}))).concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormDivider, {
 								className: BDFDB.disCN.marginbottom8
-							})).concat(Object.keys(amounts).map(key => this.defaults.amounts[key].cat == "tooltip" && BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
+							})).concat(Object.keys(this.defaults.amounts).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
 								type: "Slider",
 								plugin: this,
 								keys: ["amounts", key],
@@ -295,124 +272,19 @@ module.exports = (_ => {
 								markerAmount: 11,
 								onValueRender: value => value + this.defaults.amounts[key].unit,
 								childProps: {type: "number"},
-								value: amounts[key]
+								value: this.settings.amounts[key]
 							}))).concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormDivider, {
 								className: BDFDB.disCN.marginbottom8
-							})).concat(Object.keys(colors).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
+							})).concat(Object.keys(this.defaults.colors).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
 								type: "TextInput",
 								plugin: this,
 								keys: ["colors", key],
 								basis: "70%",
 								label: this.defaults.colors[key].description,
-								value: colors[key],
+								value: this.settings.colors[key],
 								childProps: {type: "color"},
-								placeholder: colors[key]
+								placeholder: this.settings.colors[key]
 							})))
-						}));
-						
-						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-							title: "Time Format",
-							collapseStates: collapseStates,
-							children: Object.keys(choices).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
-								type: "Select",
-								plugin: this,
-								keys: ["choices", key],
-								label: this.defaults.choices[key].description,
-								basis: "70%",
-								value: choices[key],
-								options: BDFDB.ObjectUtils.toArray(BDFDB.ObjectUtils.map(languages, (lang, id) => {return {value: id, label: lang.name}})),
-								searchable: true,
-								optionRenderer: lang => {
-									return BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
-										align: BDFDB.LibraryComponents.Flex.Align.CENTER,
-										children: [
-											BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex.Child, {
-												grow: 0,
-												shrink: 0,
-												basis: "40%",
-												children: lang.label
-											}),
-											BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex.Child, {
-												grow: 0,
-												shrink: 0,
-												basis: "60%",
-												children: this.getTimestamp(languages[lang.value].id)
-											})
-										]
-									});
-								},
-								valueRenderer: lang => {
-									return BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex, {
-										align: BDFDB.LibraryComponents.Flex.Align.CENTER,
-										children: [
-											BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex.Child, {
-												grow: 0,
-												shrink: 0,
-												children: lang.label
-											}),
-											BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.Flex.Child, {
-												grow: 1,
-												shrink: 0,
-												basis: "70%",
-												children: this.getTimestamp(languages[lang.value].id)
-											})
-										]
-									});
-								}
-							})).concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormDivider, {
-								className: BDFDB.disCN.marginbottom8
-							})).concat(Object.keys(formats).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
-								type: "TextInput",
-								plugin: this,
-								keys: ["formats", key],
-								label: this.defaults.formats[key].description,
-								basis: "70%",
-								value: formats[key],
-								onChange: (value, instance) => {
-									formats[key] = value;
-									BDFDB.ReactUtils.forceUpdate(BDFDB.ReactUtils.findOwner(BDFDB.ReactUtils.findOwner(instance, {name: "BDFDB_SettingsPanel", up: true}), {name: "BDFDB_Select", all: true, noCopies: true}));
-								}
-							}))).concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormDivider, {
-								className: BDFDB.disCN.marginbottom8
-							})).concat(Object.keys(amounts).map(key => this.defaults.amounts[key].cat == "format" && BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
-								type: "TextInput",
-								plugin: this,
-								keys: ["amounts", key],
-								label: this.defaults.amounts[key].description,
-								note: this.defaults.amounts[key].note,
-								basis: "20%",
-								min: this.defaults.amounts[key].min,
-								max: this.defaults.amounts[key].max,
-								childProps: {type: "number"},
-								value: amounts[key]
-							}))).filter(n => n)
-						}));
-						
-						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-							title: "Placeholder Guide",
-							dividerTop: true,
-							collapseStates: collapseStates,
-							children: [
-								"$hour will be replaced with the hour of the date",
-								"$minute will be replaced with the minutes of the date",
-								"$second will be replaced with the seconds of the date",
-								"$msecond will be replaced with the milliseconds of the date",
-								"$timemode will change $hour to a 12h format and will be replaced with AM/PM",
-								"$year will be replaced with the year of the date",
-								"$yearS will be replaced with the year in short form",
-								"$month will be replaced with the month of the date",
-								"$day will be replaced with the day of the date",
-								"$monthnameL will be replaced with the monthname in long format based on the Discord Language",
-								"$monthnameS will be replaced with the monthname in short format based on the Discord Language",
-								"$weekdayL will be replaced with the weekday in long format based on the Discord Language",
-								"$weekdayS will be replaced with the weekday in short format based on the Discord Language",
-								"$daysago will be replaced with a string to tell you how many days ago the event occured. For Example: " + BDFDB.LanguageUtils.LanguageStringsFormat("ACTIVITY_FEED_USER_PLAYED_DAYS_AGO", 3)
-							].map(string => {
-								return BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.FormComponents.FormText, {
-									type: BDFDB.LibraryComponents.FormComponents.FormTextTypes.DESCRIPTION,
-									children: string
-								});
-							})
 						}));
 						
 						return settingsItems;
@@ -427,17 +299,12 @@ module.exports = (_ => {
 				}
 			}
 		
-			forceUpdateAll () {
-				settings = BDFDB.DataUtils.get(this, "settings");
-				colors = BDFDB.DataUtils.get(this, "colors");
-				choices = BDFDB.DataUtils.get(this, "choices");
-				formats = BDFDB.DataUtils.get(this, "formats");
-				amounts = BDFDB.DataUtils.get(this, "amounts");
-				
-				let iconSize = amounts.tooltipWidth - 80;
+			forceUpdateAll () {				
+				let iconSize = this.settings.amounts.tooltipWidth - 80;
 				BDFDB.DOMUtils.appendLocalStyle(this.name + "TooltipWidth", `
 					${BDFDB.dotCN._serverdetailstooltip} {
-						width: ${amounts.tooltipWidth}px !important;
+						min-width: ${this.settings.amounts.tooltipWidth}px !important;
+						width: unset !important;
 						max-width: unset !important;
 					}
 					${BDFDB.dotCNS._serverdetailstooltip + BDFDB.dotCN._serverdetailsicon} {
@@ -451,187 +318,190 @@ module.exports = (_ => {
 
 			processGuild (e) {
 				if (BDFDB.GuildUtils.is(e.instance.props.guild)) {
+					let tooltipContainer;
 					let [children, index] = BDFDB.ReactUtils.findParent(e.returnvalue, {name: ["GuildTooltip", "BDFDB_TooltipContainer"]});
 					if (index > -1) children[index] = BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.TooltipContainer, Object.assign({}, children[index].props, {
+						ref: instance => {if (instance) tooltipContainer = instance;},
 						tooltipConfig:  Object.assign({
-							backgroundColor: colors.tooltipColor
+							backgroundColor: this.settings.colors.tooltipColor
 						}, children[index].props.tooltipConfig, {
-							className: !amounts.tooltipDelay && BDFDB.disCN._serverdetailstooltip,
+							className: !this.settings.amounts.tooltipDelay && BDFDB.disCN._serverdetailstooltip,
 							type: "right",
 							guild: e.instance.props.guild,
 							list: true,
 							offset: 12
 						}),
 						text: _ => BDFDB.ReactUtils.createElement(GuildDetailsComponent, {
+							tooltipContainer: tooltipContainer,
 							guild: e.instance.props.guild
 						})
 					}));
 				}
 			}
 
-			getTimestamp (languageId, time) {
-				let timeObj = time || new Date();
-				if (typeof time == "string" || typeof time == "number") timeObj = new Date(time);
-				if (timeObj.toString() == "Invalid Date") timeObj = new Date(parseInt(time));
-				if (timeObj.toString() == "Invalid Date") return;
-				let timeString = "";
-				if (languageId != "own") {
-					let timestamp = [];
-					timestamp.push(timeObj.toLocaleDateString(languageId));
-					timestamp.push(settings.cutSeconds ? this.cutOffSeconds(timeObj.toLocaleTimeString(languageId)) : timeObj.toLocaleTimeString(languageId));
-					if (settings.otherOrder) timestamp.reverse();
-					timeString = timestamp.length > 1 ? timestamp.join(", ") : (timestamp.length > 0 ? timestamp[0] : "");
-					if (timeString && settings.forceZeros) timeString = this.addLeadingZeros(timeString);
-				}
-				else {
-					languageId = BDFDB.LanguageUtils.getLanguage().id;
-					let now = new Date();
-					let hour = timeObj.getHours(), minute = timeObj.getMinutes(), second = timeObj.getSeconds(), msecond = timeObj.getMilliseconds(), day = timeObj.getDate(), month = timeObj.getMonth()+1, timemode = "", daysago = Math.round((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(timeObj.getFullYear(), timeObj.getMonth(), timeObj.getDate()))/(1000*60*60*24));
-					if (formats.ownFormat.indexOf("$timemode") > -1) {
-						timemode = hour >= 12 ? "PM" : "AM";
-						hour = hour % 12;
-						hour = hour ? hour : 12;
-					}
-					timeString = formats.ownFormat
-						.replace(/\$hour/g, settings.forceZeros && hour < 10 ? "0" + hour : hour)
-						.replace(/\$minute/g, minute < 10 ? "0" + minute : minute)
-						.replace(/\$second/g, second < 10 ? "0" + second : second)
-						.replace(/\$msecond/g, settings.forceZeros ? (msecond < 10 ? "00" + msecond : (msecond < 100 ? "0" + msecond : msecond)) : msecond)
-						.replace(/\$timemode/g, timemode)
-						.replace(/\$weekdayL/g, timeObj.toLocaleDateString(languageId, {weekday: "long"}))
-						.replace(/\$weekdayS/g, timeObj.toLocaleDateString(languageId, {weekday: "short"}))
-						.replace(/\$monthnameL/g, timeObj.toLocaleDateString(languageId, {month: "long"}))
-						.replace(/\$monthnameS/g, timeObj.toLocaleDateString(languageId, {month: "short"}))
-						.replace(/\$daysago/g, amounts.maxDaysAgo == 0 || amounts.maxDaysAgo >= daysago ? (daysago > 0 ? BDFDB.LanguageUtils.LanguageStringsFormat("ACTIVITY_FEED_USER_PLAYED_DAYS_AGO", daysago) : BDFDB.LanguageUtils.LanguageStrings.SEARCH_SHORTCUT_TODAY) : "")
-						.replace(/\$day/g, settings.forceZeros && day < 10 ? "0" + day : day)
-						.replace(/\$month/g, settings.forceZeros && month < 10 ? "0" + month : month)
-						.replace(/\$yearS/g, parseInt(timeObj.getFullYear().toString().slice(-2)))
-						.replace(/\$year/g, timeObj.getFullYear())
-						.trim().split(" ").filter(n => n).join(" ");
-				}
-				return timeString;
-			}
-
-			cutOffSeconds (timeString) {
-				return timeString.replace(/(.{1,2}:.{1,2}):.{1,2}(.*)/, "$1$2").replace(/(.{1,2}\..{1,2})\..{1,2}(.*)/, "$1$2").replace(/(.{1,2} h .{1,2} min) .{1,2} s(.*)/, "$1$2");
-			}
-
-			addLeadingZeros (timeString) {
-				let charArray = timeString.split("");
-				let numreg = /[0-9]/;
-				for (let i = 0; i < charArray.length; i++) {
-					if (!numreg.test(charArray[i-1]) && numreg.test(charArray[i]) && !numreg.test(charArray[i+1])) charArray[i] = "0" + charArray[i];
-				}
-
-				return charArray.join("");
-			}
-
 			setLabelsByLanguage () {
 				switch (BDFDB.LanguageUtils.getLanguage().id) {
-					case "hr":		//croatian
+					case "bg":		// Bulgarian
 						return {
-							creationdate_text:			"Datum stvaranja",
-							joindate_text:				"Datum pridruživanja"
+							boosters:							"Бустери",
+							creation_date:						"Дата на създаване",
+							join_date:							"Дата на присъединяване"
 						};
-					case "da":		//danish
+					case "da":		// Danish
 						return {
-							creationdate_text:			"Oprettelsesdato",
-							joindate_text:				"Tilmeldingsdato"
+							boosters:							"Boosters",
+							creation_date:						"Oprettelsesdato",
+							join_date:							"Deltag i dato"
 						};
-					case "de":		//german
+					case "de":		// German
 						return {
-							creationdate_text:			"Erstellungsdatum",
-							joindate_text:				"Beitrittsdatum"
+							boosters:							"Booster",
+							creation_date:						"Erstellungsdatum",
+							join_date:							"Beitrittsdatum"
 						};
-					case "es":		//spanish
+					case "el":		// Greek
 						return {
-							creationdate_text:			"Fecha de creación",
-							joindate_text:				"Fecha de inscripción"
+							boosters:							"Ενισχυτές",
+							creation_date:						"Ημερομηνία δημιουργίας",
+							join_date:							"Ημερομηνία προσχώρησης"
 						};
-					case "fr":		//french
+					case "es":		// Spanish
 						return {
-							creationdate_text:			"Date de création",
-							joindate_text:				"Date d'adhésion"
+							boosters:							"Impulsores",
+							creation_date:						"Fecha de creación",
+							join_date:							"Fecha de Ingreso"
 						};
-					case "it":		//italian
+					case "fi":		// Finnish
 						return {
-							creationdate_text:			"Data di creazione",
-							joindate_text:				"Data di adesione"
+							boosters:							"Tehostimet",
+							creation_date:						"Luomispäivä",
+							join_date:							"Liittymispäivä"
 						};
-					case "nl":		//dutch
+					case "fr":		// French
 						return {
-							creationdate_text:			"Aanmaakdatum",
-							joindate_text:				"Toetredingsdatum"
+							boosters:							"Boosters",
+							creation_date:						"Date de création",
+							join_date:							"Date d'inscription"
 						};
-					case "no":		//norwegian
+					case "hr":		// Croatian
 						return {
-							creationdate_text:			"Opprettelsesdato",
-							joindate_text:				"Påmeldingsdato"
+							boosters:							"Pojačala",
+							creation_date:						"Datum stvaranja",
+							join_date:							"Datum pridruživanja"
 						};
-					case "pl":		//polish
+					case "hu":		// Hungarian
 						return {
-							creationdate_text:			"Data utworzenia",
-							joindate_text:				"Data dołączenia"
+							boosters:							"Emlékeztetők",
+							creation_date:						"Létrehozás dátuma",
+							join_date:							"Csatlakozás dátuma"
 						};
-					case "pt-BR":	//portuguese (brazil)
+					case "it":		// Italian
 						return {
-							creationdate_text:			"Data de criação",
-							joindate_text:				"Data de adesão"
+							boosters:							"Booster",
+							creation_date:						"Data di creazione",
+							join_date:							"Data di iscrizione"
 						};
-					case "fi":		//finnish
+					case "ja":		// Japanese
 						return {
-							creationdate_text:			"Luomispäivä",
-							joindate_text:				"Liittymispäivämäärä"
+							boosters:							"ブースター",
+							creation_date:						"作成日",
+							join_date:							"参加日"
 						};
-					case "sv":		//swedish
+					case "ko":		// Korean
 						return {
-							creationdate_text:			"Skapelsedagen",
-							joindate_text:				"Anslutningsdagen"
+							boosters:							"부스터",
+							creation_date:						"제작 일",
+							join_date:							"가입 날짜"
 						};
-					case "tr":		//turkish
+					case "lt":		// Lithuanian
 						return {
-							creationdate_text:			"Oluşturulma tarihi",
-							joindate_text:				"Katılım tarihi"
+							boosters:							"Stiprintuvai",
+							creation_date:						"Sukūrimo data",
+							join_date:							"Įstojimo data"
 						};
-					case "cs":		//czech
+					case "nl":		// Dutch
 						return {
-							creationdate_text:			"Datum vzniku",
-							joindate_text:				"Datum připojení"
+							boosters:							"Boosters",
+							creation_date:						"Aanmaakdatum",
+							join_date:							"Toetredingsdatum"
 						};
-					case "bg":		//bulgarian
+					case "no":		// Norwegian
 						return {
-							creationdate_text:			"Дата на създаване",
-							joindate_text:				"Дата на присъединяване"
+							boosters:							"Boosters",
+							creation_date:						"Opprettelsesdato",
+							join_date:							"Bli med på dato"
 						};
-					case "ru":		//russian
+					case "pl":		// Polish
 						return {
-							creationdate_text:			"Дата создания",
-							joindate_text:				"Дата присоединения"
+							boosters:							"Dopalacze",
+							creation_date:						"Data utworzenia",
+							join_date:							"Data dołączenia"
 						};
-					case "uk":		//ukrainian
+					case "pt-BR":	// Portuguese (Brazil)
 						return {
-							creationdate_text:			"Дата створення",
-							joindate_text:				"Дата вступу"
+							boosters:							"Boosters",
+							creation_date:						"Data de criação",
+							join_date:							"Data de afiliação"
 						};
-					case "ja":		//japanese
+					case "ro":		// Romanian
 						return {
-							creationdate_text:			"作成日",
-							joindate_text:				"入社の日"
+							boosters:							"Amplificatoare",
+							creation_date:						"Data crearii",
+							join_date:							"Data înscrierii"
 						};
-					case "zh-TW":	//chinese (traditional)
+					case "ru":		// Russian
 						return {
-							creationdate_text:			"創建日期",
-							joindate_text:				"入職日期"
+							boosters:							"Бустеры",
+							creation_date:						"Дата создания",
+							join_date:							"Дате вступления"
 						};
-					case "ko":		//korean
+					case "sv":		// Swedish
 						return {
-							creationdate_text:			"제작 일",
-							joindate_text:				"입사일"
+							boosters:							"Boosters",
+							creation_date:						"Skapelsedagen",
+							join_date:							"Gå med datum"
 						};
-					default:		//default: english
+					case "th":		// Thai
 						return {
-							creationdate_text:			"Creationdate",
-							joindate_text:				"Joindate"
+							boosters:							"บูสเตอร์",
+							creation_date:						"วันที่สร้าง",
+							join_date:							"วันที่เข้าร่วม"
+						};
+					case "tr":		// Turkish
+						return {
+							boosters:							"Güçlendiriciler",
+							creation_date:						"Oluşturulma tarihi",
+							join_date:							"Üyelik Tarihi"
+						};
+					case "uk":		// Ukrainian
+						return {
+							boosters:							"Підсилювачі",
+							creation_date:						"Дата створення",
+							join_date:							"Дата приєднання"
+						};
+					case "vi":		// Vietnamese
+						return {
+							boosters:							"Bộ tăng tốc",
+							creation_date:						"Ngày thành lập",
+							join_date:							"Ngày tham gia"
+						};
+					case "zh-CN":	// Chinese (China)
+						return {
+							boosters:							"助推器",
+							creation_date:						"创建日期",
+							join_date:							"参加日期"
+						};
+					case "zh-TW":	// Chinese (Taiwan)
+						return {
+							boosters:							"助推器",
+							creation_date:						"創建日期",
+							join_date:							"參加日期"
+						};
+					default:		// English
+						return {
+							boosters:							"Boosters",
+							creation_date:						"Creation Date",
+							join_date:							"Join Date"
 						};
 				}
 			}

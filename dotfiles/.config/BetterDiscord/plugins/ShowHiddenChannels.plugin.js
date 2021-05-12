@@ -1,12 +1,15 @@
 /**
  * @name ShowHiddenChannels
+ * @author DevilBro
  * @authorId 278543574059057154
+ * @version 2.9.7
+ * @description Displays all hidden Channels, which can't be accessed due to Role Restrictions, this won't allow you to read them (impossible)
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
  * @patreon https://www.patreon.com/MircoWittrien
- * @website https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/ShowHiddenChannels
- * @source https://raw.githubusercontent.com/mwittrien/BetterDiscordAddons/master/Plugins/ShowHiddenChannels/ShowHiddenChannels.plugin.js
- * @updateUrl https://raw.githubusercontent.com/mwittrien/BetterDiscordAddons/master/Plugins/ShowHiddenChannels/ShowHiddenChannels.plugin.js
+ * @website https://mwittrien.github.io/
+ * @source https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/ShowHiddenChannels/
+ * @updateUrl https://mwittrien.github.io/BetterDiscordAddons/Plugins/ShowHiddenChannels/ShowHiddenChannels.plugin.js
  */
 
 module.exports = (_ => {
@@ -14,12 +17,15 @@ module.exports = (_ => {
 		"info": {
 			"name": "ShowHiddenChannels",
 			"author": "DevilBro",
-			"version": "2.9.3",
-			"description": "Display channels that are hidden from you by role restrictions"
+			"version": "2.9.7",
+			"description": "Displays all hidden Channels, which can't be accessed due to Role Restrictions, this won't allow you to read them (impossible)"
 		},
 		"changeLog": {
-			"added": {
-				"Hide connected voice users": "You can now disable the option to show users who are in a hidden voice channel"
+			"improved": {
+				"Channel Topic": "Formatting Channel Topic in Access Modal (makes Links clickable, etc)"
+			},
+			"fixed": {
+				"Settings": "Show again"
 			}
 		}
 	};
@@ -32,8 +38,8 @@ module.exports = (_ => {
 		
 		downloadLibrary () {
 			require("request").get("https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js", (e, r, b) => {
-				if (!e && b && b.indexOf(`* @name BDFDB`) > -1) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => BdApi.showToast("Finished downloading BDFDB Library", {type: "success"}));
-				else BdApi.alert("Error", "Could not download BDFDB Library Plugin, try again later or download it manually from GitHub: https://github.com/mwittrien/BetterDiscordAddons/tree/master/Library/");
+				if (!e && b && r.statusCode == 200) require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0BDFDB.plugin.js"), b, _ => BdApi.showToast("Finished downloading BDFDB Library", {type: "success"}));
+				else BdApi.alert("Error", "Could not download BDFDB Library Plugin. Try again later or download it manually from GitHub: https://mwittrien.github.io/downloader/?library");
 			});
 		}
 		
@@ -64,13 +70,13 @@ module.exports = (_ => {
 	} : (([Plugin, BDFDB]) => {
 		var blackList = [], collapseList = [], hiddenCategory, lastGuildId, overrideTypes = [];
 		var hiddenChannelCache = {};
-		var settings = {};
+		var accessModal;
 		
-		const settingsMap = {
-			GUILD_TEXT: "showText",
-			GUILD_VOICE: "showVoice",
-			GUILD_ANNOUNCEMENT: "showAnnouncement",
-			GUILD_STORE: "showStore"
+		const channelGroupMap = {
+			GUILD_TEXT: "SELECTABLE",
+			GUILD_VOICE: "VOCAL",
+			GUILD_ANNOUNCEMENT: "SELECTABLE",
+			GUILD_STORE: "SELECTABLE",
 		};
 
 		const typeNameMap = {
@@ -78,7 +84,8 @@ module.exports = (_ => {
 			GUILD_VOICE: "VOICE_CHANNEL",
 			GUILD_ANNOUNCEMENT: "NEWS_CHANNEL",
 			GUILD_STORE: "STORE_CHANNEL",
-			GUILD_CATEGORY: "CATEGORY"
+			GUILD_CATEGORY: "CATEGORY",
+			GUILD_STAGE_VOICE: "STAGE_CHANNEL"
 		};
 
 		const channelIcons = {
@@ -106,7 +113,11 @@ module.exports = (_ => {
 						children: BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.AvatarComponents.default, {
 							src: BDFDB.UserUtils.getAvatar(this.props.user.id),
 							status: BDFDB.UserUtils.getStatus(this.props.user.id),
-							size: BDFDB.LibraryComponents.AvatarComponents.Sizes.SIZE_40
+							size: BDFDB.LibraryComponents.AvatarComponents.Sizes.SIZE_40,
+							onClick: _ => {
+								if (accessModal) accessModal.props.onClose();
+								BDFDB.LibraryModules.UserProfileUtils.open(this.props.user.id);
+							}
 						})
 					}),
 					label: [
@@ -118,6 +129,9 @@ module.exports = (_ => {
 						!this.props.user.discriminator ? null : BDFDB.ReactUtils.createElement("span", {
 							className: BDFDB.disCN.listdiscriminator,
 							children: `#${this.props.user.discriminator}`
+						}),
+						this.props.user.bot && BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.BotTag, {
+							style: {marginLeft: 6}
 						})
 					]
 				});
@@ -156,15 +170,18 @@ module.exports = (_ => {
 				overrideTypes = Object.keys(BDFDB.DiscordConstants.PermissionOverrideType);
 				 
 				this.defaults = {
-					settings: {
-						sortNative:				{value: false, 	description: "Sort hidden Channels in the native Order"},
-						showText:				{value: true, 	description: "Show hidden Text Channels"},
-						showVoice:				{value: true, 	description: "Show hidden Voice Channels"},
-						showAnnouncement:		{value: true, 	description: "Show hidden Announcement Channels"},
-						showStore:				{value: true, 	description: "Show hidden Store Channels"},
+					general: {
+						sortNative:				{value: true, 	description: "Sort hidden Channels in the native Order instead of an extra Category"},
 						showVoiceUsers:			{value: true, 	description: "Show connected Users in hidden Voice Channels"},
 						alwaysCollapse:			{value: false, 	description: "Always collapse 'Hidden' Category after switching Servers"},
 						showForNormal:			{value: true,	description: "Add Access-Overview ContextMenu Entry for non-hidden Channels"}
+					},
+					channels: {
+						GUILD_TEXT:				{value: true},
+						GUILD_VOICE:			{value: true},
+						GUILD_ANNOUNCEMENT:		{value: true},
+						GUILD_STORE:			{value: true},
+						GUILD_STAGE_VOICE:		{value: true}
 					}
 				};
 			
@@ -205,7 +222,7 @@ module.exports = (_ => {
 				
 				BDFDB.PatchUtils.patch(this, BDFDB.LibraryModules.CategoryCollapseStore, "isCollapsed", {after: e => {
 					if (e.methodArguments[0] && e.methodArguments[0].endsWith("hidden")) {
-						if (settings.alwaysCollapse && e.methodArguments[0] != lastGuildId && !collapseList.includes(e.methodArguments[0])) {
+						if (this.settings.general.alwaysCollapse && e.methodArguments[0] != lastGuildId && !collapseList.includes(e.methodArguments[0])) {
 							collapseList.push(e.methodArguments[0]);
 							this.saveCollapseList(BDFDB.ArrayUtils.removeCopies(collapseList));
 						}
@@ -245,53 +262,62 @@ module.exports = (_ => {
 			}
 
 			getSettingsPanel (collapseStates = {}) {
-				let settingsPanel, settingsItems = [];
-				
-				settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-					title: "Settings",
+				let settingsPanel;
+				return settingsPanel = BDFDB.PluginUtils.createSettingsPanel(this, {
 					collapseStates: collapseStates,
-					children: Object.keys(settings).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
-						type: "Switch",
-						plugin: this,
-						keys: ["settings", key],
-						label: this.defaults.settings[key].description,
-						value: settings[key]
-					}))
-				}));
+					children: _ => {
+						let settingsItems = [];
 				
-				settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
-					title: "Server Black List",
-					collapseStates: collapseStates,
-					children: [
-						BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsGuildList, {
-							className: BDFDB.disCN.marginbottom20,
-							disabled: blackList,
-							onClick: disabledGuilds => {
-								this.saveBlackList(disabledGuilds);
-							}
-						}),
-						BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsItem, {
-							type: "Button",
-							color: BDFDB.LibraryComponents.Button.Colors.GREEN,
-							label: "Enable for all Servers",
-							onClick: _ => {
-								this.batchSetGuilds(settingsPanel, collapseStates, true);
-							},
-							children: BDFDB.LanguageUtils.LanguageStrings.ENABLE
-						}),
-						BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsItem, {
-							type: "Button",
-							color: BDFDB.LibraryComponents.Button.Colors.PRIMARY,
-							label: "Disable for all Servers",
-							onClick: _ => {
-								this.batchSetGuilds(settingsPanel, collapseStates, false);
-							},
-							children: BDFDB.LanguageUtils.LanguageStrings.DISABLE
-						})
-					]
-				}));
-				
-				return settingsPanel = BDFDB.PluginUtils.createSettingsPanel(this, settingsItems);
+						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
+							title: "Settings",
+							collapseStates: collapseStates,
+							children: Object.keys(this.defaults.general).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
+								type: "Switch",
+								plugin: this,
+								keys: ["general", key],
+								label: this.defaults.general[key].description,
+								value: this.settings.general[key]
+							})).concat(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsPanelList, {
+								title: "Show Channels:",
+								children: Object.keys(this.defaults.channels).map(key => BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsSaveItem, {
+									type: "Switch",
+									plugin: this,
+									keys: ["channels", key],
+									label: BDFDB.LanguageUtils.LanguageStrings[typeNameMap[key]],
+									value: this.settings.channels[key]
+								}))
+							}))
+						}));
+						
+						settingsItems.push(BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.CollapseContainer, {
+							title: "Server Black List",
+							collapseStates: collapseStates,
+							children: [
+								BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsGuildList, {
+									className: BDFDB.disCN.marginbottom20,
+									disabled: blackList,
+									onClick: disabledGuilds => this.saveBlackList(disabledGuilds)
+								}),
+								BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsItem, {
+									type: "Button",
+									color: BDFDB.LibraryComponents.Button.Colors.GREEN,
+									label: "Enable for all Servers",
+									onClick: _ => this.batchSetGuilds(settingsPanel, collapseStates, true),
+									children: BDFDB.LanguageUtils.LanguageStrings.ENABLE
+								}),
+								BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.SettingsItem, {
+									type: "Button",
+									color: BDFDB.LibraryComponents.Button.Colors.PRIMARY,
+									label: "Disable for all Servers",
+									onClick: _ => this.batchSetGuilds(settingsPanel, collapseStates, false),
+									children: BDFDB.LanguageUtils.LanguageStrings.DISABLE
+								})
+							]
+						}));
+						
+						return settingsItems;
+					}
+				});
 			}
 
 			onSettingsClosed () {
@@ -301,9 +327,7 @@ module.exports = (_ => {
 				}
 			}
 		
-			forceUpdateAll () {
-				settings = BDFDB.DataUtils.get(this, "settings");
-				
+			forceUpdateAll () {				
 				hiddenChannelCache = {};
 
 				BDFDB.PatchUtils.forceAllUpdates(this);
@@ -317,15 +341,13 @@ module.exports = (_ => {
 						if (index > -1) children.splice(index, 1);
 					}
 					let isHidden = this.isChannelHidden(e.instance.props.channel.id);
-					if (isHidden || BDFDB.DataUtils.get(this, "settings", "showForNormal")) {
+					if (isHidden || this.settings.general.showForNormal) {
 						let [children, index] = BDFDB.ContextMenuUtils.findItem(e.returnvalue, {id: "mark-channel-read", group: true});
 						children.splice(index > -1 ? index + 1 : 0, 0, BDFDB.ContextMenuUtils.createItem(BDFDB.LibraryComponents.MenuItems.MenuGroup, {
 							children: BDFDB.ContextMenuUtils.createItem(BDFDB.LibraryComponents.MenuItems.MenuItem, {
 								label: BDFDB.LanguageUtils.LanguageStrings.CHANNEL + " " + BDFDB.LanguageUtils.LanguageStrings.ACCESSIBILITY,
 								id: BDFDB.ContextMenuUtils.createItemId(this.name, "permissions"),
-								action: _ => {
-									this.openAccessModal(e.instance.props.channel, !isHidden);
-								}
+								action: _ => this.openAccessModal(e.instance.props.channel, !isHidden)
 							})
 						}));
 					}
@@ -375,11 +397,11 @@ module.exports = (_ => {
 						if (catId != "_categories") e.instance.props.categories[catId] = e.instance.props.categories[catId].filter(n => !this.isChannelHidden(n.channel.id));
 						for (let channelObj of e.instance.props.categories[catId]) if (channelObj.index > index) index = parseInt(channelObj.index);
 					}
-					if (!settings.sortNative) {
+					if (!this.settings.general.sortNative) {
 						hiddenCategory = new BDFDB.DiscordObjects.Channel({
 							guild_id: e.instance.props.guild.id,
 							id: hiddenId,
-								"name": "hidden",
+							name: "hidden",
 							type: BDFDB.DiscordConstants.ChannelTypes.GUILD_CATEGORY
 						});
 						e.instance.props.categories[hiddenId] = [];
@@ -393,9 +415,9 @@ module.exports = (_ => {
 						});
 					}
 					else hiddenCategory = null;
-						
+					
 					for (let type in hiddenChannels) {
-						let channelType = type == BDFDB.DiscordConstants.ChannelTypes.GUILD && e.instance.props.channels.SELECTABLE ? "SELECTABLE" : type;
+						let channelType = channelGroupMap[BDFDB.DiscordConstants.ChannelTypes[type]] || type;
 						if (!BDFDB.ArrayUtils.is(e.instance.props.channels[channelType])) e.instance.props.channels[channelType] = [];
 						for (let channel of hiddenChannels[type]) {
 							let hiddenChannel = new BDFDB.DiscordObjects.Channel(Object.assign({}, channel, {
@@ -459,7 +481,7 @@ module.exports = (_ => {
 			}
 		
 			processVoiceUsers (e) {
-				if (!settings.showVoiceUsers && this.isChannelHidden(e.instance.props.channel.id)) e.instance.props.voiceStates = [];
+				if (!this.settings.general.showVoiceUsers && this.isChannelHidden(e.instance.props.channel.id)) e.instance.props.voiceStates = [];
 			}
 			
 			isChannelHidden (channelId) {
@@ -468,23 +490,23 @@ module.exports = (_ => {
 			}
 			
 			getAllChannels () {
-				return (BDFDB.LibraryModules.ChannelStore.getGuildChannels || BDFDB.LibraryModules.ChannelStore.getMutableGuildChannels || (_ => {return {};}))();
+				return (BDFDB.LibraryModules.ChannelStore.getGuildChannels || BDFDB.LibraryModules.ChannelStore.getMutableGuildChannels || (_ => ({})))();
 			}
 			
 			getHiddenChannels (guild) {
 				if (!guild) return [{}, 0];
-				let hiddenChannels = {}, rolesAmount = (BDFDB.LibraryModules.MemberStore.getMember(guild.id, BDFDB.UserUtils.me.id) || {roles: []}).roles.length;
-				if (!hiddenChannelCache[guild.id] || hiddenChannelCache[guild.id].roles != rolesAmount) {
+				let hiddenChannels = {}, visibleAmount = (BDFDB.LibraryModules.GuildChannelStore.getChannels(guild.id) || {count: 0}),count, rolesAmount = (BDFDB.LibraryModules.MemberStore.getMember(guild.id, BDFDB.UserUtils.me.id) || {roles: []}).roles.length;
+				if (!hiddenChannelCache[guild.id] || hiddenChannelCache[guild.id].visible != visibleAmount || hiddenChannelCache[guild.id].roles != rolesAmount) {
 					let all = this.getAllChannels();
 					for (let type in BDFDB.DiscordConstants.ChannelTypes) hiddenChannels[BDFDB.DiscordConstants.ChannelTypes[type]] = [];
 					for (let channel_id in all) {
 						let channel = all[channel_id];
-						if (channel.guild_id == guild.id && channel.type != BDFDB.DiscordConstants.ChannelTypes.GUILD_CATEGORY && (settings[settingsMap[BDFDB.DiscordConstants.ChannelTypes[channel.type]]] || settings[settingsMap[BDFDB.DiscordConstants.ChannelTypes[channel.type]]] === undefined) && !BDFDB.DMUtils.isDMChannel(channel.id) && !BDFDB.UserUtils.can("VIEW_CHANNEL", BDFDB.UserUtils.me.id, channel.id)) hiddenChannels[channel.type].push(channel);
+						if (channel.guild_id == guild.id && channel.type != BDFDB.DiscordConstants.ChannelTypes.GUILD_CATEGORY && (this.settings.channels[BDFDB.DiscordConstants.ChannelTypes[channel.type]] || this.settings.channels[BDFDB.DiscordConstants.ChannelTypes[channel.type]] === undefined) && !BDFDB.DMUtils.isDMChannel(channel.id) && !BDFDB.UserUtils.can("VIEW_CHANNEL", BDFDB.UserUtils.me.id, channel.id)) hiddenChannels[channel.type].push(channel);
 					}
 				}
 				else hiddenChannels = hiddenChannelCache[guild.id].hidden;
 				for (let type in hiddenChannels) hiddenChannels[type] = hiddenChannels[type].filter(c => BDFDB.LibraryModules.ChannelStore.getChannel(c.id));
-				hiddenChannelCache[guild.id] = {hidden: hiddenChannels, amount: BDFDB.ObjectUtils.toArray(hiddenChannels).flat().length, roles: rolesAmount};
+				hiddenChannelCache[guild.id] = {hidden: hiddenChannels, amount: BDFDB.ObjectUtils.toArray(hiddenChannels).flat().length, visible: visibleAmount, roles: rolesAmount};
 				return [hiddenChannelCache[guild.id].hidden, hiddenChannelCache[guild.id].amount];
 			}
 			
@@ -555,6 +577,7 @@ module.exports = (_ => {
 					subHeader: "#" + channel.name,
 					className: BDFDB.disCN._showhiddenchannelsaccessmodal,
 					contentClassName: BDFDB.disCN.listscroller,
+					onOpen: modalInstance => {if (modalInstance) accessModal = modalInstance;},
 					children: [
 						BDFDB.ReactUtils.createElement(BDFDB.LibraryComponents.ModalComponents.ModalTabContent, {
 							className: BDFDB.disCN.modalsubinner,
@@ -567,7 +590,7 @@ module.exports = (_ => {
 									text: channel.bitrate || "---"
 								} : {
 									title: BDFDB.LanguageUtils.LanguageStrings.FORM_LABEL_CHANNEL_TOPIC,
-									text: channel.topic || "---"
+									text: BDFDB.ReactUtils.markdownParse(channel.topic || "---")
 								}, {
 									title: BDFDB.LanguageUtils.LanguageStrings.CHANNEL_TYPE,
 									text: BDFDB.LanguageUtils.LanguageStrings[typeNameMap[BDFDB.DiscordConstants.ChannelTypes[channel.type]]]
@@ -648,7 +671,7 @@ module.exports = (_ => {
 						};
 					case "fr":		// French
 						return {
-							context_hidehidden:					"Masquer les chaînes verrouillées",
+							context_hidehidden:					"Masquer les salons verrouillées",
 							modal_allowed:						"Permis",
 							modal_denied:						"Refusé"
 						};

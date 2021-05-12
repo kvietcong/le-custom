@@ -69,14 +69,14 @@
 	/* Discord-specific properties */
 	/* Custom (forced) titlebar */
 	/* native (default), windows, osx, linux (framed) */
-	/* --glasscord-titlebar: native; */
+	--glasscord-titlebar: windows;
 
 	--font: 'Baloo2';
 
 	--accentcolor: 94,129,172;		/* blurple - default: 114,137,218 */
 	--linkcolor: 136,192,208;		/* link - default: 0,176,244 */
 
-	--server-icon-size: 35px; /* Size of the server icons | DEFAULT: 35px */
+	--server-icon-size: 40px; /* Size of the server icons | DEFAULT: 35px */
   	--server-icon-spacing: 8px; /* Spacing between server icons. Negative values are allowed | DEFAULT: 8px */
   	--server-container-padding: 10px; /* Spacing to the left and right sides of server icons | DEFAULT: 10px */
 
@@ -169,7 +169,7 @@
 	background-color: #e3e5e850;
 }
 
-.theme-light .container-1D34oG {   
+.theme-light .container-1D34oG {
 	background-color: transparent;
 }
 
