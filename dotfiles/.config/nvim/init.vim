@@ -1,6 +1,12 @@
 " ==================================
 " == KV Le's NeoVim Configuration ==
 " ==================================
+
+" TODO
+" Which Key Setup
+" Move to Lua configs (Packer, etc)
+" 
+
 " Vim Plug manager configuration
 call plug#begin()
     " Colorscheme/UI Plugins
@@ -28,14 +34,15 @@ call plug#begin()
     Plug 'tpope/vim-surround'
     Plug 'b3nj5m1n/kommentary'
     Plug 'nvim-lua/popup.nvim'
+    Plug 'folke/which-key.nvim'
     Plug 'nvim-lua/plenary.nvim'
     Plug 'kyazdani42/nvim-tree.lua'
     Plug 'nvim-telescope/telescope.nvim'
 call plug#end()
 
-" ================
-" GUI Vim settings
-" ================
+" =====================
+" == UI Vim settings ==
+" =====================
 if exists('g:neovide')
     let g:neovide_transparency=0.95
     let g:neovide_refresh_rate=144
@@ -53,10 +60,11 @@ else
     autocmd ColorScheme * highlight! Normal ctermbg=NONE guibg=NONE
 endif
 
-" ================
-" General Settings
-" ================
+" ======================
+" == General Settings ==
+" ======================
 let g:vimsyn_embed = 'l' " Lua syntax highlighting in vimscript
+let g:nord_italic = v:false " Disable italics because it's weird in Windows Terminal ☹
 let g:nord_spell = 'underline' " Underlined misspelled words
 
 syntax on " Enable syntax highlighting
@@ -69,7 +77,7 @@ set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set termguicolors " Enable 24bit RBG color in the terminal UI
 colorscheme nordbuddy " Set color scheme
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
-set ignorecase smartcase " Ignore case unless you have casing in your seraches
+set ignorecase smartcase " Ignore case unless you have casing in your searches
 set splitbelow splitright " Splits occur below or to the right of the current window
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
@@ -79,18 +87,33 @@ set smartindent cindent autoindent " Better indenting
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
-" ========
-" Mappings
-" ========
-let mapleader = "\<Space>" " Set the leader key
-set timeoutlen=1000 " Prevent too much leader key lag
+" ==============
+" == Mappings ==
+" ==============
+let mapleader = "," " Set the leader key
+set timeoutlen=250 " Delay for things to happen with multi key bindings
+
+" General Shortcuts
+" Move to the start of the line
+nnoremap <leader>, ^
+" Move to the end of the line
+nnoremap <leader>. $
+" New write command for sudo writing
+command! SudoWrite w !sudo tee > /dev/null %
+" Saving :)
+nnoremap <c-s> :w<Enter>
+" Redoing
+nnoremap <C-Z> <C-r>
+
+" Git
+noremap <Leader>gh :Gitsigns next_hunk<Enter>
+noremap <Leader>gH :Gitsign prev_hunk<Enter>
 
 " Better wrap navigation
-nnoremap <expr> j v:count ? 'j' : 'gj'
-nnoremap <expr> k v:count ? 'k' : 'gk'
+nnoremap <silent><expr> j v:count ? 'j' : 'gj'
+nnoremap <silent><expr> k v:count ? 'k' : 'gk'
 noremap <silent> 0 g0
 noremap <silent> $ g$
-
 
 " Better split navigation
 nnoremap <C-h> <C-w>h
@@ -104,28 +127,40 @@ nnoremap <Leader>hs :sp<Enter>
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
 
 " Banner comments
-nnoremap <buffer> <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj
-nnoremap <buffer> <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj
-nnoremap <buffer> <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj
+nnoremap <buffer> <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
+nnoremap <buffer> <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj<Esc>
+nnoremap <buffer> <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
 
-" Telescope bindings
-nnoremap <leader>fb :Telescope buffers<cr>
-nnoremap <leader>fg :Telescope live_grep<cr>
-nnoremap <leader>fr :Telescope registers<cr>
-nnoremap <leader>fh :Telescope help_tags<cr>
-nnoremap <leader>ff :Telescope find_files<cr>
-nnoremap <leader>fs :Telescope spell_suggest<cr>
-nnoremap <leader>/  :Telescope current_buffer_fuzzy_find<cr>
+" Spell check
+" Add word to dictionary (Spelling Add)
+nnoremap <Leader>sa zg
+" Remove word from dictionary (Spelling Remove)
+nnoremap <Leader>sr zw
+" Under last dictionary task (Spelling Undo)
+nnoremap <Leader>su zug
+
+" Telescope
+nnoremap <Leader>fb :Telescope buffers<Enter>
+nnoremap <Leader>fg :Telescope live_grep<Enter>
+nnoremap <Leader>fr :Telescope registers<Enter>
+nnoremap <Leader>fh :Telescope help_tags<Enter>
+nnoremap <Leader>ff :Telescope find_files<Enter>
+nnoremap <Leader>fs :Telescope spell_suggest<Enter>
+nnoremap <Leader>/  :Telescope current_buffer_fuzzy_find<Enter>
 
 " Nerd Tree
-nnoremap <leader>fe :NvimTreeToggle<CR>
+nnoremap <Leader>fe :NvimTreeToggle<Enter>
 
 " Buffer commands
-nnoremap <leader>bd :bd<CR>
-nnoremap <leader>bn :BufferLineCycleNext<CR>
-nnoremap <leader>bp :BufferLineCyclePrev<CR>
-nnoremap <leader>BN :BufferLineMoveNext<CR>
-nnoremap <leader>BP :BufferLineMovePrev<CR>
+nnoremap <Leader>bd :bd<Enter>
+nnoremap <Leader>bn :BufferLineCycleNext<Enter>
+nnoremap <Leader>bp :BufferLineCyclePrev<Enter>
+nnoremap <Leader>BN :BufferLineMoveNext<Enter>
+nnoremap <Leader>BP :BufferLineMovePrev<Enter>
+nnoremap <Right>    :BufferLineCycleNext<Enter>
+nnoremap <Left>     :BufferLineCyclePrev<Enter>
+nnoremap <Up>       :BufferLineMoveNext<Enter>
+nnoremap <Down>     :BufferLineMovePrev<Enter>
 
 " Jump to the last known cursor position.
 autocmd BufReadPost *
@@ -155,7 +190,7 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
-nnoremap <silent> K :call <SID>show_documentation()<CR>
+nnoremap <silent> K :call <SID>show_documentation()<Enter>
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
@@ -168,9 +203,9 @@ endfunction
 
 nmap <F2> <Plug>(coc-rename)
 
-" =======
-" Configs
-" =======
+" =============
+" == Configs ==
+" =============
 lua require('gitsigns').setup() -- "Git Signs on the side"
 lua require('kommentary.config').setup() -- "Kommentary (Commenting)"
 lua require('bufferline').setup() -- "Bufferline (File tabs)"
@@ -205,6 +240,9 @@ let g:nvim_tree_special_files = [ 'README.md', 'Makefile', 'MAKEFILE' ]
 
 " Vim Wiki
 let g:vimwiki_list = [{'path': 'D:/Documents/Obsidian/', 'syntax': 'markdown', 'ext': '.md'}]
+
+" Which Key
+lua require("which-key").setup()
 
 " Haskell Vim
 let g:haskell_enable_quantification = 1   " to enable highlighting of `forall`
