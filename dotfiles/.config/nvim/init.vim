@@ -2,36 +2,9 @@
 " == KV Le's NeoVim Configuration ==
 " ==================================
 
-" TODO
+" TODO:
 " Which Key Setup
-" Move to Lua configs
-" Make startup faster
-
-" =============
-" == Configs ==
-" =============
-" Entry into Lua config
-lua require("init")
-
-" =====================
-" == UI Vim settings ==
-" =====================
-if exists("g:neovide")
-    let g:neovide_transparency=0.95
-    let g:neovide_refresh_rate=144
-    let g:neovide_cursor_trail_length=0.5
-    let g:neovide_cursor_animation_length=0.1
-    let g:neovide_cursor_antialiasing=v:true
-elseif exists("g:fvim_loaded")
-    FVimBackgroundComposition "blur"
-    FVimBackgroundOpacity 0.75
-    FVimBackgroundAltOpacity 0.75
-    FVimFontAntialias v:true
-    FVimUIMultiGrid v:false
-else
-    " Transparent background in terminals
-    autocmd ColorScheme * highlight! Normal ctermbg=NONE guibg=NONE
-endif
+" Migrate to Lua configs
 
 " ======================
 " == General Settings ==
@@ -54,6 +27,29 @@ set backspace=indent,eol,start " More robust backspacing
 set smartindent cindent autoindent " Better indenting
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
+
+" Entry into Lua config
+lua require("init")
+
+" =====================
+" == UI Vim settings ==
+" =====================
+if exists("g:neovide")
+    let g:neovide_transparency=0.95
+    let g:neovide_refresh_rate=144
+    let g:neovide_cursor_trail_length=0.5
+    let g:neovide_cursor_animation_length=0.1
+    let g:neovide_cursor_antialiasing=v:true
+elseif exists("g:fvim_loaded")
+    FVimBackgroundComposition "blur"
+    FVimBackgroundOpacity 0.75
+    FVimBackgroundAltOpacity 0.75
+    FVimFontAntialias v:true
+    FVimUIMultiGrid v:false
+else
+    " Transparent background in terminals
+    autocmd ColorScheme * highlight! Normal ctermbg=NONE guibg=NONE
+endif
 
 " ==============
 " == Mappings ==
