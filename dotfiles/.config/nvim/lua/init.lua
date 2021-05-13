@@ -18,10 +18,11 @@ paq{"folke/lsp-colors.nvim"}
 paq{"tpope/vim-repeat"}
 paq{"tpope/vim-surround"}
 paq{"nvim-lua/popup.nvim"}
+paq{"bkad/CamelCaseMotion"}
 paq{"nvim-lua/plenary.nvim"}
+paq{"chaoren/vim-wordmotion"}
 paq{"kyazdani42/nvim-tree.lua"}
 paq{"nvim-telescope/telescope.nvim"}
-
 
 -- Colorscheme Setup
 paq{"arcticicestudio/nord-vim"}
