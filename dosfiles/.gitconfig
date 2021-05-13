@@ -1,0 +1,12 @@
+[core]
+	editor = neovide
+[user]
+	email = 32186663+kvietcong@users.noreply.github.com
+	name = KV Le
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[color]
+	ui = auto
