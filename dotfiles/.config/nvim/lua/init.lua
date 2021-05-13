@@ -20,7 +20,6 @@ paq{"tpope/vim-surround"}
 paq{"nvim-lua/popup.nvim"}
 paq{"bkad/CamelCaseMotion"}
 paq{"nvim-lua/plenary.nvim"}
-paq{"chaoren/vim-wordmotion"}
 paq{"kyazdani42/nvim-tree.lua"}
 paq{"nvim-telescope/telescope.nvim"}
 
@@ -67,8 +66,9 @@ require("which-key").setup()
 paq{ "nvim-treesitter/nvim-treesitter"
    , run = function() vim.cmd(":TSUpdate") end }
 require("nvim-treesitter.configs").setup {
+    ensure_installed = "all",
     highlight = {
-        enable = jtrue
+        enable = true
     },
     indent = {
         enable = true

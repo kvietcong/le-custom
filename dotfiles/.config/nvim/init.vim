@@ -6,6 +6,23 @@
 " Which Key Setup
 " Migrate to Lua configs
 
+" =====================
+" == UI Vim settings ==
+" =====================
+if exists("g:neovide")
+    let g:neovide_transparency=0.95
+    let g:neovide_refresh_rate=144
+    let g:neovide_cursor_trail_length=0.5
+    let g:neovide_cursor_animation_length=0.1
+    let g:neovide_cursor_antialiasing=v:true
+elseif exists("g:fvim_loaded")
+    FVimBackgroundComposition "blur"
+    FVimBackgroundOpacity 0.75
+    FVimBackgroundAltOpacity 0.75
+    FVimFontAntialias v:true
+    FVimUIMultiGrid v:false
+endif
+
 " ======================
 " == General Settings ==
 " ======================
@@ -30,26 +47,6 @@ set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
 " Entry into Lua config
 lua require("init")
-
-" =====================
-" == UI Vim settings ==
-" =====================
-if exists("g:neovide")
-    let g:neovide_transparency=0.95
-    let g:neovide_refresh_rate=144
-    let g:neovide_cursor_trail_length=0.5
-    let g:neovide_cursor_animation_length=0.1
-    let g:neovide_cursor_antialiasing=v:true
-elseif exists("g:fvim_loaded")
-    FVimBackgroundComposition "blur"
-    FVimBackgroundOpacity 0.75
-    FVimBackgroundAltOpacity 0.75
-    FVimFontAntialias v:true
-    FVimUIMultiGrid v:false
-else
-    " Transparent background in terminals
-    autocmd ColorScheme * highlight! Normal ctermbg=NONE guibg=NONE
-endif
 
 " ==============
 " == Mappings ==
@@ -157,15 +154,14 @@ inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
-
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
 function! s:check_back_space() abort
-  let col = col(".") - 1
-  return !col || getline(".")[col - 1]  =~# "\s"
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-inoremap <silent><expr> <c-space> coc#refresh()
+inoremap <silent><expr> <C-Space> coc#refresh()
 
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
@@ -173,14 +169,20 @@ nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
 nnoremap <silent> K :call <SID>show_documentation()<Enter>
+
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
-    execute "h ".expand("<cword>")
+    execute 'h '.expand('<cword>')
   elseif (coc#rpc#ready())
-    call CocActionAsync("doHover")
+    call CocActionAsync('doHover')
   else
-    execute "!" . &keywordprg . " " . expand("<cword>")
+    execute '!' . &keywordprg . " " . expand('<cword>')
   endif
 endfunction
 
+inoremap <expr> <Enter> pumvisible() ? "\<C-y>" : "\<C-g>u\<Enter>"
+
 nmap <F2> <Plug>(coc-rename)
+
+" Enable transparent background in certain terminals
+nnoremap <F8> :highlight! Normal ctermbg=NONE guibg=NONE<Enter>
