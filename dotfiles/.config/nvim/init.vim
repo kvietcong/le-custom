@@ -4,42 +4,14 @@
 
 " TODO
 " Which Key Setup
-" Move to Lua configs (Packer, etc)
+" Move to Lua configs
+" Make startup faster
 
-" ====================================
-" == Vim Plug manager configuration ==
-" ====================================
-call plug#begin()
-    " Colorscheme/UI Plugins
-    Plug 'luochen1990/rainbow'
-    Plug 'maaslalani/nordbuddy'
-    Plug 'karb94/neoscroll.nvim'
-    Plug 'lewis6991/gitsigns.nvim'
-    Plug 'vim-airline/vim-airline'
-    Plug 'tjdevries/colorbuddy.nvim'
-    Plug 'neovimhaskell/haskell-vim'
-    Plug 'akinsho/nvim-bufferline.lua'
-    Plug 'norcalli/nvim-colorizer.lua'
-    Plug 'kyazdani42/nvim-web-devicons'
-    Plug 'vim-airline/vim-airline-themes'
-    Plug 'lukas-reineke/indent-blankline.nvim', { 'branch': 'lua' }
-
-    " Language Plugins
-    Plug 'folke/lsp-colors.nvim'
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-
-    " Other Utility Plugins
-    Plug 'vimwiki/vimwiki'
-    Plug 'tpope/vim-repeat'
-    Plug 'tpope/vim-surround'
-    Plug 'b3nj5m1n/kommentary'
-    Plug 'nvim-lua/popup.nvim'
-    Plug 'folke/which-key.nvim'
-    Plug 'nvim-lua/plenary.nvim'
-    Plug 'kyazdani42/nvim-tree.lua'
-    Plug 'nvim-telescope/telescope.nvim'
-call plug#end()
+" =============
+" == Configs ==
+" =============
+" Entry into Lua config
+lua require("init")
 
 " =====================
 " == UI Vim settings ==
@@ -72,7 +44,6 @@ set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
 set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set termguicolors " Enable 24bit RBG color in the terminal UI
-colorscheme nordbuddy " Set color scheme
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set splitbelow splitright " Splits occur below or to the right of the current window
@@ -201,59 +172,3 @@ function! s:show_documentation()
 endfunction
 
 nmap <F2> <Plug>(coc-rename)
-
-" =============
-" == Configs ==
-" =============
-lua << EOF
--- Lua based plugin configuration
-vim.g.vimsyn_embed = "lPr" -- Lua syntax highlighting in vimscript
-vim.g.nord_italic = false -- Disable italics because it's weird in Windows Terminal ☹
-vim.g.nord_spell = "underline" -- Underlined misspelled words
-vim.g.airline_theme = "deus"
-vim.g.vimwiki_list = {{
-    path = "D:/documents/obsidian/",
-    syntax = "markdown",
-    ext = ".md"
-}}
-
---  Configuration for colorful matching brackets
-vim.g.rainbow_active = 1
-vim.g.rainbow_conf = {
-	guifgs = {"Cyan1", "PaleGreen1", "Magenta1", "Gold1"},
-	ctermfgs = { 51, 121, 201, 220 }
-}
-
--- Neovim tree (File explorer)
-vim.g.nvim_tree_ignore = { ".git", "node_modules", ".cache" }
-vim.g.nvim_tree_indent_markers = 1
-vim.g.nvim_tree_git_hl = 1
-vim.g.nvim_tree_add_trailing = 1
-vim.g.nvim_tree_special_files = { "README.md", "Makefile", "MAKEFILE" }
-
--- Haskell Vim
-vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
-vim.g.haskell_enable_recursivedo = 1      -- to enable highlighting of `mdo` and `rec`
-vim.g.haskell_enable_arrowsyntax = 1      -- to enable highlighting of `proc`
-vim.g.haskell_enable_pattern_synonyms = 1 -- to enable highlighting of `pattern`
-vim.g.haskell_enable_typeroles = 1        -- to enable highlighting of type roles
-vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
-vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
-
-require("gitsigns").setup() -- Git Signs on the side
-require("kommentary.config").setup() -- Kommentary (Commenting)
-require("bufferline").setup() -- Bufferline (File tabs)
-require("neoscroll").setup() -- NeoScroll (Smoth scrolling for window movement)
-require("colorizer").setup() -- Color highlighter
-require("which-key").setup() -- Which Key setup
-
- -- "Better Language Parsing"
-require("nvim-treesitter.configs").setup {
-    highlight = {
-        enable = jtrue
-    },
-    indent = {
-        enable = true
-    }
-}
-EOF
