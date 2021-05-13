@@ -18,9 +18,9 @@ call plug#end()
 let g:airline_theme = "deus"
 let g:rainbow_active = 1
 let g:rainbow_conf = {
-    \guifgs = {"Cyan1", "PaleGreen1", "Magenta1", "Gold1"},
-    \ctermfgs = { 51, 121, 201, 220 }
-    \}
+\    'guifgs': ["Cyan1", "PaleGreen1", "Magenta1", "Gold1"],
+\    'ctermfgs': [ 51, 121, 201, 220 ]
+\}
 let g:haskell_enable_quantification = 1   " to enable highlighting of `forall`
 let g:haskell_enable_recursivedo = 1      " to enable highlighting of `mdo` and `rec`
 let g:haskell_enable_arrowsyntax = 1      " to enable highlighting of `proc`
@@ -46,7 +46,7 @@ set ignorecase smartcase " Ignore case unless you have casing in your searches
 set splitbelow splitright " Splits occur below or to the right of the current window
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
-set guifont=FiraCode\ NF:h16 " Set a font for GUI things
+set guifont=FiraCode\ NF:h14 " Set a font for GUI things
 set backspace=indent,eol,start " More robust backspacing
 set smartindent cindent autoindent " Better indenting
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
