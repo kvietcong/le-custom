@@ -1,10 +1,8 @@
-" ==================================
-" == KV Le's NeoVim Configuration ==
-" ==================================
-
-" TODO:
-" Which Key Setup
-" Migrate to Lua configs
+" --------------------------------------
+" ======================================
+" ==== KV Le's NeoVim Configuration ====
+" ======================================
+" --------------------------------------
 
 " =====================
 " == UI Vim settings ==
@@ -68,6 +66,8 @@ nnoremap <C-Z> <C-r>
 nnoremap <C-y> <C-r>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
+" Diagnostics
+nnoremap <Leader>tt :TroubleToggle<Enter>
 
 " Better word motions
 map <silent> w <Plug>CamelCaseMotion_w
@@ -100,9 +100,6 @@ nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
-" Vertical and Horizontal Split respectively
-nnoremap <Leader>vs :vs<Enter>
-nnoremap <Leader>hs :sp<Enter>
 
 " Banner comments
 nnoremap <buffer> <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
@@ -118,9 +115,10 @@ nnoremap <Leader>sr zw
 nnoremap <Leader>su zug
 
 " Telescope
+nnoremap <Leader>ft :TodoTelescope<Enter>
 nnoremap <Leader>fb :Telescope buffers<Enter>
 nnoremap <Leader>fg :Telescope live_grep<Enter>
-nnoremap <Leader>ft :Telescope help_tags<Enter>
+nnoremap <Leader>fh :Telescope help_tags<Enter>
 nnoremap <Leader>fm :Telescope man_pages<Enter>
 nnoremap <Leader>ff :Telescope find_files<Enter>
 " This replaces the old spell checker interface
@@ -131,15 +129,15 @@ nnoremap <Leader>/  :Telescope current_buffer_fuzzy_find<Enter>
 nnoremap <Leader>fe :NvimTreeToggle<Enter>
 
 " Buffer commands
-nnoremap <Leader>bd :bd<Enter>
-nnoremap <Leader>bn :BufferLineCycleNext<Enter>
-nnoremap <Leader>bp :BufferLineCyclePrev<Enter>
-nnoremap <Leader>BN :BufferLineMoveNext<Enter>
-nnoremap <Leader>BP :BufferLineMovePrev<Enter>
-nnoremap <Right>    :BufferLineCycleNext<Enter>
-nnoremap <Left>     :BufferLineCyclePrev<Enter>
-nnoremap <Up>       :BufferLineMoveNext<Enter>
-nnoremap <Down>     :BufferLineMovePrev<Enter>
+nnoremap <Leader>bd     :bd<Enter>
+nnoremap <Leader>bn     :BufferLineCycleNext<Enter>
+nnoremap <Leader>bp     :BufferLineCyclePrev<Enter>
+nnoremap <Leader>bmn    :BufferLineMoveNext<Enter>
+nnoremap <Leader>bmp    :BufferLineMovePrev<Enter>
+nnoremap <Right>        :BufferLineCycleNext<Enter>
+nnoremap <Left>         :BufferLineCyclePrev<Enter>
+nnoremap <Up>           :BufferLineMoveNext<Enter>
+nnoremap <Down>         :BufferLineMovePrev<Enter>
 
 " Jump to the last known cursor position.
 autocmd BufReadPost *
