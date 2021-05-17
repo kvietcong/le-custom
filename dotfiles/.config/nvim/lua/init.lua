@@ -3,14 +3,6 @@ vim.cmd("packadd paq-nvim")
 local paq = require("paq-nvim").paq
 paq{"savq/paq-nvim", opt = true}
 
--- General UI Plugins
-paq{"kyazdani42/nvim-web-devicons"}
-paq{"lukas-reineke/indent-blankline.nvim", branch = "lua"}
-
--- General Language Plugins
-paq{"neoclide/coc.nvim"}
-paq{"folke/lsp-colors.nvim"}
-
 -- General Utility Plugins
 paq{"tpope/vim-repeat"}
 paq{"tpope/vim-surround"}
@@ -21,20 +13,26 @@ paq{"dstein64/vim-startuptime"}
 paq{"kyazdani42/nvim-tree.lua"}
 paq{"nvim-telescope/telescope.nvim"}
 
+-- General UI Plugins
+paq{"kyazdani42/nvim-web-devicons"}
+
+-- General Language Plugins
+paq{"neoclide/coc.nvim"}
+paq{"folke/lsp-colors.nvim"}
+
 -- Colorscheme Setup
 paq{"arcticicestudio/nord-vim"}
 vim.cmd("colorscheme nord")
--- Colorbuddy retired until startup times fixed
---[[ paq{"maaslalani/nordbuddy"}
-paq{"tjdevries/colorbuddy.nvim"}
-vim.g.nord_spell = "underline"
-vim.g.nord_italic = false -- Disable italics because it's weird in Windows Terminal ☹
-require("colorbuddy").colorscheme("nordbuddy") ]]
 
 -- Status Line
-paq{"vim-airline/vim-airline-themes"}
-paq{"vim-airline/vim-airline"}
-vim.g.airline_theme = "deus"
+paq{"hoob3rt/lualine.nvim"}
+paq{"shaunsingh/nord.nvim"} -- ATM Used for bettter Nord Lua Line
+-- require('nord').set() -- Trouble with italics on Windows Terminal
+require("lualine").setup { options = {
+    theme = "nord",
+    section_separators = {},
+    component_separators = {"|"}
+}}
 
 -- Git Signs on the side
 paq{"lewis6991/gitsigns.nvim"}
@@ -54,17 +52,18 @@ require("neoscroll").setup()
 
 -- Bufferline (File tabs)
 paq{"akinsho/nvim-bufferline.lua"}
-require("bufferline").setup()
+require("bufferline").setup { options = {
+    show_close_icon = false,
+    seperator_style = "thin",
+}}
 
 -- TODO Comments Plugin
 paq{"folke/todo-comments.nvim"}
 require("todo-comments").setup {
-    pattern = "(KEYWORDS):"
+    search = {
+        pattern = [[\b(KEYWORDS)\b]]
+    }
 }
-
--- Trouble (Diagnostics) Setup
-paq{"folke/trouble.nvim"}
-require("trouble").setup()
 
 -- Better Language Parsing with Tree Sitter
 paq{"p00f/nvim-ts-rainbow"}
@@ -73,7 +72,6 @@ paq{ "nvim-treesitter/nvim-treesitter"
 require("nvim-treesitter.configs").setup {
     ensure_installed = "all",
     highlight = { enable = true },
-    indent = { enable = true },
     rainbow = {
         enable = true,
         extended_mode = true,
@@ -122,7 +120,6 @@ paq{"folke/which-key.nvim"}
 local wk = require("which-key")
 wk.setup()
 wk.register({
-    tt          = "Trouble Diagnostics",
     ["/"]       = "Fuzzy Find (Telescope)",
     [","]       = "First Char of Line",
     ["."]       = "Last Char of Line",

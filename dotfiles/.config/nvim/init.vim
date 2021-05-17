@@ -43,6 +43,10 @@ set smartindent cindent autoindent " Better indenting
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
+if has('win32') || has('win64')
+    set shell=powershell
+endif
+
 " Entry into Lua config
 lua require("init")
 
