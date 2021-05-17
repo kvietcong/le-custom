@@ -16,3 +16,4 @@ config
 Hotkey
 colorscheme
 Neovim
+trapvector

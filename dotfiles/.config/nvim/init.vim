@@ -30,7 +30,8 @@ set hidden " Allow you to change buffers without saving
 set mouse=a " Allow mouse usage
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
-set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
+set scrolloff=8 " Ensure at least some number of lines is above/below the cursor
+set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
@@ -119,17 +120,20 @@ nnoremap <Leader>sr zw
 nnoremap <Leader>su zug
 
 " Telescope
+nnoremap <Leader>fa :Telescope<Enter>
 nnoremap <Leader>ft :TodoTelescope<Enter>
 nnoremap <Leader>fb :Telescope buffers<Enter>
+nnoremap <Leader>fo :Telescope oldfiles<Enter>
 nnoremap <Leader>fg :Telescope live_grep<Enter>
 nnoremap <Leader>fh :Telescope help_tags<Enter>
 nnoremap <Leader>fm :Telescope man_pages<Enter>
 nnoremap <Leader>ff :Telescope find_files<Enter>
+nnoremap <Leader>fc :Telescope colorscheme<Enter>
 " This replaces the old spell checker interface
 nnoremap z=         :Telescope spell_suggest<Enter>
 nnoremap <Leader>/  :Telescope current_buffer_fuzzy_find<Enter>
 
-" Nerd Tree
+" File Tree Explorer
 nnoremap <Leader>fe :NvimTreeToggle<Enter>
 
 " Buffer commands
@@ -188,3 +192,7 @@ nmap <F2> <Plug>(coc-rename)
 
 " Enable transparent background in certain terminals
 nnoremap <F8> :highlight! Normal ctermbg=NONE guibg=NONE<Enter>
+
+" Dashboard mappings (Not working on Windows)
+nmap <Leader>ss :<C-u>SessionSave<CR>
+nmap <Leader>sl :<C-u>SessionLoad<CR>

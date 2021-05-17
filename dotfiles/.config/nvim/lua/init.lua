@@ -10,8 +10,6 @@ paq{"nvim-lua/popup.nvim"}
 paq{"bkad/CamelCaseMotion"}
 paq{"nvim-lua/plenary.nvim"}
 paq{"dstein64/vim-startuptime"}
-paq{"kyazdani42/nvim-tree.lua"}
-paq{"nvim-telescope/telescope.nvim"}
 
 -- General UI Plugins
 paq{"kyazdani42/nvim-web-devicons"}
@@ -42,6 +40,15 @@ require("gitsigns").setup()
 paq{"b3nj5m1n/kommentary"}
 require("kommentary.config").setup()
 
+-- Telescope (Fuzzy Finder) Setup
+paq{"nvim-telescope/telescope.nvim"}
+require('telescope').setup { defaults = {
+    prompt_position = "top",
+    sorting_strategy = "ascending",
+    layout_strategy = "flex",
+    set_env = { ["COLORTERM"] = "truecolor" },
+}}
+
 -- Color highlighter
 paq{"norcalli/nvim-colorizer.lua"}
 require("colorizer").setup()
@@ -59,11 +66,9 @@ require("bufferline").setup { options = {
 
 -- TODO Comments Plugin
 paq{"folke/todo-comments.nvim"}
-require("todo-comments").setup {
-    search = {
-        pattern = [[\b(KEYWORDS)\b]]
-    }
-}
+require("todo-comments").setup { search = {
+    pattern = [[\b(KEYWORDS)\b]]
+}}
 
 -- Better Language Parsing with Tree Sitter
 paq{"p00f/nvim-ts-rainbow"}
@@ -99,6 +104,7 @@ vim.g.vimwiki_list = {{
 }}
 
 -- Neovim tree (File explorer)
+paq{"kyazdani42/nvim-tree.lua"}
 vim.g.nvim_tree_ignore = { ".git", "node_modules", ".cache" }
 vim.g.nvim_tree_indent_markers = 1
 vim.g.nvim_tree_git_hl = 1
@@ -115,6 +121,9 @@ vim.g.haskell_enable_typeroles = 1        -- to enable highlighting of type role
 vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
 vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
 
+paq{"glepnir/dashboard-nvim"}
+vim.g.dashboard_default_executive = "telescope"
+
 -- Which Key (Hotkey reminders)
 paq{"folke/which-key.nvim"}
 local wk = require("which-key")
@@ -125,6 +134,7 @@ wk.register({
     ["."]       = "Last Char of Line",
     f = {
         name    = "Telescope",
+        a       = "Find Built-in Telescope Picker",
         f       = "Find Files",
         t       = "Find TODOs",
         b       = "Find Buffers",
