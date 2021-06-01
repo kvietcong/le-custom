@@ -3,28 +3,43 @@ vim.cmd("packadd paq-nvim")
 local paq = require("paq-nvim").paq
 paq{"savq/paq-nvim", opt = true}
 
--- General Utility Plugins
+-- Utility Plugins
+paq{"npxbr/glow.nvim"}
 paq{"tpope/vim-repeat"}
 paq{"tpope/vim-surround"}
 paq{"nvim-lua/popup.nvim"}
-paq{"bkad/CamelCaseMotion"}
+paq{"b3nj5m1n/kommentary"}
+paq{"folke/which-key.nvim"}
 paq{"nvim-lua/plenary.nvim"}
 paq{"dstein64/vim-startuptime"}
+paq{"folke/todo-comments.nvim"}
+paq{"kyazdani42/nvim-tree.lua"}
+paq{"nvim-telescope/telescope.nvim"}
+paq{"nvim-treesitter/nvim-treesitter"}
 
--- General UI Plugins
+-- UI Plugins
+paq{"luochen1990/rainbow"}
+paq{"p00f/nvim-ts-rainbow"}
+paq{"hoob3rt/lualine.nvim"}
+paq{"shaunsingh/nord.nvim"} -- ATM Used for bettter Nord Lua Line
+paq{"karb94/neoscroll.nvim"}
+paq{"lewis6991/gitsigns.nvim"}
+paq{"arcticicestudio/nord-vim"}
+paq{"norcalli/nvim-colorizer.lua"}
+paq{"akinsho/nvim-bufferline.lua"}
 paq{"kyazdani42/nvim-web-devicons"}
 
--- General Language Plugins
+
+
+-- Language Plugins
 paq{"neoclide/coc.nvim"}
 paq{"folke/lsp-colors.nvim"}
+paq{"neovimhaskell/haskell-vim"}
 
 -- Colorscheme Setup
-paq{"arcticicestudio/nord-vim"}
 vim.cmd("colorscheme nord")
 
 -- Status Line
-paq{"hoob3rt/lualine.nvim"}
-paq{"shaunsingh/nord.nvim"} -- ATM Used for bettter Nord Lua Line
 -- require('nord').set() -- Trouble with italics on Windows Terminal
 require("lualine").setup { options = {
     theme = "nord",
@@ -33,15 +48,12 @@ require("lualine").setup { options = {
 }}
 
 -- Git Signs on the side
-paq{"lewis6991/gitsigns.nvim"}
 require("gitsigns").setup()
 
 -- Kommentary (Commenting)
-paq{"b3nj5m1n/kommentary"}
 require("kommentary.config").setup()
 
 -- Telescope (Fuzzy Finder) Setup
-paq{"nvim-telescope/telescope.nvim"}
 require('telescope').setup { defaults = {
     prompt_position = "top",
     sorting_strategy = "ascending",
@@ -50,32 +62,24 @@ require('telescope').setup { defaults = {
 }}
 
 -- Color highlighter
-paq{"norcalli/nvim-colorizer.lua"}
 require("colorizer").setup()
 
 -- Smooth Scrolling for Window Movement
-paq{"karb94/neoscroll.nvim"}
 require("neoscroll").setup()
 
 -- Bufferline (File tabs)
-paq{"akinsho/nvim-bufferline.lua"}
 require("bufferline").setup { options = {
     show_close_icon = false,
     seperator_style = "thin",
 }}
 
 -- TODO Comments Plugin
-paq{"folke/todo-comments.nvim"}
 require("todo-comments").setup { search = {
     pattern = [[\b(KEYWORDS)\b]]
 }}
 
 -- Better Language Parsing with Tree Sitter
-paq{"p00f/nvim-ts-rainbow"}
-paq{ "nvim-treesitter/nvim-treesitter"
-   , run = function() vim.cmd(":TSUpdate") end }
 require("nvim-treesitter.configs").setup {
-    ensure_installed = "all",
     highlight = { enable = true },
     rainbow = {
         enable = true,
@@ -88,23 +92,30 @@ require("nvim-treesitter.configs").setup {
 --  Configuration for colorful matching brackets
 --  This plugin doesn't work with Lua or Rust so I'm using two
 --  Rainbow Plugins XD
-paq{"luochen1990/rainbow"}
 vim.g.rainbow_active = 1
 vim.g.rainbow_conf = {
 	guifgs = {"Cyan1", "PaleGreen1", "Magenta1", "Gold1"},
 	ctermfgs = { 51, 121, 201, 220 }
 }
 
--- Vim Wiki Setup
-paq{"vimwiki/vimwiki"}
-vim.g.vimwiki_list = {{
-    path = "D:/documents/obsidian/",
-    syntax = "markdown",
-    ext = ".md"
-}}
+--[[ paq{"glepnir/indent-guides.nvim"}
+require('indent_guides').setup {
+    even_colors = { fg ="#A3BE8C",bg= "#A3BE8C"},
+    odd_colors = {fg= "#EBCB8B",bg= "#EBCB8B"}
+} ]]
+
+if vim.fn.exists("g:vscode") then
+    -- Vim Wiki Setup
+    paq{"vimwiki/vimwiki"}
+    vim.g.vimwiki_list = {{
+        path = "D:/Documents/Notes/",
+        syntax = "markdown",
+        ext = ".md"
+    }}
+    vim.g.vimwiki_create_link = 0
+end
 
 -- Neovim tree (File explorer)
-paq{"kyazdani42/nvim-tree.lua"}
 vim.g.nvim_tree_ignore = { ".git", "node_modules", ".cache" }
 vim.g.nvim_tree_indent_markers = 1
 vim.g.nvim_tree_git_hl = 1
@@ -112,7 +123,6 @@ vim.g.nvim_tree_add_trailing = 1
 vim.g.nvim_tree_special_files = { "README.md", "Makefile", "MAKEFILE" }
 
 -- Haskell Vim
-paq{"neovimhaskell/haskell-vim"}
 vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
 vim.g.haskell_enable_recursivedo = 1      -- to enable highlighting of `mdo` and `rec`
 vim.g.haskell_enable_arrowsyntax = 1      -- to enable highlighting of `proc`
@@ -121,11 +131,7 @@ vim.g.haskell_enable_typeroles = 1        -- to enable highlighting of type role
 vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
 vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
 
-paq{"glepnir/dashboard-nvim"}
-vim.g.dashboard_default_executive = "telescope"
-
 -- Which Key (Hotkey reminders)
-paq{"folke/which-key.nvim"}
 local wk = require("which-key")
 wk.setup()
 wk.register({
@@ -161,5 +167,4 @@ wk.register({
     },
     c = { name = "Commenting" },
     h = { name = "Git Signs" },
-    w = { name = "Vim Wiki" }
 }, { prefix = "<Leader>" })

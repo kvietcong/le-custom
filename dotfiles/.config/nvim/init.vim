@@ -45,7 +45,8 @@ set wildmenu wildmode=longest,list,full " Display completion matches in a status
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
 if has('win32') || has('win64')
-    set shell=powershell
+    " Sadly Powershell isn't compatible with the Glow preview plugin :(
+    " set shell=pwsh
 endif
 
 " Entry into Lua config
@@ -71,24 +72,9 @@ nnoremap <C-Z> <C-r>
 nnoremap <C-y> <C-r>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
-" Diagnostics
-nnoremap <Leader>tt :TroubleToggle<Enter>
 
-" Better word motions
-map <silent> w <Plug>CamelCaseMotion_w
-map <silent> b <Plug>CamelCaseMotion_b
-map <silent> e <Plug>CamelCaseMotion_e
-map <silent> ge <Plug>CamelCaseMotion_ge
-omap <silent> iw <Plug>CamelCaseMotion_iw
-xmap <silent> iw <Plug>CamelCaseMotion_iw
-omap <silent> ib <Plug>CamelCaseMotion_ib
-xmap <silent> ib <Plug>CamelCaseMotion_ib
-omap <silent> ie <Plug>CamelCaseMotion_ie
-xmap <silent> ie <Plug>CamelCaseMotion_ie
-sunmap w
-sunmap b
-sunmap e
-sunmap ge
+" Glow Markdown Preview
+nnoremap <Leader>mp :Glow<Enter>
 
 " Git
 noremap <Leader>gh :Gitsigns next_hunk<Enter>
@@ -116,6 +102,10 @@ nnoremap <buffer> <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
 nnoremap <Leader>sa zg
 " Remove word from dictionary (Spelling Remove)
 nnoremap <Leader>sr zw
+" Go to next spelling error (Spelling Next)
+nnoremap <Leader>sn ]s
+" Go to previous spelling error (Spelling Previous)
+nnoremap <Leader>sp [s
 " Under last dictionary task (Spelling Undo)
 nnoremap <Leader>su zug
 
@@ -192,7 +182,3 @@ nmap <F2> <Plug>(coc-rename)
 
 " Enable transparent background in certain terminals
 nnoremap <F8> :highlight! Normal ctermbg=NONE guibg=NONE<Enter>
-
-" Dashboard mappings (Not working on Windows)
-nmap <Leader>ss :<C-u>SessionSave<CR>
-nmap <Leader>sl :<C-u>SessionLoad<CR>
