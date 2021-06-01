@@ -2,7 +2,7 @@
  * @name ImageUtilities
  * @author DevilBro
  * @authorId 278543574059057154
- * @version 4.3.7
+ * @version 4.3.8
  * @description Adds several Utilities for Images/Videos (Gallery, Download, Reverse Search, Zoom, Copy, etc.)
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
@@ -17,15 +17,12 @@ module.exports = (_ => {
 		"info": {
 			"name": "ImageUtilities",
 			"author": "DevilBro",
-			"version": "4.3.7",
+			"version": "4.3.8",
 			"description": "Adds several Utilities for Images/Videos (Gallery, Download, Reverse Search, Zoom, Copy, etc.)"
 		},
 		"changeLog": {
 			"fixed": {
-				"Embed Thumbnails": "Fixed issue that caused Embed Thumbnails to go out of bounds of embeds"
-			},
-			"improved": {
-				"Tenor and other GIFs": "Fixed issue where link for some GIFs copied by 'Copy Link' wasn't the same as Discord's Original"
+				"Animated Avatars": ""
 			}
 		}
 	};
@@ -260,7 +257,7 @@ module.exports = (_ => {
 						font-weight: 600;
 					}
 					${BDFDB.dotCN._imageutilitieslense} {
-						border: 2px solid rgb(114, 137, 218);
+						border: 2px solid var(--bdfdb-blurple);
 					}
 					${BDFDB.dotCN._imageutilitiesoperations} {
 						position: absolute;
@@ -514,12 +511,12 @@ module.exports = (_ => {
 					if (banner) {
 						if (e.instance.props.guild.banner) this.injectItem(e, BDFDB.LibraryModules.IconUtils.getGuildBannerURL(e.instance.props.guild));
 					}
-					else if (e.type != "GuildChannelListContextMenu") this.injectItem(e, e.instance.props.guild.getIconURL("png"), BDFDB.LibraryModules.IconUtils.hasAnimatedGuildIcon(e.instance.props.guild) && e.instance.props.guild.getIconURL("gif"));
+					else if (e.type != "GuildChannelListContextMenu") this.injectItem(e, e.instance.props.guild.getIconURL("png", "png"), BDFDB.LibraryModules.IconUtils.hasAnimatedGuildIcon(e.instance.props.guild) && e.instance.props.guild.getIconURL("gif", "gif"));
 				}
 			}
 
 			onUserContextMenu (e) {
-				if (e.instance.props.user && this.settings.places.userAvatars) this.injectItem(e, e.instance.props.user.getAvatarURL("png"), BDFDB.LibraryModules.IconUtils.hasAnimatedAvatar(e.instance.props.user) && e.instance.props.user.getAvatarURL("gif"))
+				if (e.instance.props.user && this.settings.places.userAvatars) this.injectItem(e, e.instance.props.user.getAvatarURL("png", "png"), BDFDB.LibraryModules.IconUtils.hasAnimatedAvatar(e.instance.props.user) && e.instance.props.user.getAvatarURL("gif", "gif"))
 			}
 
 			onGroupDMContextMenu (e) {
@@ -560,7 +557,7 @@ module.exports = (_ => {
 
 			injectItem (e, ...urls) {
 				let fileTypes = [];
-				let validUrls = urls.filter(n => this.isValid(n.file || n)).map(n => {
+				let validUrls = urls.filter(n => this.isValid(n && n.file || n)).map(n => {
 					let srcUrl = (n.file || n).replace(/^url\(|\)$|"|'/g, "").replace(/\?size\=\d+$/, "?size=4096");
 					let url = srcUrl.replace(/[\?\&](height|width)=\d+/g, "").split("%3A")[0];
 					let original = (n.original || n).replace(/^url\(|\)$|"|'/g, "").replace(/\?size\=\d+$/, "?size=4096").replace(/[\?\&](height|width)=\d+/g, "").split("%3A")[0];
@@ -598,6 +595,12 @@ module.exports = (_ => {
 						children: subMenu
 					})
 				}));
+			}
+			
+			isValid (url, type) {
+				if (!url) return false;
+				const file = url && (BDFDB.LibraryModules.URLParser.parse(url).pathname || "").split("%3A")[0].toLowerCase();
+				return file && (!type && (url.startsWith("https://images-ext-1.discordapp.net/") || url.startsWith("https://images-ext-2.discordapp.net/") || Object.keys(fileTypes).some(t => file.endsWith(`/${t}`) || file.endsWith(`.${t}`))) || type && Object.keys(fileTypes).filter(t => fileTypes[t][type]).some(t => file.endsWith(`/${t}`) || file.endsWith(`.${t}`)));
 			}
 			
 			createUrlMenu (e, urls) {
@@ -1001,12 +1004,6 @@ module.exports = (_ => {
 				}
 			}
 			
-			isValid (url, type) {
-				if (!url) return false;
-				const file = url && (BDFDB.LibraryModules.URLParser.parse(url).pathname || "").split("%3A")[0].toLowerCase();
-				return file && (!type && (url.startsWith("https://images-ext-1.discordapp.net/") || url.startsWith("https://images-ext-2.discordapp.net/") || Object.keys(fileTypes).some(t => file.endsWith(`/${t}`) || file.endsWith(`.${t}`))) || type && Object.keys(fileTypes).filter(t => fileTypes[t][type]).some(t => file.endsWith(`/${t}`) || file.endsWith(`.${t}`)));
-			}
-			
 			downloadFile (url, path) {
 				url = url.startsWith("/assets") ? (window.location.origin + url) : url;
 				BDFDB.LibraryRequires.request(url, {encoding: null}, (error, response, body) => {
@@ -1034,16 +1031,16 @@ module.exports = (_ => {
 			}
 			
 			copyFile (url) {
-				BDFDB.LibraryRequires.request(url, {encoding: null}, (error, response, buffer) => {
+				BDFDB.LibraryRequires.request(url, {encoding: null}, (error, response, body) => {
 					let type = this.isValid(url, "video") ? BDFDB.LanguageUtils.LanguageStrings.VIDEO : BDFDB.LanguageUtils.LanguageStrings.IMAGE;
 					if (error) BDFDB.NotificationUtils.toast(this.labels.toast_copy_failed.replace("{{var0}}", type), {type: "danger"});
-					else if (buffer) {
+					else if (body) {
 						if (BDFDB.LibraryRequires.process.platform === "win32" || BDFDB.LibraryRequires.process.platform === "darwin") {
-							BDFDB.LibraryRequires.electron.clipboard.write({image: BDFDB.LibraryRequires.electron.nativeImage.createFromBuffer(buffer)});
+							BDFDB.LibraryRequires.electron.clipboard.write({image: BDFDB.LibraryRequires.electron.nativeImage.createFromBuffer(body)});
 						}
 						else {
 							let file = BDFDB.LibraryRequires.path.join(BDFDB.LibraryRequires.process.env.HOME, "imageutilstempimg.png");
-							BDFDB.LibraryRequires.fs.writeFileSync(file, buffer, {encoding: null});
+							BDFDB.LibraryRequires.fs.writeFileSync(file, body, {encoding: null});
 							BDFDB.LibraryRequires.electron.clipboard.write({image: file});
 							BDFDB.LibraryRequires.fs.unlinkSync(file);
 						}
