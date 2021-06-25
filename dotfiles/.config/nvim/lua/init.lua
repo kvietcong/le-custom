@@ -11,6 +11,7 @@ paq{"nvim-lua/popup.nvim"}
 paq{"b3nj5m1n/kommentary"}
 paq{"folke/which-key.nvim"}
 paq{"nvim-lua/plenary.nvim"}
+paq{"airblade/vim-gitgutter"}
 paq{"dstein64/vim-startuptime"}
 paq{"folke/todo-comments.nvim"}
 paq{"kyazdani42/nvim-tree.lua"}
@@ -22,14 +23,10 @@ paq{"luochen1990/rainbow"}
 paq{"p00f/nvim-ts-rainbow"}
 paq{"hoob3rt/lualine.nvim"}
 paq{"shaunsingh/nord.nvim"} -- ATM Used for bettter Nord Lua Line
-paq{"karb94/neoscroll.nvim"}
-paq{"lewis6991/gitsigns.nvim"}
 paq{"arcticicestudio/nord-vim"}
 paq{"norcalli/nvim-colorizer.lua"}
 paq{"akinsho/nvim-bufferline.lua"}
 paq{"kyazdani42/nvim-web-devicons"}
-
-
 
 -- Language Plugins
 paq{"neoclide/coc.nvim"}
@@ -47,9 +44,6 @@ require("lualine").setup { options = {
     component_separators = {"|"}
 }}
 
--- Git Signs on the side
-require("gitsigns").setup()
-
 -- Kommentary (Commenting)
 require("kommentary.config").setup()
 
@@ -63,9 +57,6 @@ require('telescope').setup { defaults = {
 
 -- Color highlighter
 require("colorizer").setup()
-
--- Smooth Scrolling for Window Movement
-require("neoscroll").setup()
 
 -- Bufferline (File tabs)
 require("bufferline").setup { options = {
@@ -166,5 +157,5 @@ wk.register({
         name    = "COC",
     },
     c = { name = "Commenting" },
-    h = { name = "Git Signs" },
+    h = { name = "Git Gutter" }
 }, { prefix = "<Leader>" })

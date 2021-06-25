@@ -33,6 +33,7 @@ set noshowmode " Disable native mode indicator (No need for two)
 set scrolloff=8 " Ensure at least some number of lines is above/below the cursor
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
+" set foldmethod=syntax " Folds are made through syntax
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set splitbelow splitright " Splits occur below or to the right of the current window
@@ -76,13 +77,9 @@ xnoremap gs y:%s/<C-r>"//g<Left><Left>
 " Glow Markdown Preview
 nnoremap <Leader>mp :Glow<Enter>
 
-" Git
-noremap <Leader>gh :Gitsigns next_hunk<Enter>
-noremap <Leader>gH :Gitsign prev_hunk<Enter>
-
 " Better wrap navigation
-nnoremap <silent><expr> j v:count ? "j" : "gj"
-nnoremap <silent><expr> k v:count ? "k" : "gk"
+nmap <silent><expr> j v:count ? "j" : "gj"
+nmap <silent><expr> k v:count ? "k" : "gk"
 noremap <silent> 0 g0
 noremap <silent> $ g$
 
