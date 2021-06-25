@@ -2,7 +2,7 @@
  * @name BDFDB
  * @author DevilBro
  * @authorId 278543574059057154
- * @version 1.6.7
+ * @version 1.7.3
  * @description Required Library for DevilBro's Plugins
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
@@ -19,7 +19,7 @@ module.exports = (_ => {
 		"info": {
 			"name": "BDFDB",
 			"author": "DevilBro",
-			"version": "1.6.7",
+			"version": "1.7.3",
 			"description": "Required Library for DevilBro's Plugins"
 		},
 		"rawUrl": `https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js`
@@ -1250,7 +1250,7 @@ module.exports = (_ => {
 						
 						let type = data.config.type && BDFDB.disCN["toast" + data.config.type];
 						if (!type) {
-							barColor = BDFDB.ColorUtils.convert(data.config.barColor, "HEX");
+							barColor = BDFDB.ColorUtils.getType(data.config.barColor) ? BDFDB.ColorUtils.convert(data.config.barColor, "HEX") : data.config.barColor;
 							let comp = BDFDB.ColorUtils.convert(data.config.color, "RGBCOMP");
 							if (comp) {
 								backgroundColor = BDFDB.ColorUtils.convert(comp, "HEX");
@@ -2832,10 +2832,10 @@ module.exports = (_ => {
 				BDFDB.MessageUtils.rerenderAll = function (instant) {
 					BDFDB.TimeUtils.clear(BDFDB.MessageUtils.rerenderAll.timeout);
 					BDFDB.MessageUtils.rerenderAll.timeout = BDFDB.TimeUtils.timeout(_ => {
-						let channel = LibraryModules.ChannelStore.getChannel(LibraryModules.LastChannelStore.getChannelId());
-						if (channel) {
-							if (BDFDB.DMUtils.isDMChannel(channel)) BDFDB.DMUtils.markAsRead(channel);
-							else BDFDB.ChannelUtils.markAsRead(channel);
+						let channelId = LibraryModules.LastChannelStore.getChannelId();
+						if (channelId) {
+							if (BDFDB.DMUtils.isDMChannel(channelId)) BDFDB.DMUtils.markAsRead(channelId);
+							else BDFDB.ChannelUtils.markAsRead(channelId);
 						}
 						let LayerProviderIns = BDFDB.ReactUtils.findOwner(document.querySelector(BDFDB.dotCN.messageswrapper), {name: "LayerProvider", unlimited: true, up: true});
 						let LayerProviderPrototype = BDFDB.ObjectUtils.get(LayerProviderIns, `${BDFDB.ReactUtils.instanceKey}.type.prototype`);
@@ -4184,6 +4184,11 @@ module.exports = (_ => {
 				};
 				BDFDB.DiscordUtils.isDevModeEnabled = function () {
 					return LibraryModules.SettingsStore.developerMode;
+				};
+				BDFDB.DiscordUtils.getExperiment = function (id) {
+					if (!id) return null;
+					const module = BDFDB.ModuleUtils.find(m => m.definition && m.definition.defaultConfig && m.definition.defaultConfig[id] != null && typeof m.getCurrentConfig == "function");
+					return module && (module.getCurrentConfig({}) || {})[id];
 				};
 				BDFDB.DiscordUtils.getTheme = function () {
 					return LibraryModules.SettingsStore.theme != "dark" ? BDFDB.disCN.themelight : BDFDB.disCN.themedark;
@@ -5903,10 +5908,12 @@ module.exports = (_ => {
 								animated: false
 							};
 							if (typeof this.props.onSelect == "function") this.props.onSelect(this.props.emoji, this);
+							if (typeof this.close == "function" && !BDFDB.ListenerUtils.isPressed(16)) this.close();
 							BDFDB.ReactUtils.forceUpdate(this);
 						}
 					}
 					render() {
+						let button = this;
 						return BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.PopoutContainer, {
 							children: BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.EmojiButton, {
 								className: BDFDB.DOMUtils.formatClassName(this.props.className, BDFDB.disCN.emojiinputbutton),
@@ -5921,16 +5928,25 @@ module.exports = (_ => {
 							position: InternalComponents.LibraryComponents.PopoutContainer.Positions.TOP,
 							align: InternalComponents.LibraryComponents.PopoutContainer.Align.LEFT,
 							renderPopout: instance => {
-								return BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.EmojiPicker, {
-									closePopout: instance.close,
-									onSelectEmoji: this.handleEmojiChange.bind(this),
-									allowManagedEmojis: this.props.allowManagedEmojis
-								});
+								this.close = instance.close;
+								return [
+									BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.EmojiPicker, {
+										closePopout: this.close,
+										onSelectEmoji: this.handleEmojiChange.bind(this),
+										allowManagedEmojis: this.props.allowManagedEmojis,
+										allowManagedEmojisUsage: this.props.allowManagedEmojisUsage
+									}),
+									BDFDB.ReactUtils.createElement(class extends LibraryModules.React.Component {
+										componentDidMount() {InternalComponents.LibraryComponents.EmojiPickerButton.current = button;}
+										componentWillUnmount() {delete InternalComponents.LibraryComponents.EmojiPickerButton.current;}
+										render() {return null;}
+									})
+								];
 							}
 						});
 					}
 				};
-				InternalBDFDB.setDefaultProps(InternalComponents.LibraryComponents.EmojiPickerButton, {allowManagedEmojis: false});
+				InternalBDFDB.setDefaultProps(InternalComponents.LibraryComponents.EmojiPickerButton, {allowManagedEmojis: false, allowManagedEmojisUsage: false});
 				
 				InternalComponents.LibraryComponents.FavButton = reactInitialized && class BDFDB_FavButton extends LibraryModules.React.Component {
 					handleClick() {
@@ -6064,7 +6080,7 @@ module.exports = (_ => {
 						this.props.participating = this.props.state ? LibraryModules.CurrentVoiceUtils.getGuildId() == this.props.guild.id : false;
 						this.props.participatingInStage = this.props.state ? currentVoiceChannel && currentVoiceChannel.guild_id == this.props.guild.id && currentVoiceChannel.isGuildStageVoice() : false;
 						
-						this.props.animatable = this.props.state ? LibraryModules.IconUtils.hasAnimatedGuildIcon(this.props.guild) : false;
+						this.props.animatable = this.props.state ? this.props.guild.icon && LibraryModules.IconUtils.isAnimatedIconHash(this.props.guild.icon) : false;
 						this.props.unavailable = this.props.state ? LibraryModules.GuildUnavailableStore.unavailableGuilds.includes(this.props.guild.id) : false;
 					
 						let isDraggedGuild = this.props.draggingGuildId === this.props.guild.id;
@@ -6095,7 +6111,7 @@ module.exports = (_ => {
 									onMouseUp: this.handleMouseUp.bind(this),
 									onClick: this.handleClick.bind(this),
 									onContextMenu: this.handleContextMenu.bind(this),
-									icon: this.props.guild.getIconURL(this.state.hovered && this.props.animatable ? "gif" : "png"),
+									icon: this.props.guild.getIconURL(this.state.hovered && this.props.animatable),
 									selected: this.props.selected || this.state.hovered
 								})
 							})
@@ -7761,16 +7777,19 @@ module.exports = (_ => {
 				});
 				
 				InternalBDFDB.patchedModules = {
+					before: {
+						EmojiPickerListRow: "default"
+					},
 					after: {
-						DiscordTag: "default",
+						SettingsView: "componentDidMount",
+						Shakeable: "render",
 						Message: "default",
 						MessageHeader: "default",
 						MemberListItem: ["componentDidMount", "componentDidUpdate"],
 						PrivateChannel: ["componentDidMount", "componentDidUpdate"],
 						UserPopout: ["componentDidMount", "componentDidUpdate"],
-						UserProfile: ["componentDidMount", "componentDidUpdate"],
-						SettingsView: "componentDidMount",
-						Shakeable: "render"
+						AnalyticsContext: ["componentDidMount", "componentDidUpdate"],
+						DiscordTag: "default"
 					}
 				};
 				
@@ -7864,10 +7883,6 @@ module.exports = (_ => {
 				};
 				InternalBDFDB._processUserInfoNode = function (user, wrapper) {
 					if (!user || !wrapper) return;
-					LibraryModules.ImageEditUtils.getPrimaryColorForAvatar(BDFDB.UserUtils.getAvatar(user.id)).then(color => {
-						const rgb = BDFDB.ColorUtils.convert(color, "RGB");
-						if (rgb) wrapper.style.setProperty("--user-banner-color", rgb, "important");
-					});
 					if (InternalData.UserBackgrounds[user.id]) for (let property in InternalData.UserBackgrounds[user.id]) wrapper.style.setProperty(property, InternalData.UserBackgrounds[user.id][property], "important");
 				};
 				InternalBDFDB.processMessageHeader = function (e) {
@@ -7893,12 +7908,18 @@ module.exports = (_ => {
 					InternalBDFDB._processAvatarMount(e.instance.props.user, e.node.querySelector(BDFDB.dotCN.avatarwrapper), e.node);
 					InternalBDFDB._processUserInfoNode(e.instance.props.user, e.node);
 				};
-				InternalBDFDB.processUserProfile = function (e) {
-					InternalBDFDB._processAvatarMount(e.instance.props.user, e.node.querySelector(BDFDB.dotCN.avatarwrapper), e.node);
-					InternalBDFDB._processUserInfoNode(e.instance.props.user, e.node);
+				InternalBDFDB.processAnalyticsContext = function (e) {
+					if (e.instance.props.section != BDFDB.DiscordConstants.AnalyticsSections.PROFILE_MODAL) return;
+					const user = BDFDB.ReactUtils.findValue(e.instance, "user");
+					const wrapper = e.node.querySelector(BDFDB.dotCN.userprofile) || e.node;
+					InternalBDFDB._processAvatarMount(user, e.node.querySelector(BDFDB.dotCN.avatarwrapper), wrapper);
+					InternalBDFDB._processUserInfoNode(user, wrapper);
 				};
 				InternalBDFDB.processDiscordTag = function (e) {
 					if (e.instance && e.instance.props && e.returnvalue && e.instance.props.user) e.returnvalue.props.user = e.instance.props.user;
+				};
+				InternalBDFDB.processEmojiPickerListRow = function (e) {
+					if (e.instance.props.emojiDescriptors && InternalComponents.LibraryComponents.EmojiPickerButton.current && InternalComponents.LibraryComponents.EmojiPickerButton.current.props && InternalComponents.LibraryComponents.EmojiPickerButton.current.props.allowManagedEmojisUsage) for (let i in e.instance.props.emojiDescriptors) e.instance.props.emojiDescriptors[i] = Object.assign({}, e.instance.props.emojiDescriptors[i], {isDisabled: false});
 				};
 				
 				const ContextMenuTypes = ["UserSettingsCog", "UserProfileActions", "User", "Developer", "Slate", "GuildFolder", "GroupDM", "SystemMessage", "Message", "Native", "Role", "Guild", "Channel"];
@@ -7934,7 +7955,7 @@ module.exports = (_ => {
 				if (window.Lightcord || window.LightCord) BDFDB.ModalUtils.open(BDFDB, {
 					header: "Attention!",
 					subHeader: "Modified Client detected",
-					text: "We detected that you are using LightCord. Unlike other client modificaton (BetterDiscord, PowerCord), LightCord is a completely modified client, which is no longer maintained by Discord but instead by a 3rd party. This will put your account at risk, not only because the 3rd party might use your account credentials as they like, you are also breaking a higher instance of Discord's ToS by using a 3rd party client instead of using a simple client mod which ininjects itself into the original client app. Many Plugins won't flawlessly run on LightCord. We do not support LightCord and as such, we do not provide help or support. You should switch to another modification as soon as possible.",
+					text: "We detected that you are using LightCord. Unlike other client modificaton (BetterDiscord, PowerCord), LightCord is a completely modified client, which is no longer maintained by Discord but instead by a 3rd party. This will put your account at risk, not only because the 3rd party might use your account credentials as they like, you are also breaking a higher instance of Discord's ToS by using a 3rd party client instead of using a simple client mod which injects itself into the original client app. Many Plugins won't flawlessly run on LightCord. We do not support LightCord and as such, we do not provide help or support. You should switch to another modification as soon as possible.",
 					buttons: [{color: "RED", contents: BDFDB.LanguageUtils.LanguageStrings.OKAY, close: true}]
 				});
 				
@@ -8134,6 +8155,10 @@ module.exports = (_ => {
 
 				BDFDB.PatchUtils.patch(BDFDB, LibraryModules.IconUtils, "getUserBannerURL", {instead: e => {
 					return e.methodArguments[0].id == InternalData.myId ? e.methodArguments[0].banner : e.callOriginalMethod();
+				}});
+				
+				BDFDB.PatchUtils.patch(BDFDB, LibraryModules.EmojiStateUtils, "getEmojiUnavailableReason", {after: e => {
+					if (InternalComponents.LibraryComponents.EmojiPickerButton.current && InternalComponents.LibraryComponents.EmojiPickerButton.current.props && InternalComponents.LibraryComponents.EmojiPickerButton.current.props.allowManagedEmojisUsage) return null;
 				}});
 				
 				InternalBDFDB.forceUpdateAll();
