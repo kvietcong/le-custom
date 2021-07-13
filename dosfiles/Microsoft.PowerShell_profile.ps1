@@ -6,3 +6,5 @@ function DirDots { cd 'D:\Documents\le-custom\' }
 function DirNotes { cd 'D:\Documents\Notes\' }
 function DirUW { cd 'D:\Documents\UW\' }
 function DirAppData { cd '~\AppData\' }
+
+function Notes { cd 'D:\Documents\Notes\' && nvim }
