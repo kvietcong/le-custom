@@ -1,7 +1,7 @@
 -- Paq Package Manager Setup
 vim.cmd("packadd paq-nvim")
 local paq = require("paq-nvim").paq
-paq{"savq/paq-nvim", opt = true}
+paq{"savq/paq-nvim"}
 
 -- Utility Plugins
 paq{"npxbr/glow.nvim"}
@@ -11,7 +11,7 @@ paq{"nvim-lua/popup.nvim"}
 paq{"b3nj5m1n/kommentary"}
 paq{"folke/which-key.nvim"}
 paq{"nvim-lua/plenary.nvim"}
-paq{"airblade/vim-gitgutter"}
+paq{"lewis6991/gitsigns.nvim"}
 paq{"dstein64/vim-startuptime"}
 paq{"folke/todo-comments.nvim"}
 paq{"kyazdani42/nvim-tree.lua"}
@@ -32,6 +32,9 @@ paq{"kyazdani42/nvim-web-devicons"}
 paq{"neoclide/coc.nvim"}
 paq{"folke/lsp-colors.nvim"}
 paq{"neovimhaskell/haskell-vim"}
+
+-- Git Stuffs
+require("gitsigns").setup()
 
 -- Colorscheme Setup
 vim.cmd("colorscheme nord")
@@ -157,5 +160,5 @@ wk.register({
         name    = "COC",
     },
     c = { name = "Commenting" },
-    h = { name = "Git Gutter" }
+    h = { name = "Git Signs" }
 }, { prefix = "<Leader>" })
