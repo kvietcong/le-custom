@@ -1,5 +1,5 @@
 [core]
-	editor = neovide
+	editor = nvim
 [user]
 	email = 32186663+kvietcong@users.noreply.github.com
 	name = KV Le
