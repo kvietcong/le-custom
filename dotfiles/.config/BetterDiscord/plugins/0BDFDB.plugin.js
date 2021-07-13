@@ -2,7 +2,7 @@
  * @name BDFDB
  * @author DevilBro
  * @authorId 278543574059057154
- * @version 1.7.3
+ * @version 1.7.5
  * @description Required Library for DevilBro's Plugins
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
@@ -19,7 +19,7 @@ module.exports = (_ => {
 		"info": {
 			"name": "BDFDB",
 			"author": "DevilBro",
-			"version": "1.7.3",
+			"version": "1.7.5",
 			"description": "Required Library for DevilBro's Plugins"
 		},
 		"rawUrl": `https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js`
@@ -979,7 +979,7 @@ module.exports = (_ => {
 					if (tryAgain) return BDFDB.TimeUtils.timeout(_ => loadLibrary(), 10000);
 					else {
 						BDFDB.LogUtils.error(["Failed to fetch JSON from GitHub. Could not load data.json!", e2 || ""]);
-						b2 = loadBackup(dataPath);
+						b2 = loadBackup();
 					}
 				}
 				let InternalData;
@@ -987,7 +987,7 @@ module.exports = (_ => {
 				catch (err) {
 					BDFDB.LogUtils.error(["Failed to parse fetched JSON. Could not load data.json!", err]);
 					b2 = null;
-					InternalData = JSON.parse(loadBackup(dataPath));
+					InternalData = JSON.parse(loadBackup());
 				}
 				if (!e && b && r.statusCode == 200) fs.writeFile(cssPath, b, _ => {});
 				if (!e2 && b2 && r2.statusCode == 200) fs.writeFile(dataPath, b2, _ => {});
@@ -2863,10 +2863,10 @@ module.exports = (_ => {
 				BDFDB.UserUtils.is = function (user) {
 					return user && user instanceof BDFDB.DiscordObjects.User;
 				};
-				var myDataUser = LibraryModules.UserStore && LibraryModules.UserStore.getCurrentUser();
+				var myDataUser = LibraryModules.UserStore && LibraryModules.UserStore.getCurrentUser && LibraryModules.UserStore.getCurrentUser();
 				BDFDB.UserUtils.me = new Proxy(myDataUser || {}, {
 					get: function (list, item) {
-						return (myDataUser = LibraryModules.UserStore.getCurrentUser()) && myDataUser[item];
+						return (myDataUser = (LibraryModules.UserStore && LibraryModules.UserStore.getCurrentUser && LibraryModules.UserStore.getCurrentUser() || {})) && myDataUser[item];
 					}
 				});
 				BDFDB.UserUtils.getStatus = function (id = BDFDB.UserUtils.me.id) {
@@ -2965,11 +2965,11 @@ module.exports = (_ => {
 							BDFDB.PatchUtils.patch({name: "BDFDB GuildUtils"}, GuildsPrototype, "render", {after: e => {
 								if (typeof e.returnValue.props.children == "function") {
 									let childrenRender = e.returnValue.props.children;
-									e.returnValue.props.children = (...args) => {
+									e.returnValue.props.children = BDFDB.TimeUtils.suppress((...args) => {
 										let children = childrenRender(...args);
 										injectPlaceholder(children);
 										return children;
-									};
+									});
 								}
 								else injectPlaceholder(e.returnValue);
 							}}, {once: true});
@@ -6283,7 +6283,7 @@ module.exports = (_ => {
 					handleClick(e) {if (typeof this.props.onClick == "function") this.props.onClick(e, this);}
 					handleContextMenu(e) {if (typeof this.props.onContextMenu == "function") this.props.onContextMenu(e, this);}
 					render() {
-						let color = BDFDB.ColorUtils.convert(this.props.role.colorString || BDFDB.DiscordConstants.Colors.PRIMARY_DARK_300, "RGB");
+						let color = BDFDB.ColorUtils.convert(this.props.role.colorString, "RGB") || BDFDB.DiscordConstants.Colors.PRIMARY_DARK_300;
 						return BDFDB.ReactUtils.createElement("li", {
 							className: BDFDB.DOMUtils.formatClassName(BDFDB.disCN.userpopoutrole, this.props.className),
 							style: {borderColor: BDFDB.ColorUtils.setAlpha(color, 0.6)},
@@ -7663,14 +7663,12 @@ module.exports = (_ => {
 					render() {
 						return BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.PopoutContainer, BDFDB.ObjectUtils.exclude(Object.assign({}, this.props, {
 							wrap: false,
-							renderPopout: instance => {
-								return BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.UserPopout, {
-									userId: this.props.userId,
-									guildId: this.props.guildId,
-									channelId: this.props.channelId
-								});
-							}
-						}), "userId", "guildId", "channelId"));
+							renderPopout: instance => BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.UserPopout, {
+								userId: this.props.userId,
+								channelId: this.props.channelId,
+								guildId: this.props.guildId
+							}),
+						}), "userId", "channelId", "guildId"));
 					}
 				};
 				
@@ -7787,7 +7785,6 @@ module.exports = (_ => {
 						MessageHeader: "default",
 						MemberListItem: ["componentDidMount", "componentDidUpdate"],
 						PrivateChannel: ["componentDidMount", "componentDidUpdate"],
-						UserPopout: ["componentDidMount", "componentDidUpdate"],
 						AnalyticsContext: ["componentDidMount", "componentDidUpdate"],
 						DiscordTag: "default"
 					}
@@ -7819,11 +7816,12 @@ module.exports = (_ => {
 				InternalBDFDB._processAvatarRender = function (user, avatar) {
 					if (BDFDB.ReactUtils.isValidElement(avatar) && BDFDB.ObjectUtils.is(user) && (avatar.props.className || "").indexOf(BDFDB.disCN.bdfdbbadgeavatar) == -1) {
 						avatar.props[InternalData.userIdAttribute] = user.id;
-						let role = "", note = "", link, className = BDFDB.DOMUtils.formatClassName((avatar.props.className || "").replace(BDFDB.disCN.avatar, "")), addBadge = InternalBDFDB.settings.general.showSupportBadges;
+						let role = "", note = "", color, link, className = BDFDB.DOMUtils.formatClassName((avatar.props.className || "").replace(BDFDB.disCN.avatar, "")), addBadge = InternalBDFDB.settings.general.showSupportBadges;
 						if (BDFDB_Patrons[user.id] && BDFDB_Patrons[user.id].active) {
 							link = "https://www.patreon.com/MircoWittrien";
 							role = BDFDB_Patrons[user.id].text || (BDFDB_Patron_Tiers[BDFDB_Patrons[user.id].tier] || {}).text;
 							note = BDFDB_Patrons[user.id].text && (BDFDB_Patron_Tiers[BDFDB_Patrons[user.id].tier] || {}).text;
+							color = BDFDB_Patrons[user.id].color;
 							className = BDFDB.DOMUtils.formatClassName(className, addBadge && BDFDB.disCN.bdfdbhasbadge, BDFDB.disCN.bdfdbbadgeavatar, BDFDB.disCN.bdfdbsupporter, BDFDB.disCN[`bdfdbsupporter${BDFDB_Patrons[user.id].tier}`]);
 						}
 						if (user.id == InternalData.myId) {
@@ -7846,6 +7844,7 @@ module.exports = (_ => {
 							if (addBadge) avatar.props.children.push(BDFDB.ReactUtils.createElement(InternalComponents.LibraryComponents.TooltipContainer, {
 								text: role,
 								note: note,
+								tooltipConfig: {backgroundColor: color || ""},
 								onClick: link ? (_ => BDFDB.DiscordUtils.openLink(link)) : (_ => {}),
 								children: BDFDB.ReactUtils.createElement("div", {
 									className: BDFDB.disCN.bdfdbbadge
@@ -7860,11 +7859,12 @@ module.exports = (_ => {
 					if (wrapper) wrapper.setAttribute(InternalData.userIdAttribute, user.id);
 					if (Node.prototype.isPrototypeOf(avatar) && (avatar.className || "").indexOf(BDFDB.disCN.bdfdbbadgeavatar) == -1) {
 						avatar.setAttribute(InternalData.userIdAttribute, user.id);
-						let role = "", note = "", link, addBadge = InternalBDFDB.settings.general.showSupportBadges;
+						let role = "", note = "", color, link, addBadge = InternalBDFDB.settings.general.showSupportBadges;
 						if (BDFDB_Patrons[user.id] && BDFDB_Patrons[user.id].active) {
 							link = "https://www.patreon.com/MircoWittrien";
 							role = BDFDB_Patrons[user.id].text || (BDFDB_Patron_Tiers[BDFDB_Patrons[user.id].tier] || {}).text;
 							note = BDFDB_Patrons[user.id].text && (BDFDB_Patron_Tiers[BDFDB_Patrons[user.id].tier] || {}).text;
+							color = BDFDB_Patrons[user.id].color;
 							avatar.className = BDFDB.DOMUtils.formatClassName(avatar.className, addBadge && BDFDB.disCN.bdfdbhasbadge, BDFDB.disCN.bdfdbbadgeavatar, BDFDB.disCN.bdfdbsupporter, BDFDB.disCN[`bdfdbsupporter${BDFDB_Patrons[user.id].tier}`]);
 						}
 						else if (user.id == InternalData.myId) {
@@ -7876,7 +7876,7 @@ module.exports = (_ => {
 							let badge = document.createElement("div");
 							badge.className = BDFDB.disCN.bdfdbbadge;
 							if (link) badge.addEventListener("click", _ => BDFDB.DiscordUtils.openLink(link));
-							badge.addEventListener("mouseenter", _ => BDFDB.TooltipUtils.create(badge, role, {position: "top", note: note}));
+							badge.addEventListener("mouseenter", _ => BDFDB.TooltipUtils.create(badge, role, {position: "top", note: note, backgroundColor: color || ""}));
 							avatar.appendChild(badge);
 						}
 					}
@@ -7890,10 +7890,10 @@ module.exports = (_ => {
 						let avatarWrapper = BDFDB.ObjectUtils.get(e, "returnvalue.props.children.0");
 						if (avatarWrapper && avatarWrapper.props && typeof avatarWrapper.props.children == "function") {
 							let renderChildren = avatarWrapper.props.children;
-							avatarWrapper.props.children = (...args) => {
+							avatarWrapper.props.children = BDFDB.TimeUtils.suppress((...args) => {
 								let renderedChildren = renderChildren(...args);
 								return InternalBDFDB._processAvatarRender(e.instance.props.message.author, renderedChildren) || renderedChildren;
-							};
+							});
 						}
 						else if (avatarWrapper && avatarWrapper.type == "img") e.returnvalue.props.children[0] = InternalBDFDB._processAvatarRender(e.instance.props.message.author, avatarWrapper) || avatarWrapper;
 					}
@@ -7904,14 +7904,11 @@ module.exports = (_ => {
 				InternalBDFDB.processPrivateChannel = function (e) {
 					InternalBDFDB._processAvatarMount(e.instance.props.user, e.node.querySelector(BDFDB.dotCN.avatarwrapper), e.node);
 				};
-				InternalBDFDB.processUserPopout = function (e) {
-					InternalBDFDB._processAvatarMount(e.instance.props.user, e.node.querySelector(BDFDB.dotCN.avatarwrapper), e.node);
-					InternalBDFDB._processUserInfoNode(e.instance.props.user, e.node);
-				};
 				InternalBDFDB.processAnalyticsContext = function (e) {
-					if (e.instance.props.section != BDFDB.DiscordConstants.AnalyticsSections.PROFILE_MODAL) return;
+					if (e.instance.props.section != BDFDB.DiscordConstants.AnalyticsSections.PROFILE_MODAL && e.instance.props.section != BDFDB.DiscordConstants.AnalyticsSections.PROFILE_POPOUT) return;
 					const user = BDFDB.ReactUtils.findValue(e.instance, "user");
-					const wrapper = e.node.querySelector(BDFDB.dotCN.userprofile) || e.node;
+					if (!user) return;
+					const wrapper = e.node.querySelector(BDFDB.dotCNC.userpopout + BDFDB.dotCN.userprofile) || e.node;
 					InternalBDFDB._processAvatarMount(user, e.node.querySelector(BDFDB.dotCN.avatarwrapper), wrapper);
 					InternalBDFDB._processUserInfoNode(user, wrapper);
 				};
@@ -7986,13 +7983,13 @@ module.exports = (_ => {
 						InternalBDFDB.executeExtraPatchedPatches("MessageOptionToolbar", {instance: {props: e2.methodArguments[0]}, returnvalue: e2.returnValue, methodname: "default"});
 						if (menu && typeof menu.props.renderPopout == "function") {
 							let renderPopout = menu.props.renderPopout;
-							menu.props.renderPopout = (...args) => {
+							menu.props.renderPopout = BDFDB.TimeUtils.suppress((...args) => {
 								let renderedPopout = renderPopout(...args);
 								BDFDB.PatchUtils.patch(BDFDB, renderedPopout, "type", {after: e3 => {
 									InternalBDFDB.executeExtraPatchedPatches("MessageOptionContextMenu", {instance: {props: e3.methodArguments[0]}, returnvalue: e3.returnValue, methodname: "default"});
 								}}, {noCache: true});
 								return renderedPopout;
-							}
+							});
 						}
 					}}, {once: true});
 				}});
