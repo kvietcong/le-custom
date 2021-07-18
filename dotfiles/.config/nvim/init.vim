@@ -73,6 +73,8 @@ nnoremap <C-Z> <C-r>
 nnoremap <C-y> <C-r>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
+" Zen Mode
+nnoremap <Leader>z :ZenMode<Enter>
 
 " Glow Markdown Preview
 nnoremap <Leader>mp :Glow<Enter>
@@ -108,7 +110,6 @@ nnoremap <Leader>su zug
 
 " Telescope
 nnoremap <Leader>fa :Telescope<Enter>
-nnoremap <Leader>ft :TodoTelescope<Enter>
 nnoremap <Leader>fb :Telescope buffers<Enter>
 nnoremap <Leader>fo :Telescope oldfiles<Enter>
 nnoremap <Leader>fg :Telescope live_grep<Enter>
@@ -156,10 +157,11 @@ endfunction
 
 inoremap <silent><expr> <C-Space> coc#refresh()
 
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
+" TODO: Find good bindings for this or move to nvim LSP
+nmap <silent> gcd <Plug>(coc-definition)
+nmap <silent> gcy <Plug>(coc-type-definition)
+nmap <silent> gci <Plug>(coc-implementation)
+nmap <silent> gcr <Plug>(coc-references)
 
 nnoremap <silent> K :call <SID>show_documentation()<Enter>
 

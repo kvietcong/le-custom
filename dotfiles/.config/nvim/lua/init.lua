@@ -1,65 +1,70 @@
+--[[
+TODO: Possibly move to Packer
+TODO: Checkout Neorg when I think seems stable/mature
+      enough to move my notes (i.e. when there's a pandoc
+      option to convert markdown to neorg)
+]]
+
 -- Paq Package Manager Setup
-vim.cmd("packadd paq-nvim")
-local paq = require("paq-nvim").paq
-paq{"savq/paq-nvim"}
+local paq = require("paq") {
+    "savq/paq-nvim"; -- Let Paq manage itself
 
--- Utility Plugins
-paq{"npxbr/glow.nvim"}
-paq{"tpope/vim-repeat"}
-paq{"tpope/vim-surround"}
-paq{"nvim-lua/popup.nvim"}
-paq{"b3nj5m1n/kommentary"}
-paq{"folke/which-key.nvim"}
-paq{"nvim-lua/plenary.nvim"}
-paq{"lewis6991/gitsigns.nvim"}
-paq{"dstein64/vim-startuptime"}
-paq{"folke/todo-comments.nvim"}
-paq{"kyazdani42/nvim-tree.lua"}
-paq{"nvim-telescope/telescope.nvim"}
-paq{"nvim-treesitter/nvim-treesitter"}
+    -- Utility Plugins
+    "npxbr/glow.nvim";
+    "tpope/vim-repeat";
+    "tpope/vim-surround";
+    "nvim-lua/popup.nvim";
+    "b3nj5m1n/kommentary";
+    "folke/which-key.nvim";
+    "nvim-lua/plenary.nvim";
+    "lewis6991/gitsigns.nvim";
+    "dstein64/vim-startuptime";
+    "kyazdani42/nvim-tree.lua";
+    "nvim-telescope/telescope.nvim";
 
--- UI Plugins
-paq{"luochen1990/rainbow"}
-paq{"p00f/nvim-ts-rainbow"}
-paq{"hoob3rt/lualine.nvim"}
-paq{"shaunsingh/nord.nvim"} -- ATM Used for bettter Nord Lua Line
-paq{"arcticicestudio/nord-vim"}
-paq{"norcalli/nvim-colorizer.lua"}
-paq{"akinsho/nvim-bufferline.lua"}
-paq{"kyazdani42/nvim-web-devicons"}
+    -- Treesitter Stuff
+    "nvim-treesitter/nvim-treesitter";
+    "nvim-treesitter/nvim-treesitter-refactor";
+    "windwp/nvim-ts-autotag";
+    "folke/twilight.nvim";
 
--- Language Plugins
-paq{"neoclide/coc.nvim"}
-paq{"folke/lsp-colors.nvim"}
-paq{"neovimhaskell/haskell-vim"}
+    -- UI Plugins
+    "luochen1990/rainbow";
+    "folke/zen-mode.nvim";
+    "p00f/nvim-ts-rainbow";
+    "hoob3rt/lualine.nvim";
+    "shaunsingh/nord.nvim";
+    "arcticicestudio/nord-vim";
+    "norcalli/nvim-colorizer.lua";
+    "akinsho/nvim-bufferline.lua";
+    "kyazdani42/nvim-web-devicons";
 
--- Git Stuffs
+    -- Language Plugins
+    "neoclide/coc.nvim";
+    "folke/lsp-colors.nvim";
+}
+
+-- Quick Plugin Setup
 require("gitsigns").setup()
-
--- Colorscheme Setup
-vim.cmd("colorscheme nord")
+require("colorizer").setup()
 
 -- Status Line
--- require('nord').set() -- Trouble with italics on Windows Terminal
+require("nord").set()
 require("lualine").setup { options = {
     theme = "nord",
     section_separators = {},
     component_separators = {"|"}
 }}
 
--- Kommentary (Commenting)
-require("kommentary.config").setup()
-
 -- Telescope (Fuzzy Finder) Setup
 require('telescope').setup { defaults = {
-    prompt_position = "top",
-    sorting_strategy = "ascending",
+    layout_config = {
+        prompt_position = "top",
+    },
     layout_strategy = "flex",
+    sorting_strategy = "ascending",
     set_env = { ["COLORTERM"] = "truecolor" },
 }}
-
--- Color highlighter
-require("colorizer").setup()
 
 -- Bufferline (File tabs)
 require("bufferline").setup { options = {
@@ -67,21 +72,40 @@ require("bufferline").setup { options = {
     seperator_style = "thin",
 }}
 
--- TODO Comments Plugin
-require("todo-comments").setup { search = {
-    pattern = [[\b(KEYWORDS)\b]]
-}}
-
--- Better Language Parsing with Tree Sitter
+-- Treesitter Setup
 require("nvim-treesitter.configs").setup {
     highlight = { enable = true },
+    autotag = { enable = true },
     rainbow = {
         enable = true,
         extended_mode = true,
         colors = { "Cyan1", "PaleGreen1", "Magenta1", "Gold1" },
         termcolors = { 51, 121, 201, 220 }
+    },
+    refactor = {
+        highlight_definitions = { enable = true },
+        smart_rename = {
+            enable = true,
+            keymaps = {
+                smart_rename = "grr",
+            },
+        },
+        navigation = {
+            enable = true,
+            keymaps = {
+                goto_definition = "gd",
+                goto_next_usage = "gnu",
+                goto_previous_usage = "gpu",
+            }
+        }
     }
 }
+require("zen-mode").setup {
+    window = { width = 110, number = true },
+    plugins = { options = { ruler = true }},
+    gitsigns = { enable = true }
+}
+require("twilight").setup()
 
 --  Configuration for colorful matching brackets
 --  This plugin doesn't work with Lua or Rust so I'm using two
@@ -92,51 +116,22 @@ vim.g.rainbow_conf = {
 	ctermfgs = { 51, 121, 201, 220 }
 }
 
---[[ paq{"glepnir/indent-guides.nvim"}
-require('indent_guides').setup {
-    even_colors = { fg ="#A3BE8C",bg= "#A3BE8C"},
-    odd_colors = {fg= "#EBCB8B",bg= "#EBCB8B"}
-} ]]
-
-if vim.fn.exists("g:vscode") then
-    -- Vim Wiki Setup
-    paq{"vimwiki/vimwiki"}
-    vim.g.vimwiki_list = {{
-        path = "D:/Documents/Notes/",
-        syntax = "markdown",
-        ext = ".md"
-    }}
-    vim.g.vimwiki_create_link = 0
-end
-
 -- Neovim tree (File explorer)
-vim.g.nvim_tree_ignore = { ".git", "node_modules", ".cache" }
 vim.g.nvim_tree_indent_markers = 1
 vim.g.nvim_tree_git_hl = 1
 vim.g.nvim_tree_add_trailing = 1
-vim.g.nvim_tree_special_files = { "README.md", "Makefile", "MAKEFILE" }
-
--- Haskell Vim
-vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
-vim.g.haskell_enable_recursivedo = 1      -- to enable highlighting of `mdo` and `rec`
-vim.g.haskell_enable_arrowsyntax = 1      -- to enable highlighting of `proc`
-vim.g.haskell_enable_pattern_synonyms = 1 -- to enable highlighting of `pattern`
-vim.g.haskell_enable_typeroles = 1        -- to enable highlighting of type roles
-vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
-vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
 
 -- Which Key (Hotkey reminders)
 local wk = require("which-key")
 wk.setup()
 wk.register({
-    ["/"]       = "Fuzzy Find (Telescope)",
-    [","]       = "First Char of Line",
-    ["."]       = "Last Char of Line",
+    ["/"]       = "Fuzzy Find",
+    [","]       = "Go to first Non-Space Character",
+    ["."]       = "Go to end of line",
     f = {
         name    = "Telescope",
         a       = "Find Built-in Telescope Picker",
         f       = "Find Files",
-        t       = "Find TODOs",
         b       = "Find Buffers",
         g       = "Find w/ grep",
         h       = "Find Help (From Vim)",
@@ -159,6 +154,6 @@ wk.register({
     g = {
         name    = "COC",
     },
-    c = { name = "Commenting" },
-    h = { name = "Git Signs" }
-}, { prefix = "<Leader>" })
+    c = { name  = "Commenting" },
+    h = { name  = "Git Signs" }
+}, { prefix     = "<Leader>" })
