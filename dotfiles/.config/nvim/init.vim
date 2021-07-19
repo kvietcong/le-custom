@@ -41,6 +41,7 @@ set relativenumber number " Show relative number lines with regular number line 
 filetype plugin indent on " Enable filetype detection and indentation
 set guifont=FiraCode\ NF:h16 " Set a font for GUI things
 set backspace=indent,eol,start " More robust backspacing
+set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
@@ -75,6 +76,8 @@ nnoremap <C-y> <C-r>
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
 " Zen Mode
 nnoremap <Leader>z :ZenMode<Enter>
+" Toggle transparent background
+nnoremap <Leader>t :TransparentToggle<Enter>
 
 " Glow Markdown Preview
 nnoremap <Leader>mp :Glow<Enter>
@@ -116,6 +119,7 @@ nnoremap <Leader>fg :Telescope live_grep<Enter>
 nnoremap <Leader>fh :Telescope help_tags<Enter>
 nnoremap <Leader>fm :Telescope man_pages<Enter>
 nnoremap <Leader>ff :Telescope find_files<Enter>
+nnoremap <Leader>fd :Telescope treesitter<Enter>
 nnoremap <Leader>fc :Telescope colorscheme<Enter>
 " This replaces the old spell checker interface
 nnoremap z=         :Telescope spell_suggest<Enter>
@@ -141,43 +145,6 @@ autocmd BufReadPost *
     \ |   exe "normal! g`\""
     \ | endif
 
-" COC configuration
-autocmd CursorHold * silent call CocActionAsync("highlight")
-
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-inoremap <silent><expr> <C-Space> coc#refresh()
-
-" TODO: Find good bindings for this or move to nvim LSP
-nmap <silent> gcd <Plug>(coc-definition)
-nmap <silent> gcy <Plug>(coc-type-definition)
-nmap <silent> gci <Plug>(coc-implementation)
-nmap <silent> gcr <Plug>(coc-references)
-
-nnoremap <silent> K :call <SID>show_documentation()<Enter>
-
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  elseif (coc#rpc#ready())
-    call CocActionAsync('doHover')
-  else
-    execute '!' . &keywordprg . " " . expand('<cword>')
-  endif
-endfunction
-
-inoremap <expr> <Enter> pumvisible() ? "\<C-y>" : "\<C-g>u\<Enter>"
-
-nmap <F2> <Plug>(coc-rename)
-
-" Enable transparent background in certain terminals
-nnoremap <F8> :highlight! Normal ctermbg=NONE guibg=NONE<Enter>
+" Completion
+inoremap <silent><expr> <Enter> compe#confirm('<CR>')
+inoremap <silent><expr> <C-e>   compe#close('<C-e>')
