@@ -47,8 +47,7 @@ set wildmenu wildmode=longest,list,full " Display completion matches in a status
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
 if has('win32') || has('win64')
-    " Sadly Powershell isn't compatible with the Glow preview plugin :(
-    " set shell=pwsh
+    set shell=pwsh
 endif
 
 " Entry into Lua config
@@ -119,11 +118,26 @@ nnoremap <Leader>fg :Telescope live_grep<Enter>
 nnoremap <Leader>fh :Telescope help_tags<Enter>
 nnoremap <Leader>fm :Telescope man_pages<Enter>
 nnoremap <Leader>ff :Telescope find_files<Enter>
-nnoremap <Leader>fd :Telescope treesitter<Enter>
-nnoremap <Leader>fc :Telescope colorscheme<Enter>
-" This replaces the old spell checker interface
+nnoremap <Leader>ft :Telescope treesitter<Enter>
+nnoremap <Leader>fcr :Telescope lsp_references<Enter>
+nnoremap <Leader>fcs :Telescope lsp_document_symbols<Enter>
+nnoremap <Leader>fca :Telescope lsp_code_actions<Enter>
+nnoremap <Leader>fci :Telescope lsp_implementations<Enter>
+nnoremap <Leader>fcd :Telescope lsp_definitions<Enter>
+nnoremap <Leader>fcD :Telescope lsp_document_diagnostics<Enter>
 nnoremap z=         :Telescope spell_suggest<Enter>
 nnoremap <Leader>/  :Telescope current_buffer_fuzzy_find<Enter>
+
+" LSP
+nnoremap <silent> K :Lspsaga hover_doc<CR>
+nnoremap <silent> gr :Lspsaga rename<CR>
+nnoremap <silent> gpd :Lspsaga preview_definition<CR>
+nnoremap <silent> <Leader>ca :Lspsaga code_action<CR>
+vnoremap <silent> <Leader>ca :<C-U>Lspsaga range_code_action<CR>
+nnoremap <silent> <C-j> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(1)<CR>
+nnoremap <silent> <C-k> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1)<CR>
+nnoremap <silent> <C-t> :Lspsaga open_floaterm<CR>
+tnoremap <silent> <C-t><C-t> <C-\><C-n>:Lspsaga close_floaterm<CR>
 
 " File Tree Explorer
 nnoremap <Leader>fe :NvimTreeToggle<Enter>

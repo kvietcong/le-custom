@@ -1,78 +1,75 @@
 --[[
-TODO: Possibly move to Packer
 TODO: Checkout Neorg when I think seems stable/mature
       enough to move my notes (i.e. when there's a pandoc
       option to convert markdown to neorg)
 ]]
 
--- Paq Package Manager Setup
-local paq = require("paq") {
-    "savq/paq-nvim"; -- Let Paq manage itself
+vim.cmd [[packadd packer.nvim]]
+require("packer").startup(function(use)
+    use "wbthomason/packer.nvim"
 
     -- Utility Plugins
-    "tpope/vim-repeat";
-    "tpope/vim-surround";
-    "nvim-lua/popup.nvim";
-    "b3nj5m1n/kommentary";
-    "folke/which-key.nvim";
-    "nvim-lua/plenary.nvim";
-    "ggandor/lightspeed.nvim";
-    "lewis6991/gitsigns.nvim";
-    "tversteeg/registers.nvim";
-    "dstein64/vim-startuptime";
-    "kyazdani42/nvim-tree.lua";
-    "nvim-telescope/telescope.nvim";
+    use "tpope/vim-repeat"
+    use "tpope/vim-surround"
+    use "nvim-lua/popup.nvim"
+    use "b3nj5m1n/kommentary"
+    use "folke/which-key.nvim"
+    use "nvim-lua/plenary.nvim"
+    use "ggandor/lightspeed.nvim"
+    use "lewis6991/gitsigns.nvim"
+    use "tversteeg/registers.nvim"
+    use "dstein64/vim-startuptime"
+    use "kyazdani42/nvim-tree.lua"
+    use "nvim-telescope/telescope.nvim"
 
     -- UI Plugins
-    "luochen1990/rainbow";
-    "folke/zen-mode.nvim";
-    "p00f/nvim-ts-rainbow";
-    "hoob3rt/lualine.nvim";
-    "shaunsingh/nord.nvim";
-    "andweeb/presence.nvim";
-    "xiyaowong/nvim-transparent";
-    "norcalli/nvim-colorizer.lua";
-    "akinsho/nvim-bufferline.lua";
-    "kyazdani42/nvim-web-devicons";
-    "lukas-reineke/indent-blankline.nvim";
+    use "luochen1990/rainbow"
+    use "folke/zen-mode.nvim"
+    use "p00f/nvim-ts-rainbow"
+    use "hoob3rt/lualine.nvim"
+    use "shaunsingh/nord.nvim"
+    use "andweeb/presence.nvim"
+    use "xiyaowong/nvim-transparent"
+    use "norcalli/nvim-colorizer.lua"
+    use "akinsho/nvim-bufferline.lua"
+    use "kyazdani42/nvim-web-devicons"
+    use "lukas-reineke/indent-blankline.nvim"
 
     -- LSP Plugins
-    "folke/trouble.nvim";
-    "hrsh7th/nvim-compe";
-    "folke/lsp-colors.nvim";
-    "neovim/nvim-lspconfig";
-    "kosayoda/nvim-lightbulb";
-    "ray-x/lsp_signature.nvim";
-    "kabouzeid/nvim-lspinstall"; -- Can't use this on Windows :(
-    "simrat39/symbols-outline.nvim";
+    use "folke/trouble.nvim"
+    use "hrsh7th/nvim-compe"
+    use "glepnir/lspsaga.nvim"
+    use "folke/lsp-colors.nvim"
+    use "neovim/nvim-lspconfig"
+    use "ray-x/lsp_signature.nvim"
+    use "simrat39/symbols-outline.nvim"
 
     -- Treesitter Plugins
-    "nvim-treesitter/nvim-treesitter";
-    "nvim-treesitter/nvim-treesitter-refactor";
-    "folke/twilight.nvim";
-}
+    use "nvim-treesitter/nvim-treesitter"
+    use "nvim-treesitter/nvim-treesitter-refactor"
+    use "folke/twilight.nvim"
+end)
 
 -- Quick Plugin Setup
 require("gitsigns").setup()
 require("colorizer").setup()
 
 -- Lightspeed Setup
-function repeat_ft(reverse)
+function Repeat_Search(reverse)
   local ls = require'lightspeed'
-  ls.ft['instant-repeat?'] = true
-  ls.ft:to(reverse, ls.ft['prev-t-like?'])
+  ls.ft["instant-repeat?"] = true
+  ls.ft:to(reverse, ls.ft["prev-t-like?"])
 end
-vim.api.nvim_set_keymap('n', ';', '<cmd>lua repeat_ft(false)<cr>',
+vim.api.nvim_set_keymap("n", ";", ":lua Repeat_Search(false)<cr>",
                         {noremap = true, silent = true})
-vim.api.nvim_set_keymap('x', ';', '<cmd>lua repeat_ft(false)<cr>',
+vim.api.nvim_set_keymap("x", ";", ":lua Repeat_Search(false)<cr>",
                         {noremap = true, silent = true})
-vim.api.nvim_set_keymap('n', ',', '<cmd>lua repeat_ft(true)<cr>',
+vim.api.nvim_set_keymap("n", ",", ":lua Repeat_Search(true)<cr>",
                         {noremap = true, silent = true})
-vim.api.nvim_set_keymap('x', ',', '<cmd>lua repeat_ft(true)<cr>',
+vim.api.nvim_set_keymap("x", ",", ":lua Repeat_Search(true)<cr>",
                         {noremap = true, silent = true})
 
 -- Color Scheme/Status Line
-vim.g.nord_contrast = true
 vim.g.nord_borders = true
 require("nord").set()
 require("lualine").setup { options = {
@@ -98,7 +95,6 @@ require("bufferline").setup { options = {
 }}
 
 -- LSP Setup
-vim.cmd [[autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb()]]
 require("trouble").setup()
 require("compe").setup {
     enabled = true;
@@ -117,20 +113,37 @@ require("compe").setup {
         treesitter = true;
     };
 }
-require("lsp_signature").setup()
--- LSP Install Setup for when I move back to Linux
-local function setup_servers()
-  require("lspinstall").setup()
-  local servers = require("lspinstall").installed_servers()
-  for _, server in pairs(servers) do
-    require("lspconfig")[server].setup{}
-  end
+require("lsp_signature").setup({
+    hint_enable = true,
+    hint_prefix = "✅ "
+})
+local on_attach = function(client, bufnr)
+    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+    local opts = { noremap=true, silent=true }
+    buf_set_keymap("n", "<Leader>f", ":lua vim.lsp.buf.formatting()<CR>", opts)
 end
-require("lspinstall").post_install_hook = function ()
-  setup_servers()
-  vim.cmd("bufdo e")
+local servers = { "pyright", "hls", "clangd", "html", "cssls", "tsserver" }
+for _, server in pairs(servers) do
+    require("lspconfig")[server].setup{ on_attach = on_attach }
 end
-setup_servers()
+-- Only have Lua configured for Windows atm
+if vim.fn.has("win32") == 1 then
+    local sumneko_root = "D:/Custom Binaries/lua-language-server-2.3/"
+    local sumneko_binary = sumneko_root .. "/bin/lua-language-server"
+    local runtime_path = vim.split(package.path, ';')
+    table.insert(runtime_path, "lua/?.lua")
+    table.insert(runtime_path, "lua/?/init.lua")
+    require("lspconfig").sumneko_lua.setup {
+        cmd = { sumneko_binary, "-E", sumneko_root .. "main.lua" };
+        settings = { Lua = {
+            runtime = { version = "LuaJIT", path = runtime_path },
+            diagnostics = { globals = { "vim" } },
+            workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+            telemetry = { enable = true }
+        }},
+        on_attach = on_attach
+    }
+end
 
 -- Treesitter Setup
 require("nvim-treesitter.configs").setup {
@@ -152,7 +165,7 @@ require("nvim-treesitter.configs").setup {
         navigation = {
             enable = true,
             keymaps = {
-                goto_definition_lsp_fallback = "gd",
+                goto_definition_lsp_fallback = "gnd",
                 goto_next_usage = "g>",
                 goto_previous_usage = "g<",
             }
@@ -163,10 +176,10 @@ require("zen-mode").setup {
     window = { width = 110, number = true },
     plugins = { options = { ruler = true }},
     gitsigns = { enable = true },
-    on_open = function(win)
+    on_open = function()
         vim.api.nvim_command("TransparentDisable")
     end,
-    on_close = function(win)
+    on_close = function()
         vim.api.nvim_command("TransparentEnable")
     end
 }
@@ -183,10 +196,11 @@ vim.g.rainbow_conf = {
 
 -- Indenting
 vim.g.indent_blankline_char = "│"
-vim.cmd [[highlight Indent1 guifg=#88C0D0 guibg=NONE gui=nocombine]]
-vim.cmd [[highlight Indent2 guifg=#8FBCBB guibg=NONE gui=nocombine]]
-vim.cmd [[highlight Indent3 guifg=#81A1C1 guibg=NONE gui=nocombine]]
-vim.g.indent_blankline_char_highlight_list = { "Indent1", "Indent2", "Indent3" }
+-- Colored indents
+-- vim.cmd [[highlight Indent1 guifg=#88C0D0 guibg=NONE gui=nocombine]]
+-- vim.cmd [[highlight Indent2 guifg=#8FBCBB guibg=NONE gui=nocombine]]
+-- vim.cmd [[highlight Indent3 guifg=#81A1C1 guibg=NONE gui=nocombine]]
+-- vim.g.indent_blankline_char_highlight_list = { "Indent1", "Indent2", "Indent3" }
 
 -- Neovim tree (File explorer)
 vim.g.nvim_tree_indent_markers = 1
