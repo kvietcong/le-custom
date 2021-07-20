@@ -1,7 +1,7 @@
 --[[
-TODO: Checkout Neorg when I think seems stable/mature
-      enough to move my notes (i.e. when there's a pandoc
-      option to convert markdown to neorg)
+    TODO: Checkout Neorg when I think seems stable/mature
+    enough to move my notes (i.e. when there's a pandoc
+    option to convert markdown to neorg)
 ]]
 
 vim.cmd [[packadd packer.nvim]]
@@ -29,6 +29,7 @@ require("packer").startup(function(use)
     use "hoob3rt/lualine.nvim"
     use "shaunsingh/nord.nvim"
     use "andweeb/presence.nvim"
+    use "folke/todo-comments.nvim"
     use "xiyaowong/nvim-transparent"
     use "norcalli/nvim-colorizer.lua"
     use "akinsho/nvim-bufferline.lua"
@@ -45,7 +46,7 @@ require("packer").startup(function(use)
     use "simrat39/symbols-outline.nvim"
 
     -- Treesitter Plugins
-    use "nvim-treesitter/nvim-treesitter"
+    use { "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" }
     use "nvim-treesitter/nvim-treesitter-refactor"
     use "folke/twilight.nvim"
 end)
@@ -53,6 +54,16 @@ end)
 -- Quick Plugin Setup
 require("gitsigns").setup()
 require("colorizer").setup()
+
+-- Color Scheme/Status Line
+vim.g.nord_borders = true
+require("nord").set()
+require("lualine").setup { options = {
+    theme = "nord",
+    section_separators = {},
+    component_separators = {"|"},
+}}
+
 
 -- Lightspeed Setup
 function Repeat_Search(reverse)
@@ -68,15 +79,6 @@ vim.api.nvim_set_keymap("n", ",", ":lua Repeat_Search(true)<cr>",
                         {noremap = true, silent = true})
 vim.api.nvim_set_keymap("x", ",", ":lua Repeat_Search(true)<cr>",
                         {noremap = true, silent = true})
-
--- Color Scheme/Status Line
-vim.g.nord_borders = true
-require("nord").set()
-require("lualine").setup { options = {
-    theme = "nord",
-    section_separators = {},
-    component_separators = {"|"},
-}}
 
 -- Telescope (Fuzzy Finder) Setup
 require('telescope').setup { defaults = {

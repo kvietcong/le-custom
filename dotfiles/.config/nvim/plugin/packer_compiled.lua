@@ -177,6 +177,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\telescope.nvim"
   },
+  ["todo-comments.nvim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\todo-comments.nvim"
+  },
   ["trouble.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\trouble.nvim"
