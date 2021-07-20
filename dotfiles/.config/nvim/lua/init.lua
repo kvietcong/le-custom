@@ -1,10 +1,11 @@
+-- Welcome to my actual configuration!
 --[[
-    TODO: Checkout Neorg when I think seems stable/mature
-    enough to move my notes (i.e. when there's a pandoc
-    option to convert markdown to neorg)
+    TODO: Checkout Neorg when I think seems stable/mature enough to move my notes
+          (i.e. when there's a pandoc option to convert markdown to neorg)
+    TODO: Clean up my Configuration
+          (Split my configuration into modules)
 ]]
 
-vim.cmd [[packadd packer.nvim]]
 require("packer").startup(function(use)
     use "wbthomason/packer.nvim"
 
@@ -14,6 +15,7 @@ require("packer").startup(function(use)
     use "nvim-lua/popup.nvim"
     use "b3nj5m1n/kommentary"
     use "folke/which-key.nvim"
+    use "rafcamlet/nvim-luapad"
     use "nvim-lua/plenary.nvim"
     use "ggandor/lightspeed.nvim"
     use "lewis6991/gitsigns.nvim"
@@ -51,9 +53,60 @@ require("packer").startup(function(use)
     use "folke/twilight.nvim"
 end)
 
+-- Helper Functions
+--- Split String on Delimiter
+--- @param input string Given string to be split
+--- @param delimeter string What to split by
+--- @return string splitInput
+local function split(input, delimiter)
+    if delimiter == nil then delimiter = " " end
+    local result = {}
+    for token in string.gmatch(input, "([^"..delimiter.."]+)") do
+        table.insert(result, token)
+    end
+    return result
+end
+--- Trim Trailing and Leading Whitespace
+--- @param input string Given string to trim
+--- @return string trimmedInput
+local function trim(input)
+  return (string.gsub(input, "^%s*(.-)%s*$", "%1"))
+end
+
+--- Keymap helper
+--- @param map string Info about the map
+--- @param options? string Extra options. Default options are `noremap` and `silent`
+--- @param buff? string Buffer for local mappings
+local function map(map, options, buff)
+    if options == nil then
+        options = { noremap = true, silent = true }
+    else
+        options = split(options)
+        local new_options = {}
+        for _, option in pairs(options) do
+            new_options[option] = true
+        end
+        options = new_options
+    end
+    map = split(map)
+    local function get_command(map)
+        local command = ""
+        for i, v in pairs(map) do
+            if i > 2 then command = command .. " " .. v end
+        end
+        return trim(command)
+    end
+    if buff == nil then
+        vim.api.nvim_set_keymap(map[1], map[2], get_command(map), options)
+    else
+        vim.api.nvim_buf_set_keymap(buff, map[1], map[2], get_command(map), options)
+    end
+end
+
 -- Quick Plugin Setup
 require("gitsigns").setup()
 require("colorizer").setup()
+require("todo-comments").setup()
 
 -- Color Scheme/Status Line
 vim.g.nord_borders = true
@@ -66,19 +119,17 @@ require("lualine").setup { options = {
 
 
 -- Lightspeed Setup
+--- Enables Lightspeed to use , and ; as repeats
+--- @param reverse boolean If serach direction should be reversed
 function Repeat_Search(reverse)
   local ls = require'lightspeed'
   ls.ft["instant-repeat?"] = true
   ls.ft:to(reverse, ls.ft["prev-t-like?"])
 end
-vim.api.nvim_set_keymap("n", ";", ":lua Repeat_Search(false)<cr>",
-                        {noremap = true, silent = true})
-vim.api.nvim_set_keymap("x", ";", ":lua Repeat_Search(false)<cr>",
-                        {noremap = true, silent = true})
-vim.api.nvim_set_keymap("n", ",", ":lua Repeat_Search(true)<cr>",
-                        {noremap = true, silent = true})
-vim.api.nvim_set_keymap("x", ",", ":lua Repeat_Search(true)<cr>",
-                        {noremap = true, silent = true})
+map("n ; :lua Repeat_Search(false)<Enter>")
+map("x ; :lua Repeat_Search(false)<Enter>")
+map("n , :lua Repeat_Search(true)<Enter>")
+map("x , :lua Repeat_Search(true)<Enter>")
 
 -- Telescope (Fuzzy Finder) Setup
 require('telescope').setup { defaults = {
@@ -89,12 +140,37 @@ require('telescope').setup { defaults = {
     sorting_strategy = "ascending",
     set_env = { ["COLORTERM"] = "truecolor" },
 }}
+map("n <Leader>fa   :Telescope<Enter>")
+map("n <Leader>fb   :Telescope buffers<Enter>")
+map("n <Leader>fo   :Telescope oldfiles<Enter>")
+map("n <Leader>fg   :Telescope live_grep<Enter>")
+map("n <Leader>fh   :Telescope help_tags<Enter>")
+map("n <Leader>fm   :Telescope man_pages<Enter>")
+map("n <Leader>ff   :Telescope find_files<Enter>")
+map("n <Leader>ft   :Telescope treesitter<Enter>")
+map("n <Leader>fcr  :Telescope lsp_references<Enter>")
+map("n <Leader>fcs  :Telescope lsp_document_symbols<Enter>")
+map("n <Leader>fca  :Telescope lsp_code_actions<Enter>")
+map("n <Leader>fci  :Telescope lsp_implementations<Enter>")
+map("n <Leader>fcd  :Telescope lsp_definitions<Enter>")
+map("n <Leader>fcD  :Telescope lsp_document_diagnostics<Enter>")
+map("n z=           :Telescope spell_suggest<Enter>")
+map("n <Leader>/    :Telescope current_buffer_fuzzy_find<Enter>")
 
 -- Bufferline (File tabs)
 require("bufferline").setup { options = {
     show_close_icon = false,
     seperator_style = "thin",
 }}
+map("n <Leader>bd     :bd<Enter>")
+map("n <Leader>bn     :BufferLineCycleNext<Enter>")
+map("n <Leader>bp     :BufferLineCyclePrev<Enter>")
+map("n <Leader>bmn    :BufferLineMoveNext<Enter>")
+map("n <Leader>bmp    :BufferLineMovePrev<Enter>")
+map("n <Right>        :BufferLineCycleNext<Enter>")
+map("n <Left>         :BufferLineCyclePrev<Enter>")
+map("n <Up>           :BufferLineMoveNext<Enter>")
+map("n <Down>         :BufferLineMovePrev<Enter>")
 
 -- LSP Setup
 require("trouble").setup()
@@ -115,14 +191,23 @@ require("compe").setup {
         treesitter = true;
     };
 }
+map("i <Enter> compe#confirm('<Enter>')", "silent expr noremap")
+map("i <C-e>   compe#close('<C-e>')", "silent expr noremap")
 require("lsp_signature").setup({
     hint_enable = true,
     hint_prefix = "✅ "
 })
-local on_attach = function(client, bufnr)
-    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-    local opts = { noremap=true, silent=true }
-    buf_set_keymap("n", "<Leader>f", ":lua vim.lsp.buf.formatting()<CR>", opts)
+map("n <C-t>       :Lspsaga open_floaterm<CR>")
+map("t <C-t><C-t>  <C-\\><C-n>:Lspsaga close_floaterm<CR>")
+local on_attach = function(client, buff)
+    map("n K           :Lspsaga hover_doc<Enter>", nil, buff)
+    map("n gr          :Lspsaga rename<Enter>", nil, buff)
+    map("n gpd         :Lspsaga preview_definition<Enter>", nil, buff)
+    map("n <Leader>ca  :Lspsaga code_action<Enter>", nil, buff)
+    map("v <Leader>ca  :<C-U>Lspsaga range_code_action<Enter>", nil, buff)
+    map("n <Leader>f   :lua vim.lsp.buf.formatting()<Enter>", nil, buff)
+    map("n <C-j>       :lua require('lspsaga.action').smart_scroll_with_saga(1)<Enter>", nil, buff)
+    map("n <C-k>       :lua require('lspsaga.action').smart_scroll_with_saga(-1)<Enter>", nil, buff)
 end
 local servers = { "pyright", "hls", "clangd", "html", "cssls", "tsserver" }
 for _, server in pairs(servers) do
@@ -161,13 +246,13 @@ require("nvim-treesitter.configs").setup {
         smart_rename = {
             enable = true,
             keymaps = {
-                smart_rename = "grr",
+                smart_rename = "gr",
             },
         },
         navigation = {
             enable = true,
             keymaps = {
-                goto_definition_lsp_fallback = "gnd",
+                goto_definition = "gd",
                 goto_next_usage = "g>",
                 goto_previous_usage = "g<",
             }
@@ -185,6 +270,7 @@ require("zen-mode").setup {
         vim.api.nvim_command("TransparentEnable")
     end
 }
+map("n <Leader>z :ZenMode<Enter>")
 require("twilight").setup()
 
 --  Configuration for colorful matching brackets
@@ -208,9 +294,11 @@ vim.g.indent_blankline_char = "│"
 vim.g.nvim_tree_indent_markers = 1
 vim.g.nvim_tree_git_hl = 1
 vim.g.nvim_tree_add_trailing = 1
+map("n <Leader>fe :NvimTreeToggle<Enter>")
 
 -- Transparency
 require("transparent").setup({ enable = true })
+map("n <Leader>t :TransparentToggle<Enter>")
 
 -- Discord Rich Presence
 require("presence"):setup({
