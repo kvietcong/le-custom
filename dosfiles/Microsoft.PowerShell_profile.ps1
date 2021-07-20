@@ -1,5 +1,5 @@
 Set-Alias -Name vim -Value nvim
-Set-Alias -Name cd -Value z -Option AllScope
+# Set-Alias -Name cd -Value z -Option AllScope
 Set-PoshPrompt -Theme ~/.mytheme.omp.json
 
 function DirCS { cd 'D:\Documents\Computer Science\' }
