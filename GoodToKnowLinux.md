@@ -27,6 +27,7 @@
   - NeoVim: Great text editing
   - CopyQ: Clipboard manager
   - Obsidian: Great note taking app
+  - wpgtk: Great way to have changing color themes based on wallpaper
 
 ## Nice things to know
 
