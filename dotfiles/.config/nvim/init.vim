@@ -28,11 +28,13 @@ syntax on " Enable syntax highlighting
 set spell " Spellcheck
 set hidden " Allow you to change buffers without saving
 set mouse=a " Allow mouse usage
+let mapleader = "\<Space>" " Set the leader key
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
 set scrolloff=8 " Ensure at least some number of lines is above/below the cursor
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
+set timeoutlen=350 " Delay for things to happen with multi key bindings
 " set foldmethod=syntax " Folds are made through syntax
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
@@ -56,9 +58,6 @@ lua require("init")
 " ==============
 " == Mappings ==
 " ==============
-let mapleader = "\<Space>" " Set the leader key
-set timeoutlen=350 " Delay for things to happen with multi key bindings
-
 " General Shortcuts
 " Move to the start of the line
 nnoremap <Leader>, ^
@@ -73,15 +72,8 @@ nnoremap <C-Z> <C-r>
 nnoremap <C-y> <C-r>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
-" Zen Mode
-nnoremap <Leader>z :ZenMode<Enter>
-" Toggle transparent background
-nnoremap <Leader>t :TransparentToggle<Enter>
 
-" Glow Markdown Preview
-nnoremap <Leader>mp :Glow<Enter>
-
-" Better wrap navigation
+" "Better" wrap navigation
 nmap <silent><expr> j v:count ? "j" : "gj"
 nmap <silent><expr> k v:count ? "k" : "gk"
 noremap <silent> 0 g0
@@ -110,55 +102,8 @@ nnoremap <Leader>sp [s
 " Under last dictionary task (Spelling Undo)
 nnoremap <Leader>su zug
 
-" Telescope
-nnoremap <Leader>fa :Telescope<Enter>
-nnoremap <Leader>fb :Telescope buffers<Enter>
-nnoremap <Leader>fo :Telescope oldfiles<Enter>
-nnoremap <Leader>fg :Telescope live_grep<Enter>
-nnoremap <Leader>fh :Telescope help_tags<Enter>
-nnoremap <Leader>fm :Telescope man_pages<Enter>
-nnoremap <Leader>ff :Telescope find_files<Enter>
-nnoremap <Leader>ft :Telescope treesitter<Enter>
-nnoremap <Leader>fcr :Telescope lsp_references<Enter>
-nnoremap <Leader>fcs :Telescope lsp_document_symbols<Enter>
-nnoremap <Leader>fca :Telescope lsp_code_actions<Enter>
-nnoremap <Leader>fci :Telescope lsp_implementations<Enter>
-nnoremap <Leader>fcd :Telescope lsp_definitions<Enter>
-nnoremap <Leader>fcD :Telescope lsp_document_diagnostics<Enter>
-nnoremap z=         :Telescope spell_suggest<Enter>
-nnoremap <Leader>/  :Telescope current_buffer_fuzzy_find<Enter>
-
-" LSP
-nnoremap <silent> K :Lspsaga hover_doc<CR>
-nnoremap <silent> gr :Lspsaga rename<CR>
-nnoremap <silent> gpd :Lspsaga preview_definition<CR>
-nnoremap <silent> <Leader>ca :Lspsaga code_action<CR>
-vnoremap <silent> <Leader>ca :<C-U>Lspsaga range_code_action<CR>
-nnoremap <silent> <C-j> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(1)<CR>
-nnoremap <silent> <C-k> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1)<CR>
-nnoremap <silent> <C-t> :Lspsaga open_floaterm<CR>
-tnoremap <silent> <C-t><C-t> <C-\><C-n>:Lspsaga close_floaterm<CR>
-
-" File Tree Explorer
-nnoremap <Leader>fe :NvimTreeToggle<Enter>
-
-" Buffer commands
-nnoremap <Leader>bd     :bd<Enter>
-nnoremap <Leader>bn     :BufferLineCycleNext<Enter>
-nnoremap <Leader>bp     :BufferLineCyclePrev<Enter>
-nnoremap <Leader>bmn    :BufferLineMoveNext<Enter>
-nnoremap <Leader>bmp    :BufferLineMovePrev<Enter>
-nnoremap <Right>        :BufferLineCycleNext<Enter>
-nnoremap <Left>         :BufferLineCyclePrev<Enter>
-nnoremap <Up>           :BufferLineMoveNext<Enter>
-nnoremap <Down>         :BufferLineMovePrev<Enter>
-
 " Jump to the last known cursor position.
 autocmd BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"
     \ |   exe "normal! g`\""
     \ | endif
-
-" Completion
-inoremap <silent><expr> <Enter> compe#confirm('<CR>')
-inoremap <silent><expr> <C-e>   compe#close('<C-e>')

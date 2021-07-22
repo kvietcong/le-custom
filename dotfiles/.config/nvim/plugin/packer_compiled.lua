@@ -73,6 +73,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\gitsigns.nvim"
   },
+  ["haskell-vim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\haskell-vim"
+  },
   ["indent-blankline.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\indent-blankline.nvim"
@@ -120,6 +124,10 @@ _G.packer_plugins = {
   ["nvim-lspconfig"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-lspconfig"
+  },
+  ["nvim-luapad"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-luapad"
   },
   ["nvim-transparent"] = {
     loaded = true,
@@ -176,6 +184,10 @@ _G.packer_plugins = {
   ["telescope.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\telescope.nvim"
+  },
+  ["todo-comments.nvim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\todo-comments.nvim"
   },
   ["trouble.nvim"] = {
     loaded = true,
