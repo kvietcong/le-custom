@@ -1,1 +1,1 @@
-dotfiles/.config/BetterDiscord/plugins/* linguist-vendored
+dotfiles/.config/BetterDiscord/plugins/* -linguist-vendored
