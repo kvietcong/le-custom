@@ -1,25 +1,8 @@
-" --------------------------------------
-" ======================================
-" ==== KV Le's NeoVim Configuration ====
-" ======================================
-" --------------------------------------
-
-" =====================
-" == UI Vim settings ==
-" =====================
-if exists("g:neovide")
-    let g:neovide_transparency=0.95
-    let g:neovide_refresh_rate=144
-    let g:neovide_cursor_trail_length=0.5
-    let g:neovide_cursor_animation_length=0.1
-    let g:neovide_cursor_antialiasing=v:true
-elseif exists("g:fvim_loaded")
-    FVimBackgroundComposition "blur"
-    FVimBackgroundOpacity 0.75
-    FVimBackgroundAltOpacity 0.75
-    FVimFontAntialias v:true
-    FVimUIMultiGrid v:false
-endif
+" -----------------------------------
+" ===================================
+" ==== KV Le's Vim Configuration ====
+" ===================================
+" -----------------------------------
 
 " ======================
 " == General Settings ==
@@ -28,7 +11,6 @@ syntax on " Enable syntax highlighting
 set spell " Spellcheck
 set hidden " Allow you to change buffers without saving
 set mouse=a " Allow mouse usage
-let mapleader = "\<Space>" " Set the leader key
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
 set scrolloff=8 " Ensure at least some number of lines is above/below the cursor
@@ -41,6 +23,7 @@ set ignorecase smartcase " Ignore case unless you have casing in your searches
 set splitbelow splitright " Splits occur below or to the right of the current window
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
+let mapleader = "\<Space>" " Set the leader key
 set guifont=FiraCode\ NF:h16 " Set a font for GUI things
 set backspace=indent,eol,start " More robust backspacing
 set completeopt=menuone,noselect " For nvim-compe
@@ -48,12 +31,24 @@ set smartindent cindent autoindent " Better indenting
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
-if has('win32') || has('win64')
-    set shell=pwsh
+if has("win32") || has("win64")
+    let &shell = "pwsh"
+    let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
+    let &shellredir = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+    let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+    set shellquote= shellxquote=
 endif
 
 " Entry into Lua config
-lua require("init")
+if has("nvim")
+    lua require("init")
+endif
+
+" Case Insensitive Saving/Quitting
+:command WQ wq
+:command Wq wq
+:command W w
+:command Q q
 
 " ==============
 " == Mappings ==
@@ -67,7 +62,7 @@ nnoremap <Leader>. $
 command! SudoWrite w !sudo tee > /dev/null %
 " Saving :)
 nnoremap <C-s> :w<Enter>
-" Redoing (For some reason I can't remap <C-y>)
+" Redoing
 nnoremap <C-Z> <C-r>
 nnoremap <C-y> <C-r>
 " Global substitution for things selected in visual mode
@@ -107,3 +102,31 @@ autocmd BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"
     \ |   exe "normal! g`\""
     \ | endif
+
+" Refresh Colorscheme
+function RefreshColor()
+    if exists("g:colors_name")
+        let current = g:colors_name
+    else
+        let current = "default"
+    endif
+    execute "colorscheme ".current
+endfunction
+nnoremap <silent><C-F5> :call RefreshColor()<Enter>
+
+" ======================
+" == GUI Vim settings ==
+" ======================
+if exists("g:neovide")
+    let g:neovide_transparency=0.95
+    let g:neovide_refresh_rate=144
+    let g:neovide_cursor_trail_length=0.5
+    let g:neovide_cursor_animation_length=0.1
+    let g:neovide_cursor_antialiasing=v:true
+elseif exists("g:fvim_loaded")
+    FVimBackgroundComposition "blur"
+    FVimBackgroundOpacity 0.75
+    FVimBackgroundAltOpacity 0.75
+    FVimFontAntialias v:true
+    FVimUIMultiGrid v:false
+endif

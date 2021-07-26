@@ -73,6 +73,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\gitsigns.nvim"
   },
+  ["gruvbox-material"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\gruvbox-material"
+  },
   ["haskell-vim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\haskell-vim"
@@ -97,13 +101,13 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\lsp_signature.nvim"
   },
-  ["lspsaga.nvim"] = {
-    loaded = true,
-    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\lspsaga.nvim"
-  },
   ["lualine.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\lualine.nvim"
+  },
+  ["material.nvim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\material.nvim"
   },
   ["nord.nvim"] = {
     loaded = true,
@@ -129,10 +133,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-luapad"
   },
-  ["nvim-transparent"] = {
-    loaded = true,
-    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-transparent"
-  },
   ["nvim-tree.lua"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-tree.lua"
@@ -144,6 +144,10 @@ _G.packer_plugins = {
   ["nvim-treesitter-refactor"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-treesitter-refactor"
+  },
+  ["nvim-treesitter-textobjects"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\nvim-treesitter-textobjects"
   },
   ["nvim-ts-rainbow"] = {
     loaded = true,
@@ -165,10 +169,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\popup.nvim"
   },
-  ["presence.nvim"] = {
-    loaded = true,
-    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\presence.nvim"
-  },
   rainbow = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\rainbow"
@@ -189,6 +189,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\todo-comments.nvim"
   },
+  ["tokyonight.nvim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\tokyonight.nvim"
+  },
   ["trouble.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\trouble.nvim"
@@ -196,6 +200,10 @@ _G.packer_plugins = {
   ["twilight.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\twilight.nvim"
+  },
+  ["vim-floaterm"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\vim-floaterm"
   },
   ["vim-repeat"] = {
     loaded = true,

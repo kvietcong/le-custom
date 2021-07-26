@@ -18,6 +18,7 @@ local function setup()
     map("n <Leader>fm   :Telescope man_pages<Enter>")
     map("n <Leader>ff   :Telescope find_files<Enter>")
     map("n <Leader>ft   :Telescope treesitter<Enter>")
+    map("n <Leader>fT   :TodoTelescope<Enter>")
     map("n <Leader>fcr  :Telescope lsp_references<Enter>")
     map("n <Leader>fcs  :Telescope lsp_document_symbols<Enter>")
     map("n <Leader>fca  :Telescope lsp_code_actions<Enter>")
@@ -62,6 +63,4 @@ local function setup()
     map("n <Leader>fe :NvimTreeToggle<Enter>")
 end
 
-local navigation = {}
-navigation.setup = setup
-return navigation
+return { setup = setup }

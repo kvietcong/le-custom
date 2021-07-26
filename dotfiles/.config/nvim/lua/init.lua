@@ -4,14 +4,15 @@
           (i.e. when there's a pandoc option to convert markdown to neorg)
 ]]
 
--- Retrieve Plugins
-require("plugins").setup()
--- LSP Setup
-require("lsp").setup()
--- Treesitter Setup
-require("treesitter").setup()
--- Navigation Setup
-require("navigation").setup()
--- UI Setup
-require("ui").setup()
+local safe_setup = require("helpers").safe_setup
 
+-- Retrieve Plugins
+safe_setup("plugins")
+-- UI Setup
+safe_setup("ui")
+-- Navigation Setup
+safe_setup("navigation")
+-- Treesitter Setup
+safe_setup("treesitter")
+-- LSP Setup
+safe_setup("lsp")

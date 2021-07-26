@@ -48,8 +48,40 @@ local function map(map, options, buff)
     end
 end
 
-local helpers = {}
-helpers.split = split
-helpers.trim = trim
-helpers.map = map
-return helpers
+--- Retrieve Current Time
+--- @return table Table with Hour, Minute, and Formatted String
+local function get_time()
+    return {
+        hour = tonumber(os.date("%H")),
+        minute = tonumber(os.date("%M")),
+        string = os.date("%H:%M")
+    }
+end
+
+--- Retrieve Day Status
+--- @return boolean
+local function is_day()
+    local hour = get_time().hour
+    return hour > 6 and hour < 18
+end
+
+--- Safely Setup a Module (No Blocking)
+--- @param string Name of the module (file name)
+--- @return any Value Module's return value or error message
+local function safe_setup(name)
+    local success, result = pcall(require(name).setup)
+    if not success then
+        print(name.." setup failed")
+        print("ERROR: "..result)
+    end
+    return result
+end
+
+return {
+    safe_setup = safe_setup,
+    get_time = get_time,
+    is_day = is_day,
+    split = split,
+    trim = trim,
+    map = map
+}

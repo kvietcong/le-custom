@@ -27,32 +27,23 @@ local function setup()
     map("i <Enter> compe#confirm('<Enter>')", "silent expr noremap")
     map("i <C-e>   compe#close('<C-e>')", "silent expr noremap")
 
-    map("n <C-t>       :Lspsaga open_floaterm<CR>")
-    map("t <C-t><C-t>  <C-\\><C-n>:Lspsaga close_floaterm<CR>")
     local on_attach = function(client, buff)
-        map("n K           :Lspsaga hover_doc<Enter>", nil, buff)
-        map("n gr          :Lspsaga rename<Enter>", nil, buff)
-        map("n gpd         :Lspsaga preview_definition<Enter>", nil, buff)
-        map("n <Leader>ca  :Lspsaga code_action<Enter>", nil, buff)
-        map("v <Leader>ca  :<C-U>Lspsaga range_code_action<Enter>", nil, buff)
-        map("n <Leader>f   :lua vim.lsp.buf.formatting()<Enter>", nil, buff)
-        map("n <C-j>       :lua require('lspsaga.action').smart_scroll_with_saga(1)<Enter>", nil, buff)
-        map("n <C-k>       :lua require('lspsaga.action').smart_scroll_with_saga(-1)<Enter>", nil, buff)
+        map("n <C-k>        :lua vim.lsp.buf.signature_help()", nil, buff)
+        map("n K            :lua vim.lsp.buf.hover()<Enter>", nil, buff)
+        map("n gr           :lua vim.lsp.buf.rename()<Enter>", nil, buff)
+        map("n <Leader>ca   :lua vim.lsp.buf.code_action()<Enter>", nil, buff)
+        map("n <Leader>cf   :lua vim.lsp.buf.formatting()<Enter>", nil, buff)
     end
 
-    local servers = { "pyright", "hls", "clangd", "tsserver" }
-    -- For some reason, the extracted VSCode servers don't work on Windows :(
-    if not vim.fn.has("win32") then
-        for _, server in pairs{ "cssls", "html" } do
-            table.insert(servers, server)
-        end
-    end
+    -- TODO: For some reason, the extracted VSCode servers (HTML, CSS) don't work on Windows :(
+    local servers = { "pyright", "hls", "clangd", "tsserver", "html", "cssls" }
     for _, server in pairs(servers) do
-        local options = { on_attach = on_attach }
-        require("lspconfig")[server].setup(options)
+        require("lspconfig")[server].setup {
+            on_attach = on_attach
+        }
     end
 
-    -- Lua server configuration
+    -- Lua Specific Server Configuration
     local sumneko_root
     local sumneko_binary
     -- Only have Lua configured for Windows atm
@@ -75,6 +66,4 @@ local function setup()
     }
 end
 
-local lsp = {}
-lsp.setup = setup
-return lsp
+return { setup = setup }
