@@ -88,8 +88,6 @@ local function setup()
     wk.setup()
     wk.register({
         ["/"]       = "Fuzzy Find",
-        [","]       = "Go to first Non-Space Character",
-        ["."]       = "Go to end of line",
         f = {
             name    = "Find (Telescope)",
             a       = "All Built-in Telescope Pickers",
@@ -129,7 +127,12 @@ local function setup()
         c = {
             name = "Code",
             a    = "Action",
-            f    = "Format"
+            f    = "Format",
+            h    = "Help (Hover Docs)",
+            s    = "Signature",
+            ["-"] = "Comment Banner (--)",
+            ["="] = "Comment Banner (==)",
+            ["/"] = "Comment Banner (//)",
         },
     }, { prefix     = "<Leader>" })
 end

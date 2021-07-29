@@ -33,15 +33,15 @@ local function setup()
         show_close_icon = false,
         seperator_style = "thin",
     }}
-    map("n <Leader>bd     :bd<Enter>")
-    map("n <Leader>bn     :BufferLineCycleNext<Enter>")
-    map("n <Leader>bp     :BufferLineCyclePrev<Enter>")
-    map("n <Leader>bmn    :BufferLineMoveNext<Enter>")
-    map("n <Leader>bmp    :BufferLineMovePrev<Enter>")
-    map("n <Right>        :BufferLineCycleNext<Enter>")
-    map("n <Left>         :BufferLineCyclePrev<Enter>")
-    map("n <Up>           :BufferLineMoveNext<Enter>")
-    map("n <Down>         :BufferLineMovePrev<Enter>")
+    map("n <Leader>bd   :bd<Enter>")
+    map("n <M-l>        :BufferLineCycleNext<Enter>")
+    map("n <M-h>        :BufferLineCyclePrev<Enter>")
+    map("n <Leader>bn   :BufferLineCycleNext<Enter>")
+    map("n <Leader>bp   :BufferLineCyclePrev<Enter>")
+    map("n <M-j>        :BufferLineMoveNext<Enter>")
+    map("n <M-k>        :BufferLineMovePrev<Enter>")
+    map("n <Leader>bmn  :BufferLineMoveNext<Enter>")
+    map("n <Leader>bmp  :BufferLineMovePrev<Enter>")
 
     -- Lightspeed Setup
     --- Enables Lightspeed to use , and ; as repeats
@@ -61,6 +61,18 @@ local function setup()
     vim.g.nvim_tree_git_hl = 1
     vim.g.nvim_tree_add_trailing = 1
     map("n <Leader>fe :NvimTreeToggle<Enter>")
+
+    -- Wiki Vim
+    vim.g.wiki_root = "~/Documents/Notes"
+    vim.g.wiki_link_extension = ".md"
+    vim.g.wiki_filetypes = { "md", "wiki", "markdown" }
+    vim.g.wiki_journal = {
+        name = "Journal",
+        frequency = "daily",
+        date_format = {
+            daily = "%Y-%m-%d"
+        }
+    }
 end
 
 return { setup = setup }

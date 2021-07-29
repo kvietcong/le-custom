@@ -4,19 +4,27 @@
 " ===================================
 " -----------------------------------
 
+set nocompatible " Screw vi compatibility XD
 " ======================
 " == General Settings ==
 " ======================
 syntax on " Enable syntax highlighting
 set spell " Spellcheck
+set title " Change Terminal Title
 set hidden " Allow you to change buffers without saving
+set confirm
 set mouse=a " Allow mouse usage
+set nobackup
+set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
-set scrolloff=8 " Ensure at least some number of lines is above/below the cursor
+set lazyredraw
+set scrolloff=3 " Ensure at least some number of lines is above/below the cursor
+set history=500
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
 set timeoutlen=350 " Delay for things to happen with multi key bindings
+set inccommand=split " Live update of commands like substitution
 " set foldmethod=syntax " Folds are made through syntax
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
@@ -32,6 +40,7 @@ set wildmenu wildmode=longest,list,full " Display completion matches in a status
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
 if has("win32") || has("win64")
+    " Make Powershell work :)
     let &shell = "pwsh"
     let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
     let &shellredir = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
@@ -44,9 +53,15 @@ if has("nvim")
     lua require("init")
 endif
 
-" Case Insensitive Saving/Quitting
+" Case/Typo Insensitive Saving/Quitting
 :command WQ wq
 :command Wq wq
+:command Qw wq
+:command QW wq
+:command Ww wq
+:command Qq wq
+:command QQ wq
+:command WW wq
 :command W w
 :command Q q
 
@@ -54,36 +69,51 @@ endif
 " == Mappings ==
 " ==============
 " General Shortcuts
-" Move to the start of the line
-nnoremap <Leader>, ^
-" Move to the end of the line
-nnoremap <Leader>. $
 " New write command for sudo writing
 command! SudoWrite w !sudo tee > /dev/null %
 " Saving :)
 nnoremap <C-s> :w<Enter>
-" Redoing
-nnoremap <C-Z> <C-r>
+" Redo stuff
 nnoremap <C-y> <C-r>
+nnoremap U <C-r>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
+" Help is now delegated to CTRL-h
+nnoremap <silent> <C-h> K
 
-" "Better" wrap navigation
-nmap <silent><expr> j v:count ? "j" : "gj"
-nmap <silent><expr> k v:count ? "k" : "gk"
-noremap <silent> 0 g0
-noremap <silent> $ g$
+" Custom Navigation Stuff (Basically Vim Heresy)
+nnoremap <silent><expr> j v:count ? "j" : "gj"
+nnoremap <silent><expr> k v:count ? "k" : "gk"
+nnoremap <silent> 0 g0
+nnoremap gm gM
+nnoremap Y y$
 
-" Better split navigation
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
+nnoremap <silent> H g^
+nnoremap <silent> L g$
+nnoremap <silent> J 10gj
+nnoremap <silent> K 10gk
+nnoremap <silent> <M-o> o<Esc>
+nnoremap <silent> <M-O> O<Esc>
+
+nnoremap gh <C-w>h
+nnoremap gj <C-w>j
+nnoremap gk <C-w>k
+nnoremap gl <C-w>l
+nnoremap <C-Up> <C-w>-
+nnoremap <C-Down> <C-w>+
+nnoremap <C-Left> <C-w><
+nnoremap <C-Right> <C-w>>
+nnoremap <C-w>v <C-w>v<C-w><C-l>
+nnoremap <C-w><C-v> <C-w>v<C-w><C-l>
+nnoremap <C-w>h <C-w>s
+nnoremap <C-w><C-h> <C-w>s
+nnoremap <C-w>h <C-w>s<C-w><C-j>
+nnoremap <C-w><C-h> <C-w>s<C-w><C-j>
 
 " Banner comments
-nnoremap <buffer> <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
-nnoremap <buffer> <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj<Esc>
-nnoremap <buffer> <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
+nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
+nnoremap <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj<Esc>
+nnoremap <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
 
 " Spell check
 " Add word to dictionary (Spelling Add)
@@ -112,7 +142,7 @@ function RefreshColor()
     endif
     execute "colorscheme ".current
 endfunction
-nnoremap <silent><C-F5> :call RefreshColor()<Enter>
+nnoremap <silent><F5> :call RefreshColor()<Enter>
 
 " ======================
 " == GUI Vim settings ==

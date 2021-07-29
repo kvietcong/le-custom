@@ -221,6 +221,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\which-key.nvim"
   },
+  ["wiki.vim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\wiki.vim"
+  },
   ["zen-mode.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\zen-mode.nvim"

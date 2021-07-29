@@ -6,7 +6,7 @@
 
 local safe_setup = require("helpers").safe_setup
 
--- Retrieve Plugins
+-- Plugin Setup
 safe_setup("plugins")
 -- UI Setup
 safe_setup("ui")
