@@ -1,3 +1,18 @@
-plugged/
 **/BetterDiscord/*.json
 **/BetterDiscord/**/*.json
+
+# Vim Stuff
+**/nvim/plugin/
+
+# Emacs Stuff
+\#*\#
+*~
+.#*
+tramp
+elpa/
+server/
+cache/
+bookmarks
+.org-id-locations
+*_archive
+url/
