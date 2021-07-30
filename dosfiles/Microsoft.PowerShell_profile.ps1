@@ -2,6 +2,24 @@ Set-Alias -Name vim -Value nvim
 # Set-Alias -Name cd -Value z -Option AllScope
 Set-PoshPrompt -Theme ~/.mytheme.omp.json
 
+# Vi Mode
+$PSReadLineOptions = @{
+    EditMode = "vi"
+    HistoryNoDuplicates = $true
+    HistorySearchCursorMovesToEnd = $true
+}
+Set-PSReadLineOption @PSReadLineOptions
+function OnViModeChange {
+    if ($args[0] -eq 'Command') {
+        # Set the cursor to a blinking block.
+        Write-Host -NoNewLine "`e[1 q"
+    } else {
+        # Set the cursor to a blinking line.
+        Write-Host -NoNewLine "`e[5 q"
+    }
+}
+Set-PSReadLineOption -ViModeIndicator Script -ViModeChangeHandler $Function:OnViModeChange
+
 function DirCS { cd 'D:\Documents\Computer Science\' }
 function DirDots { cd 'D:\Documents\le-custom\' }
 function DirNotes { cd 'D:\Documents\Notes\' }
