@@ -105,6 +105,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\lualine.nvim"
   },
+  ["markdown-preview.nvim"] = {
+    loaded = true,
+    path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\markdown-preview.nvim"
+  },
   ["material.nvim"] = {
     loaded = true,
     path = "C:\\Users\\minec\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\material.nvim"

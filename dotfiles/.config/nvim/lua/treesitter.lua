@@ -69,12 +69,8 @@ local function setup()
         window = { width = 110, number = true },
         plugins = { options = { ruler = true }},
         gitsigns = { enable = true },
-        on_open = function()
-            vim.api.nvim_command("TransparentDisable")
-        end,
-        on_close = function()
-            vim.api.nvim_command("TransparentEnable")
-        end
+        on_open = function() end,
+        on_close = function() end
     }
     map("n <Leader>z :ZenMode<Enter>")
 

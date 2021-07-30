@@ -24,6 +24,7 @@ set history=500
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
 set timeoutlen=350 " Delay for things to happen with multi key bindings
+set viminfo='100,f1 " Save marks and stuff
 set inccommand=split " Live update of commands like substitution
 " set foldmethod=syntax " Folds are made through syntax
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
@@ -86,6 +87,7 @@ nnoremap <silent><expr> j v:count ? "j" : "gj"
 nnoremap <silent><expr> k v:count ? "k" : "gk"
 nnoremap <silent> 0 g0
 nnoremap gm gM
+nnoremap gM gm
 nnoremap Y y$
 
 nnoremap <silent> H g^
@@ -105,10 +107,6 @@ nnoremap <C-Left> <C-w><
 nnoremap <C-Right> <C-w>>
 nnoremap <C-w>v <C-w>v<C-w><C-l>
 nnoremap <C-w><C-v> <C-w>v<C-w><C-l>
-nnoremap <C-w>h <C-w>s
-nnoremap <C-w><C-h> <C-w>s
-nnoremap <C-w>h <C-w>s<C-w><C-j>
-nnoremap <C-w><C-h> <C-w>s<C-w><C-j>
 
 " Banner comments
 nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>

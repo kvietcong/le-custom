@@ -51,6 +51,7 @@ local function setup()
         use "ray-x/lsp_signature.nvim"
         use "kyazdani42/nvim-tree.lua"
         use "neovimhaskell/haskell-vim"
+        use "iamcco/markdown-preview.nvim"
         use "simrat39/symbols-outline.nvim"
         use "nvim-treesitter/nvim-treesitter-refactor"
         use "nvim-treesitter/nvim-treesitter-textobjects"
