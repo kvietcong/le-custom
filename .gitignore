@@ -5,14 +5,11 @@
 **/nvim/plugin/
 
 # Emacs Stuff
-\#*\#
+**\#*\#
 *~
 .#*
-tramp
-elpa/
-server/
-cache/
-bookmarks
-.org-id-locations
-*_archive
-url/
+**/elpa/
+**/server/
+**/cache/
+**/.emacs.d/auto-save-list
+**/.emacs.d/url
