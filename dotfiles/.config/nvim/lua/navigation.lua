@@ -28,10 +28,23 @@ local function setup()
     map("n z=           :Telescope spell_suggest<Enter>")
     map("n <Leader>/    :Telescope current_buffer_fuzzy_find<Enter>")
 
+    -- Lightspeed Setup
+    function Repeat_Search(reverse)
+        local ls = require'lightspeed'
+        ls.ft['instant-repeat?'] = true
+        ls.ft:to(reverse, ls.ft['prev-t-like?'])
+    end
+    -- Find out why I have to use <CMD> to make this work in visual mode. Like WTF?
+    map("n ; <CMD>lua Repeat_Search(false)<Enter>")
+    map("x ; <CMD>lua Repeat_Search(false)<Enter>")
+    map("n , <CMD>lua Repeat_Search(true)<Enter>")
+    map("x , <CMD>lua Repeat_Search(true)<Enter>")
+
     -- Bufferline (File tabs)
     require("bufferline").setup { options = {
         show_close_icon = false,
-        seperator_style = "thin",
+        diagnostics = "nvim_lsp",
+        seperator_style = "thick"
     }}
     map("n <Leader>bd   :bd<Enter>")
     map("n <M-l>        :BufferLineCycleNext<Enter>")
@@ -62,9 +75,7 @@ local function setup()
     }
 
     -- Lua Pad
-    require("luapad").config {
-        count_limit = 50000
-    }
+    require("luapad").config { count_limit = 50000 }
 end
 
 return { setup = setup }

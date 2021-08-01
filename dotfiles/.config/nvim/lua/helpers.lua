@@ -1,6 +1,6 @@
 --- Split String on Delimiter
 --- @param input string Given string to be split
---- @param delimeter string What to split by
+--- @param delimiter string What to split by
 --- @return string splitInput
 local function split(input, delimiter)
     if delimiter == nil then delimiter = " " end
@@ -19,10 +19,10 @@ local function trim(input)
 end
 
 --- Keymap helper
---- @param map string Info about the map
+--- @param keymapping string Info about the keymapping
 --- @param options? string Extra options. Default options are `noremap` and `silent`
 --- @param buff? string Buffer for local mappings
-local function map(map, options, buff)
+local function map(keymapping, options, buff)
     if options == nil then
         options = { noremap = true, silent = true }
     else
@@ -33,18 +33,20 @@ local function map(map, options, buff)
         end
         options = new_options
     end
-    map = split(map)
-    local function get_command(map)
+    keymapping = split(keymapping)
+    local function get_command(split_keymap)
         local command = ""
-        for i, v in pairs(map) do
+        for i, v in pairs(split_keymap) do
             if i > 2 then command = command .. " " .. v end
         end
         return trim(command)
     end
     if buff == nil then
-        vim.api.nvim_set_keymap(map[1], map[2], get_command(map), options)
+        vim.api.nvim_set_keymap(
+            keymapping[1], keymapping[2], get_command(keymapping), options)
     else
-        vim.api.nvim_buf_set_keymap(buff, map[1], map[2], get_command(map), options)
+        vim.api.nvim_buf_set_keymap(buff,
+            keymapping[1], keymapping[2], get_command(keymapping), options)
     end
 end
 
@@ -66,7 +68,7 @@ local function is_day()
 end
 
 --- Safely Setup a Module (No Blocking)
---- @param string Name of the module (file name)
+--- @param name string of the module (file name)
 --- @return any Value Module's return value or error message
 local function safe_setup(name)
     local success, result = pcall(require(name).setup)

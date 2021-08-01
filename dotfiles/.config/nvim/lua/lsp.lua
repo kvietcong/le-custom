@@ -1,7 +1,6 @@
 local map = require("helpers").map
 
 local function setup()
-    require("trouble").setup()
     require("lsp_signature").setup({
         hint_enable = true,
         hint_prefix = "✅ "
@@ -28,6 +27,9 @@ local function setup()
     map("i <C-e>   compe#close('<C-e>')", "silent expr noremap")
 
     local on_attach = function(client, buff)
+        map("n gd           :lua vim.lsp.buf.definition()<Enter>", nil, buff)
+        map("n gD           :lua vim.lsp.buf.declaration()<Enter>", nil, buff)
+        map("n gi           :lua vim.lsp.buf.implementation()<Enter>", nil, buff)
         map("n <Leader>cs   :lua vim.lsp.buf.signature_help()<Enter>", nil, buff)
         map("n <Leader>ch   :lua vim.lsp.buf.hover()<Enter>", nil, buff)
         map("n gr           :lua vim.lsp.buf.rename()<Enter>", nil, buff)

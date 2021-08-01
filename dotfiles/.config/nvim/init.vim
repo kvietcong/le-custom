@@ -66,6 +66,13 @@ endif
 :command W w
 :command Q q
 
+" Highlight characters in column 81 and 101
+:1match ErrorMsg '\%101v.'
+:2match WarningMsg '\%81v.'
+" Disable for Markdown and Text
+autocmd FileType markdown,text 1match none
+autocmd FileType markdown,text 2match none
+
 " ==============
 " == Mappings ==
 " ==============

@@ -15,30 +15,28 @@ local function setup()
         use "nvim-lua/popup.nvim"
         use "nvim-lua/plenary.nvim"
         use "neovim/nvim-lspconfig"
-        use "nvim-treesitter/nvim-treesitter"
         use "nvim-telescope/telescope.nvim"
+        use "nvim-treesitter/nvim-treesitter"
 
         -- Colorschemes
         use "shaunsingh/nord.nvim"
         use "folke/tokyonight.nvim"
         use "sainnhe/gruvbox-material"
-        use "marko-cerovac/material.nvim"
 
         -- Small UI Improvements
         use "luochen1990/rainbow"
-        use "folke/twilight.nvim"
         use "hoob3rt/lualine.nvim"
         use "p00f/nvim-ts-rainbow"
         use "folke/which-key.nvim"
-        use "folke/lsp-colors.nvim"
         use "voldikss/vim-floaterm"
         use "akinsho/nvim-bufferline.lua"
         use "norcalli/nvim-colorizer.lua"
         use "kyazdani42/nvim-web-devicons"
         use "lukas-reineke/indent-blankline.nvim"
 
+        use "ggandor/lightspeed.nvim"
+
         use "lervag/wiki.vim"
-        use "folke/trouble.nvim"
         use "hrsh7th/nvim-compe"
         use "folke/zen-mode.nvim"
         use "b3nj5m1n/kommentary"

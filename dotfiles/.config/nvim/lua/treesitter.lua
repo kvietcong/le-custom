@@ -73,10 +73,6 @@ local function setup()
         on_close = function() end
     }
     map("n <Leader>z :ZenMode<Enter>")
-
-    require("twilight").setup {
-        dimming = { alpha = 0.4 }
-    }
 end
 
 return { setup = setup }
