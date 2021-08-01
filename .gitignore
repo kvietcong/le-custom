@@ -2,14 +2,16 @@
 **/BetterDiscord/**/*.json
 
 # Vim Stuff
-**/nvim/plugin/
+**/nvim/plugin
 
 # Emacs Stuff
 **\#*\#
 *~
 .#*
-**/elpa/
-**/server/
-**/cache/
+**/elpa
+**/server
+**/cache
 **/.emacs.d/auto-save-list
 **/.emacs.d/url
+**/recentf
+**/dotfiles/.emacs.d/.last-package-update-day
