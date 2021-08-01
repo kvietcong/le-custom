@@ -2,7 +2,7 @@
  * @name BDFDB
  * @author DevilBro
  * @authorId 278543574059057154
- * @version 1.7.10
+ * @version 1.7.12
  * @description Required Library for DevilBro's Plugins
  * @invite Jx3TjNS
  * @donate https://www.paypal.me/MircoWittrien
@@ -19,7 +19,7 @@ module.exports = (_ => {
 		"info": {
 			"name": "BDFDB",
 			"author": "DevilBro",
-			"version": "1.7.10",
+			"version": "1.7.12",
 			"description": "Required Library for DevilBro's Plugins"
 		},
 		"rawUrl": `https://mwittrien.github.io/BetterDiscordAddons/Library/0BDFDB.plugin.js`
@@ -1955,12 +1955,16 @@ module.exports = (_ => {
 					methodNames = BDFDB.ArrayUtils.removeCopies(methodNames).flat(10).filter(n => n);
 					if (methodNames.includes("componentDidMount")) InternalBDFDB.initiateProcess(plugin, type, {
 						instance: instance,
+						returnvalue: undefined,
+						component: undefined,
 						methodname: "componentDidMount",
 						patchtypes: pluginData.patchTypes[type]
 					});
 					if (methodNames.includes("render")) forceRender = true;
 					else if (!forceRender && methodNames.includes("componentDidUpdate")) InternalBDFDB.initiateProcess(plugin, type, {
 						instance: instance,
+						returnvalue: undefined,
+						component: undefined,
 						methodname: "componentDidUpdate",
 						patchtypes: pluginData.patchTypes[type]
 					});
@@ -2048,14 +2052,13 @@ module.exports = (_ => {
 					toBePatched = toBePatched && toBePatched.type && typeof toBePatched.type.render == "function" ? toBePatched.type : toBePatched;
 					for (let pluginData of pluginDataObjs) for (let patchType in pluginData.patchTypes) {
 						let patchMethods = {};
-						patchMethods[patchType] = e => {
-							return InternalBDFDB.initiateProcess(pluginData.plugin, type, {
-								instance: e.thisObject,
-								returnvalue: e.returnValue,
-								methodname: e.originalMethodName,
-								patchtypes: [patchType]
-							});
-						};
+						patchMethods[patchType] = e => InternalBDFDB.initiateProcess(pluginData.plugin, type, {
+							instance: e.thisObject,
+							returnvalue: e.returnValue,
+							component: toBePatched,
+							methodname: e.originalMethodName,
+							patchtypes: [patchType]
+						});
 						BDFDB.PatchUtils.patch(pluginData.plugin, toBePatched, pluginData.patchTypes[patchType], patchMethods, {name});
 					}
 				}
@@ -2068,7 +2071,7 @@ module.exports = (_ => {
 			}) && ins.return.type;
 		};
 		InternalBDFDB.isMemo = function (exports) {
-			return exports && exports.default && typeof exports.default.$$typeof == "symbol" && (exports.default.$$typeof.toString() || "").indexOf("memo") > -1
+			return exports && exports.default && typeof exports.default.$$typeof == "symbol" && (exports.default.$$typeof.toString() || "").indexOf("memo") > -1;
 		};
 		InternalBDFDB.checkEle = function (pluginDataObjs, ele, type, config) {
 			pluginDataObjs = [pluginDataObjs].flat(10).filter(n => n);
