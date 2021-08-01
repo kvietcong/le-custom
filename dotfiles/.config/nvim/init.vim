@@ -14,7 +14,6 @@ set title " Change Terminal Title
 set hidden " Allow you to change buffers without saving
 set confirm
 set mouse=a " Allow mouse usage
-set nobackup
 set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
@@ -27,6 +26,7 @@ set timeoutlen=350 " Delay for things to happen with multi key bindings
 set viminfo='100,f1 " Save marks and stuff
 set inccommand=split " Live update of commands like substitution
 " set foldmethod=syntax " Folds are made through syntax
+set jumpoptions+=stack
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set splitbelow splitright " Splits occur below or to the right of the current window
@@ -83,19 +83,25 @@ xnoremap gs y:%s/<C-r>"//g<Left><Left>
 nnoremap <silent> <C-h> K
 
 " Custom Navigation Stuff (Basically Vim Heresy)
-nnoremap <silent><expr> j v:count ? "j" : "gj"
-nnoremap <silent><expr> k v:count ? "k" : "gk"
-nnoremap <silent> 0 g0
+nnoremap <expr> j v:count ? "j" : "gj"
+nnoremap <expr> k v:count ? "k" : "gk"
 nnoremap gm gM
 nnoremap gM gm
+nnoremap 0 g0
+vnoremap 0 g0
 nnoremap Y y$
 
-nnoremap <silent> H g^
-nnoremap <silent> L g$
-nnoremap <silent> J 10gj
-nnoremap <silent> K 10gk
-nnoremap <silent> <M-o> o<Esc>
-nnoremap <silent> <M-O> O<Esc>
+nnoremap H g^
+nnoremap L g$
+nnoremap J 6gj
+nnoremap K 6gk
+vnoremap H g^
+vnoremap L g$
+vnoremap J 6gj
+vnoremap K 6gk
+nnoremap <C-j> J
+nnoremap <M-o> o<Esc>
+nnoremap <M-O> O<Esc>
 
 nnoremap gh <C-w>h
 nnoremap gj <C-w>j
@@ -107,6 +113,8 @@ nnoremap <C-Left> <C-w><
 nnoremap <C-Right> <C-w>>
 nnoremap <C-w>v <C-w>v<C-w><C-l>
 nnoremap <C-w><C-v> <C-w>v<C-w><C-l>
+
+inoremap <C-v> <Esc>"+pi
 
 " Banner comments
 nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>

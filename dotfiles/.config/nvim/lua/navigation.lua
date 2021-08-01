@@ -43,19 +43,6 @@ local function setup()
     map("n <Leader>bmn  :BufferLineMoveNext<Enter>")
     map("n <Leader>bmp  :BufferLineMovePrev<Enter>")
 
-    -- Lightspeed Setup
-    --- Enables Lightspeed to use , and ; as repeats
-    --- @param reverse boolean If serach direction should be reversed
-    function Repeat_Search(reverse)
-      local ls = require'lightspeed'
-      ls.ft["instant-repeat?"] = true
-      ls.ft:to(reverse, ls.ft["prev-t-like?"])
-    end
-    map("n ; :lua Repeat_Search(false)<Enter>")
-    map("x ; :lua Repeat_Search(false)<Enter>")
-    map("n , :lua Repeat_Search(true)<Enter>")
-    map("x , :lua Repeat_Search(true)<Enter>")
-
     -- Neovim tree (File explorer)
     vim.g.nvim_tree_indent_markers = 1
     vim.g.nvim_tree_git_hl = 1
@@ -72,6 +59,11 @@ local function setup()
         date_format = {
             daily = "%Y-%m-%d"
         }
+    }
+
+    -- Lua Pad
+    require("luapad").config {
+        count_limit = 50000
     }
 end
 

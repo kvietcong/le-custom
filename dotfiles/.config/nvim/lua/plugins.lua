@@ -43,7 +43,6 @@ local function setup()
         use "folke/zen-mode.nvim"
         use "b3nj5m1n/kommentary"
         use "rafcamlet/nvim-luapad"
-        use "ggandor/lightspeed.nvim"
         use "lewis6991/gitsigns.nvim"
         use "tversteeg/registers.nvim"
         use "folke/todo-comments.nvim"

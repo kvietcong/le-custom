@@ -72,7 +72,7 @@ local function setup()
     -- vim.cmd [[highlight Indent2 guifg=#8FBCBB guibg=NONE gui=nocombine]]
     -- vim.cmd [[highlight Indent3 guifg=#81A1C1 guibg=NONE gui=nocombine]]
     -- vim.g.indent_blankline_char_highlight_list = { "Indent1", "Indent2", "Indent3" }
-    
+
     -- Terminal Stuff
     vim.g.floaterm_width = 0.9
     vim.g.floaterm_height = 0.9
