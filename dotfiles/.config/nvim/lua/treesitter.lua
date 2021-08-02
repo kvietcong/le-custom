@@ -27,9 +27,9 @@ local function setup()
             },
             -- TODO: Find out why custom text objects are not working
             textobjects = {
+                lsp_interop = { enable = true },
                 select = {
                     enable = true,
-                    lookahead = true,
                     keymaps = {
                         ["al"] = "@loop.outer",
                         ["il"] = "@loop.inner",

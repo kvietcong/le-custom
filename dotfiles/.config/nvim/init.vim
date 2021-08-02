@@ -82,16 +82,22 @@ command! SudoWrite w !sudo tee > /dev/null %
 " Saving :)
 nnoremap <C-s> :w<Enter>
 " Redo stuff
-nnoremap <C-y> <C-r>
 nnoremap U <C-r>
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
 " Help is now delegated to CTRL-h
-nnoremap <silent> <C-h> K
+nnoremap <C-h> K
+noremap <M-x> :
+nnoremap Q q:
+" "Regular" Copy and Paste
+inoremap <C-v> <Esc>"+pi
+vnoremap <C-c> "+y<Esc>
 
-" Custom Navigation Stuff (Basically Vim Heresy)
+" Custom Navigation Stuff
 nnoremap <expr> j v:count ? "j" : "gj"
 nnoremap <expr> k v:count ? "k" : "gk"
+nnoremap N Nzzzv
+nnoremap n nzzzv
 nnoremap gm gM
 nnoremap gM gm
 nnoremap 0 g0
@@ -100,20 +106,24 @@ nnoremap Y y$
 
 nnoremap H g^
 nnoremap L g$
-nnoremap J 6gj
-nnoremap K 6gk
 vnoremap H g^
 vnoremap L g$
-vnoremap J 6gj
-vnoremap K 6gk
-nnoremap <C-j> J
+nnoremap J mzJ`z
 nnoremap <M-o> o<Esc>
 nnoremap <M-O> O<Esc>
+" I have to find a more ergonomic way to scroll up and down
+nnoremap \\ <C-d>
+nnoremap \|\| <C-u>
 
 nnoremap gh <C-w>h
 nnoremap gj <C-w>j
 nnoremap gk <C-w>k
 nnoremap gl <C-w>l
+nnoremap <Leader>ws <C-w>s
+nnoremap <Leader>wv <C-w>v
+nnoremap <Leader>wc <C-w>c
+nnoremap <Leader>wf <C-w>f
+nnoremap <Leader>wo <C-w>o
 nnoremap <C-Up> <C-w>-
 nnoremap <C-Down> <C-w>+
 nnoremap <C-Left> <C-w><
@@ -121,14 +131,21 @@ nnoremap <C-Right> <C-w>>
 nnoremap <C-w>v <C-w>v<C-w><C-l>
 nnoremap <C-w><C-v> <C-w>v<C-w><C-l>
 
-inoremap <C-v> <Esc>"+pi
+" Finer Undoing
+inoremap , ,<C-g>u
+inoremap . .<C-g>u
+inoremap = =<C-g>u
+inoremap ] ]<C-g>u
+inoremap } }<C-g>u
+inoremap ! !<C-g>u
+inoremap ? ?<C-g>u
 
 " Banner comments
 nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
 nnoremap <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj<Esc>
 nnoremap <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
 
-" Spell check
+" Spell check (wtf are the defaults lol)
 " Add word to dictionary (Spelling Add)
 nnoremap <Leader>sa zg
 " Remove word from dictionary (Spelling Remove)
@@ -155,7 +172,7 @@ function RefreshColor()
     endif
     execute "colorscheme ".current
 endfunction
-nnoremap <silent><F5> :call RefreshColor()<Enter>
+nnoremap <F5> :call RefreshColor()<Enter>
 
 " ======================
 " == GUI Vim settings ==
