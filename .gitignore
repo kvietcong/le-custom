@@ -1,17 +1,25 @@
 **/BetterDiscord/*.json
 **/BetterDiscord/**/*.json
+**/cache
 
 # Vim Stuff
 **/nvim/plugin
 
 # Emacs Stuff
-**\#*\#
 *~
 .#*
-**/elpa
-**/server
-**/cache
-**/.emacs.d/auto-save-list
+**\#*\#
 **/.emacs.d/url
-**/recentf
-**/dotfiles/.emacs.d/.last-package-update-day
+**/.emacs.d/elpa
+**/.emacs.d/emojis
+**/.emacs.d/places
+**/.emacs.d/server
+**/.emacs.d/recentf
+**/.emacs.d/backups
+**/.emacs.d/.cache
+**/.emacs.d/history
+**/.emacs.d/transient
+**/.emacs.d/auto-save-list
+**/.emacs.d/projectile.cache
+**/.emacs.d/.last-package-update-day
+**/.emacs.d/projectile-bookmarks.eld
