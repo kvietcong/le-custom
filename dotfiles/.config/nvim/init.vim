@@ -90,7 +90,7 @@ nnoremap <C-h> K
 noremap <M-x> :
 nnoremap Q q:
 " "Regular" Copy and Paste
-inoremap <C-v> <Esc>"+pi
+inoremap <C-v> <Esc>"+pa
 vnoremap <C-c> "+y<Esc>
 
 " Custom Navigation Stuff
@@ -108,7 +108,6 @@ nnoremap H g^
 nnoremap L g$
 vnoremap H g^
 vnoremap L g$
-nnoremap J mzJ`z
 nnoremap <M-o> o<Esc>
 nnoremap <M-O> O<Esc>
 " I have to find a more ergonomic way to scroll up and down
@@ -119,11 +118,7 @@ nnoremap gh <C-w>h
 nnoremap gj <C-w>j
 nnoremap gk <C-w>k
 nnoremap gl <C-w>l
-nnoremap <Leader>ws <C-w>s
-nnoremap <Leader>wv <C-w>v
-nnoremap <Leader>wc <C-w>c
-nnoremap <Leader>wf <C-w>f
-nnoremap <Leader>wo <C-w>o
+nnoremap <Leader>w <C-w>
 nnoremap <C-Up> <C-w>-
 nnoremap <C-Down> <C-w>+
 nnoremap <C-Left> <C-w><

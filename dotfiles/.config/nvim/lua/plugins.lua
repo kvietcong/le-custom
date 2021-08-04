@@ -34,14 +34,14 @@ local function setup()
         use "kyazdani42/nvim-web-devicons"
         use "lukas-reineke/indent-blankline.nvim"
 
-        use "ggandor/lightspeed.nvim"
-
         use "lervag/wiki.vim"
         use "hrsh7th/nvim-compe"
         use "folke/zen-mode.nvim"
         use "b3nj5m1n/kommentary"
         use "rafcamlet/nvim-luapad"
+        use "TimUntersberger/neogit"
         use "lewis6991/gitsigns.nvim"
+        use "ggandor/lightspeed.nvim"
         use "tversteeg/registers.nvim"
         use "folke/todo-comments.nvim"
         use "dstein64/vim-startuptime"

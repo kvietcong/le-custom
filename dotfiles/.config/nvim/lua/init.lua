@@ -1,6 +1,6 @@
 --[[
-    TODO: Clean up my Configuration Modules
-    TODO: Checkout Neorg when I think seems stable/mature enough to move my notes
+    TODO: Taxonomic Modules were a mistake. I need to find a more flexible way
+    TODO: Checkout Neorg when it seems stable/mature enough to move my notes
           (i.e. when there's a pandoc option to convert markdown to neorg)
 ]]
 

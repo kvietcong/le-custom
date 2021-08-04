@@ -12,7 +12,7 @@ local function setup()
     }}
     map("n <Leader>fa   :Telescope<Enter>")
     map("n <Leader>fb   :Telescope buffers<Enter>")
-    map("n <Leader>fo   :Telescope oldfiles<Enter>")
+    map("n <Leader>fr   :Telescope oldfiles<Enter>")
     map("n <Leader>fg   :Telescope live_grep<Enter>")
     map("n <Leader>fh   :Telescope help_tags<Enter>")
     map("n <Leader>fm   :Telescope man_pages<Enter>")

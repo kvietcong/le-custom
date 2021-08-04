@@ -97,6 +97,7 @@ local function setup()
             g       = "Grep Project",
             h       = "Help (From Vim)",
             m       = "Man Page",
+            r       = "Recent Files",
             t       = "Treesitter Symbols",
             T       = "TODO Plugin",
             c = {
