@@ -20,7 +20,7 @@ function OnViModeChange {
 }
 Set-PSReadLineOption -ViModeIndicator Script -ViModeChangeHandler $Function:OnViModeChange
 
-function DirCS { cd 'D:\Documents\Computer Science\' }
+function DirProjects { cd 'D:\Documents\Projects\' }
 function DirDots { cd 'D:\Documents\le-custom\' }
 function DirNotes { cd 'D:\Documents\Notes\' }
 function DirUW { cd 'D:\Documents\UW\' }
