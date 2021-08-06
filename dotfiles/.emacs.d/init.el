@@ -154,7 +154,7 @@
   :diminish which-key-mode
   :config
   (which-key-mode)
-  (setq which-key-idle-delay 0
+  (setq which-key-idle-delay 0.25
         which-key-popup-type 'side-window
         which-key-side-window-location 'bottom))
 
@@ -194,6 +194,13 @@
   ;;   (lambda () (interactive)
   ;;     (evil-search-next) (evil-scroll-line-to-center)))
 
+  (evil-ex-define-cmd "kill-everything" 'le/shutdown)
+  (evil-ex-define-cmd ":" 'execute-extended-command)
+  (evil-ex-define-cmd ";" 'execute-extended-command)
+  (evil-ex-define-cmd "hv" 'helpful-variable)
+  (evil-ex-define-cmd "hf" 'helpful-function)
+  (evil-ex-define-cmd "hs" 'helpful-symbol)
+  (evil-ex-define-cmd "hk" 'helpful-key)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (evil-set-initial-state 'messages-buffer-mode 'normal))
 (use-package evil-commentary :after evil :config (evil-commentary-mode))
@@ -207,6 +214,7 @@
   (setq evil-snipe-scope 'visible
         evil-snipe-show-prompt nil))
 
+;; I feel like with how many mappings there are, I'll need this someday
 (defun le/nth-leader (n &optional after)
   "Repeat Leader n times"
   (let ((result ""))
@@ -251,6 +259,10 @@
 
     "o"  '(:ignore t :which-key "Organization ...")
     "oo" '(consult-outline :which-key "Outline")
+    "ol" '(org-latex-preview :which-key "LaTeX Preview")
+    "op" '(org-toggle-pretty-entities :which-key "Pretty Entities")
+    "ox" '(org-execute-src-block :which-key "Execute Source Block")
+    "oX" '(org-execute-buffer :which-key "Execute Buffer")
 
     "w" (general-simulate-key "C-w")
     "h" (general-simulate-key "C-h")
@@ -280,20 +292,12 @@
         orderless-style-dispatchers '(le/flex-style)
         completion-category-overrides '((file (styles partial-completion)))))
 
-;; Project Stuff
-(use-package projectile :defer 0
-  :diminish projectile-mode :config (projectile-mode)
-  :init
-  (when (file-directory-p "~/Documents/Projects")
-    (setq projectile-project-search-path '("~/Documents/Projects")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-(use-package consult :defer 0
-  :config
-  (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root))
+(use-package company :hook (lsp-mode . company-mode)
+  :custom (company-minimum-prefix-length 2) (company-idle-delay 0.25))
+(use-package company-box :hook (company-mode . company-box-mode))
 
 (defun le/org-mode-setup ()
+  (setq org-preview-latex-image-directory (concat user-emacs-directory ".cache/"))
   (org-indent-mode)
   (variable-pitch-mode 1)
   (visual-line-mode 1))
@@ -322,6 +326,8 @@
 
 (use-package org :hook (org-mode . le/org-mode-setup)
   :config
+  (general-define-key :states '(normal) :keymaps 'org-mode-map "gk" nil)
+  (general-define-key :states '(normal) :keymaps 'org-mode-map "gj" nil)
   (setq-default org-ellipsis " ++"
                 org-hide-leading-stars nil
                 org-hide-block-startup t
@@ -341,8 +347,11 @@
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("lua" . "src lua"))
+(add-to-list 'org-structure-template-alist '("js" . "src js"))
+(add-to-list 'org-structure-template-alist '("sh" . "src sh"))
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t) (haskell . t) (lua . t) (sql . t) (js . t)
@@ -358,19 +367,14 @@
           (lambda () (add-hook 'after-save-hook #'le/tangle-config)))
 
 (use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook ((prog-mode . lsp)
-         (lsp-mode . lsp-enable-which-key-integration)))
+  :commands lsp
+  :hook ((lsp-mode . lsp-enable-which-key-integration)))
 (use-package lsp-ui :hook (lsp-mode . lsp-ui-mode))
-
-(use-package company :hook (lsp-mode . company-mode)
-  :custom (company-minimum-prefix-length 2) (company-idle-delay 0.0))
-(use-package company-box :hook (company-mode . company-box-mode))
 
 (use-package haskell-mode :defer t)
 (use-package lsp-haskell :hook (haskell-mode . lsp))
 
-(use-package lsp-pyright :hook (python-mode . (lambda () (require 'lsp-pyright) (lsp))))
+(use-package lsp-pyright :defer t)
 
 ;; Markdown
 (use-package markdown-mode
@@ -423,6 +427,20 @@
   ([remap describe-variable] . helpful-variable)
   ([remap describe-command] . helpful-command)
   ([remap describe-key] . helpful-key))
+
+;; Project Stuff
+(use-package projectile :defer 0
+  :diminish projectile-mode :config (projectile-mode)
+  :init
+  (when (file-directory-p "~/Documents/Projects")
+    (setq projectile-project-search-path '("~/Documents/Projects")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+;; Some rich actions
+(use-package consult :defer 0
+  :config
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-root-function #'projectile-project-root))
 
 ;; Icons to allow cool UI
 (use-package all-the-icons
