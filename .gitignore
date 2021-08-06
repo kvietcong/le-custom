@@ -23,3 +23,4 @@
 **/.emacs.d/projectile.cache
 **/.emacs.d/.last-package-update-day
 **/.emacs.d/projectile-bookmarks.eld
+/dotfiles/.emacs.d/.lsp-session-v1

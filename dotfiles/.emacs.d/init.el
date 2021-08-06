@@ -30,6 +30,7 @@
 (defvar le/fixed-font "CodeNewRoman NF")
 (defvar le/variable-font "Merriweather")
 (defvar le/backup-directory (concat user-emacs-directory "backups"))
+(defvar le/window-width 100)
 
 (when (eq system-type 'windows-nt)
   (message "IT'S WINDOWS")
@@ -67,7 +68,7 @@
 (savehist-mode t) ; Save minibuffer histories
 (save-place-mode t) ; Save file cursor placement
 (setq select-enable-clipboard nil) ; Find out why evil auto-pastes into clipboard
-(setq-default indent-tabs-mode nil) ; Tabs -> Spaces
+(setq-default indent-tabs-mode nil) ; Tabs to Spaces
 (setq-default delete-by-moving-to-trash t)
 (global-set-key (kbd "<Escape>") 'keyboard-quit) ; Universal Keybinds
 (global-set-key (kbd "C-M-u") 'universal-argument)
@@ -248,7 +249,8 @@
     "xb" '(eval-buffer :which-key "Execute Buffer")
     "xe" '(eval-last-sexp :which-key "Execute Expression")
 
-    "o" '(:ignore t :which-key "Organization ...")
+    "o"  '(:ignore t :which-key "Organization ...")
+    "oo" '(consult-outline :which-key "Outline")
 
     "w" (general-simulate-key "C-w")
     "h" (general-simulate-key "C-h")
@@ -310,46 +312,37 @@
      (car face) nil
      :font (concat le/variable-font " black") :weight 'bold :height (cdr face)))
 
-  (set-face-attribute 'org-block nil
-                      :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil
-                      :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil
-                      :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil
-                      :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil
-                      :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil
-                      :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil
-                      :inherit 'fixed-pitch))
+  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
-(use-package org
-  :hook (org-mode . le/org-mode-setup)
+(use-package org :hook (org-mode . le/org-mode-setup)
   :config
-  (setq org-ellipsis " ++")
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "FIX(f)" "URGENT(u)" "NOTE(n)"
-                    "WARN(w)" "|" "DONE(d!)")))
+  (setq-default org-ellipsis " ++"
+                org-hide-leading-stars nil
+                org-hide-block-startup t
+                org-todo-keywords
+                '((sequence "TODO(t)" "FIX(f)" "URGENT(u)" "NOTE(n)"
+                            "WARN(w)" "|" "DONE(d!)")))
   (le/org-font-setup))
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◎" "○" "●" "○" "●" "○" "●")))
+(use-package org-bullets :after org :hook (org-mode . org-bullets-mode)
+  :custom (org-bullets-bullet-list '("◎" "○" "●" "○" "●" "○" "●")))
 
 (defun le/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
+  (setq visual-fill-column-width le/window-width
         visual-fill-column-center-text t)
   (visual-fill-column-mode t))
-
-(use-package visual-fill-column
-  :hook (org-mode . le/org-mode-visual-fill))
+(use-package visual-fill-column :hook (org-mode . le/org-mode-visual-fill))
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t) (haskell . t) (lua . t) (sql . t) (js . t)
@@ -361,9 +354,23 @@
     (let ((org-confirm-babel-evaluate nil))
       (message "Tangling Configuration")
       (org-babel-tangle))))
-
 (add-hook 'org-mode-hook
           (lambda () (add-hook 'after-save-hook #'le/tangle-config)))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook ((prog-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration)))
+(use-package lsp-ui :hook (lsp-mode . lsp-ui-mode))
+
+(use-package company :hook (lsp-mode . company-mode)
+  :custom (company-minimum-prefix-length 2) (company-idle-delay 0.0))
+(use-package company-box :hook (company-mode . company-box-mode))
+
+(use-package haskell-mode :defer t)
+(use-package lsp-haskell :hook (haskell-mode . lsp))
+
+(use-package lsp-pyright :hook (python-mode . (lambda () (require 'lsp-pyright) (lsp))))
 
 ;; Markdown
 (use-package markdown-mode
@@ -377,10 +384,8 @@
                     (markdown-header-face-4 . 1.2)
                     (markdown-header-face-5 . 1.1)))
       (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
-
   (defun le/markdown-mode-hook ()
     (le/set-markdown-header-font-sizes))
-
   (add-hook 'markdown-mode-hook 'le/markdown-mode-hook))
 
 ;; Git Interface
@@ -433,7 +438,7 @@
 ;; Zen Mode
 (use-package writeroom-mode :commands writeroom-mode
   :config
-  (setq writeroom-width 100
+  (setq writeroom-width le/window-width
         writeroom-mode-line t
         writeroom-header-line t
         writeroom-added-width-left (- 0 (writeroom-full-line-number-width) -1)
@@ -449,6 +454,7 @@
 
 ;; File Tree
 (use-package treemacs :commands treemacs)
+(use-package lsp-treemacs :after (treemacs lsp))
 (use-package treemacs-evil :after (treemacs evil))
 (use-package treemacs-magit :after (treemacs magit))
 
@@ -514,10 +520,8 @@
         initial-buffer-choice (lambda () (get-buffer "*dashboard*"))
         dashboard-banner-logo-title "Welcome to Le Emacs 🚀"
         dashboard-set-navigator t
-        dashboard-items '((recents  . 5)
-                          (projects . 5)
-                          (bookmarks . 5)
-                          (agenda . 5))
+        dashboard-items '((agenda . 5) (bookmarks . 5)
+                          (projects . 5) (recents  . 5))
         dashboard-navigator-buttons
         `(((,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
             "GitHub" "GitHub Profile"
