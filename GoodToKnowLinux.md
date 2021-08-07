@@ -25,6 +25,7 @@
   - Samba: Nice SMB file sharing service
   - Flameshot: Powerful screen-shot tool
   - NeoVim: Great text editing
+  - Emacs: Great text editing
   - CopyQ: Clipboard manager
   - Obsidian: Great note taking app
   - wpgtk: Great way to have changing color themes based on wallpaper
