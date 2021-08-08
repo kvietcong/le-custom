@@ -18,6 +18,7 @@ local function setup()
             spell = true;
             emoji = true;
             buffer = true;
+            orgmode = true;
             nvim_lsp = true;
             nvim_lua = true;
             treesitter = true;

@@ -27,6 +27,7 @@ local function setup()
     map("n <Leader>fcD  :Telescope lsp_document_diagnostics<Enter>")
     map("n z=           :Telescope spell_suggest<Enter>")
     map("n <Leader>/    :Telescope current_buffer_fuzzy_find<Enter>")
+    map("n <Leader>?    :Telescope live_grep<Enter>")
 
     -- Lightspeed Setup
     function Repeat_Search(reverse)
@@ -46,7 +47,7 @@ local function setup()
         diagnostics = "nvim_lsp",
         seperator_style = "thick"
     }}
-    map("n <Leader>bd   :bd<Enter>")
+    map("n <Leader>bk   :bd<Enter>")
     map("n <M-l>        :BufferLineCycleNext<Enter>")
     map("n <M-h>        :BufferLineCyclePrev<Enter>")
     map("n <Leader>bn   :BufferLineCycleNext<Enter>")
@@ -76,6 +77,28 @@ local function setup()
 
     -- Lua Pad
     require("luapad").config { count_limit = 50000 }
+
+    -- Org Mode
+    require("orgmode").setup({
+      org_agenda_files = {"~/Documents/Notes/org-mode/*"},
+      org_default_notes_file = "~/Documents/Notes/org-mode/Inbox.org"
+    })
+    require("org-bullets").setup { symbols = { "◉", "○", "✸", "✿" }}
+
+    -- Better Wild Menu (Completion Menu)
+    vim.cmd[[
+        call wilder#enable_cmdline_enter()
+        set wildcharm=<Tab>
+        cmap <expr> <C-n> wilder#in_context() ? wilder#next() : "<C-n>"
+        cmap <expr> <C-p> wilder#in_context() ? wilder#previous() : "<C-p>"
+        call wilder#set_option('modes', ['/', '?', ':'])
+
+        call wilder#set_option('pipeline', [wilder#branch(wilder#cmdline_pipeline({'fuzzy': 1, 'sorter': wilder#python_difflib_sorter(), }), wilder#python_search_pipeline({ 'pattern': 'fuzzy', }),), ])
+
+        let g:highlighters = [wilder#pcre2_highlighter(),wilder#basic_highlighter(),]
+
+        call wilder#set_option('renderer', wilder#renderer_mux({ ':': wilder#popupmenu_renderer({ 'highlighter': g:highlighters, }), '/': wilder#wildmenu_renderer({ 'highlighter': g:highlighters, }), }))
+    ]]
 end
 
 return { setup = setup }

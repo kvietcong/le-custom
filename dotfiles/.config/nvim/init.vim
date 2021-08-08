@@ -88,6 +88,7 @@ xnoremap gs y:%s/<C-r>"//g<Left><Left>
 " Help is now delegated to CTRL-h
 nnoremap <C-h> K
 noremap <M-x> :
+noremap <Leader><Leader><Leader> :
 nnoremap Q q:
 " "Regular" Copy and Paste
 inoremap <C-v> <Esc>"+pa

@@ -36,6 +36,8 @@ local function setup()
 
         use "lervag/wiki.vim"
         use "hrsh7th/nvim-compe"
+        use "wellle/targets.vim"
+        use "gelguy/wilder.nvim"
         use "folke/zen-mode.nvim"
         use "b3nj5m1n/kommentary"
         use "rafcamlet/nvim-luapad"
@@ -47,7 +49,9 @@ local function setup()
         use "dstein64/vim-startuptime"
         use "ray-x/lsp_signature.nvim"
         use "kyazdani42/nvim-tree.lua"
+        use "akinsho/org-bullets.nvim"
         use "neovimhaskell/haskell-vim"
+        use "kristijanhusak/orgmode.nvim"
         use "iamcco/markdown-preview.nvim"
         use "simrat39/symbols-outline.nvim"
         use "nvim-treesitter/nvim-treesitter-refactor"

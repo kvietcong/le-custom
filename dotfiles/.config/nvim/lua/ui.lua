@@ -47,6 +47,10 @@ local function setup()
     require("colorizer").setup()
     require("todo-comments").setup()
 
+    -- Neogit
+    require("neogit").setup()
+    map("n <Leader>gg :Neogit<Enter>")
+
     --  Configuration for colorful matching brackets
     --  This plugin doesn't work with Lua or Rust so I'm using two
     --  Rainbow Plugins XD
@@ -118,6 +122,7 @@ local function setup()
         },
         b = {
             name    = "Buffers",
+            k       = "Kill (Delete) Buffer",
             n       = "Next Buffer",
             p       = "Previous Buffer",
             mn      = "Move Buffer to Next",
