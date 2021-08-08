@@ -25,3 +25,5 @@
 **/.emacs.d/projectile-bookmarks.eld
 /dotfiles/.emacs.d/.lsp-session-v1
 /dotfiles/.emacs.d/eshell/
+/dotfiles/.emacs.d/bookmarks
+*.db

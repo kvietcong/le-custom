@@ -31,6 +31,7 @@
 (defvar le/variable-font "Merriweather")
 (defvar le/backup-directory (concat user-emacs-directory "backups"))
 (defvar le/window-width 100)
+(defvar le/org-path (expand-file-name "~/Documents/Notes/org-mode/"))
 
 (when (eq system-type 'windows-nt)
   (message "IT'S WINDOWS")
@@ -56,7 +57,7 @@
 
 (require 'use-package)
 (setq use-package-always-ensure t)
-;; (setq use-package-verbose t) ; For debugging
+(setq use-package-verbose t) ; For debugging
 
 (use-package auto-package-update :custom
   (auto-package-update-interval 4)
@@ -67,6 +68,7 @@
 (recentf-mode t) ; Save recent files
 (savehist-mode t) ; Save minibuffer histories
 (save-place-mode t) ; Save file cursor placement
+(fset 'yes-or-no-p 'y-or-n-p) ; y/n promps
 (setq select-enable-clipboard nil) ; Find out why evil auto-pastes into clipboard
 (setq-default indent-tabs-mode nil) ; Tabs to Spaces
 (setq-default delete-by-moving-to-trash t)
@@ -120,12 +122,14 @@
   (set-face-attribute
    'variable-pitch nil :font le/variable-font :height le/variable-font-size))
 
-(if (daemonp)
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                (setq doom-modeline-icon t)
-                (with-selected-frame frame (le/set-fonts))))
-  (le/set-fonts))
+(when (daemonp)
+  (setq use-package-always-demand t)
+  (message "Daemon Mode")
+  (add-hook 'after-make-frame-functions
+            (lambda (frame)
+              (setq doom-modeline-icon t)
+              (with-selected-frame frame (le/set-fonts)))))
+(le/set-fonts)
 
 (if (not (file-directory-p le/backup-directory))
     (make-directory le/backup-directory t))
@@ -239,30 +243,30 @@
     "tt" '(consult-theme :which-key "Choose Theme")
     "gg" '(magit :which-key "Magit")
     "/" '(consult-line :which-key "Fuzzy Find in Buffer")
+    "?" '(consult-line-multi :which-key "Fuzzy Find across Buffers")
 
-    "b"  '(:ignore t :which-key "Buffer ...")
+    "b"  '(:ignore t :which-key "Buffer...")
     "bk" '(kill-this-buffer :which-key "Kill This Buffer")
     "bK" '(kill-buffer :which-key "Kill Some Buffer")
 
-    "f"  '(:ignore t :which-key "Find ...")
+    "f"  '(:ignore t :which-key "Find...")
     "fb" '(consult-buffer :which-key "Find Buffers")
+    "fB" '(consult-bookmark :which-key "Find Bookmarks")
     "fe" '(treemacs :which-key "File Tree")
     "fE" '(dired-jump :which-key "File Explorer")
     "ff" '(project-find-file :which-key "Find File in Project")
     "fg" '(consult-ripgrep :which-key "Grep Project")
-    "fr" '(consult-recent-file :which-key "Find Recent Files")
+    ;; Consult buffer is better than consult find recent lol
+    "fr" '(consult-buffer :which-key "Find Recent Files")
 
-    "x"  '(:ignore t :which-key "Execute ...")
+    "x"  '(:ignore t :which-key "Execute...")
     "xr" '(eval-region :which-key "Execute Region")
     "xb" '(eval-buffer :which-key "Execute Buffer")
     "xe" '(eval-last-sexp :which-key "Execute Expression")
 
-    "o"  '(:ignore t :which-key "Organization ...")
+    "o"  '(:ignore t :which-key "Organization...")
+    "oa" '(org-agenda :which-key "Agenda")
     "oo" '(consult-outline :which-key "Outline")
-    "ol" '(org-latex-preview :which-key "LaTeX Preview")
-    "op" '(org-toggle-pretty-entities :which-key "Pretty Entities")
-    "ox" '(org-execute-src-block :which-key "Execute Source Block")
-    "oX" '(org-execute-buffer :which-key "Execute Buffer")
 
     "w" (general-simulate-key "C-w")
     "h" (general-simulate-key "C-h")
@@ -296,27 +300,23 @@
   :custom (company-minimum-prefix-length 2) (company-idle-delay 0.25))
 (use-package company-box :hook (company-mode . company-box-mode))
 
-(defun le/org-mode-setup ()
-  (setq org-preview-latex-image-directory (concat user-emacs-directory ".cache/"))
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1))
+(defun unsafe-babel-execute (type)
+  (let ((org-confirm-babel-evaluate nil))
+    (if (equal type "buffer")
+        (org-babel-execute-buffer)
+      (org-babel-execute-src-block))))
 
 (defun le/org-font-setup ()
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 2.00)
-                  (org-level-2 . 1.75)
-                  (org-level-3 . 1.50)
-                  (org-level-4 . 1.40)
-                  (org-level-5 . 1.30)
-                  (org-level-6 . 1.20)
-                  (org-level-7 . 1.15)
-                  (org-level-8 . 1.10)))
+  (dolist (face '((org-level-1 . 2.00) (org-level-2 . 1.75)
+                  (org-level-3 . 1.50) (org-level-4 . 1.40)
+                  (org-level-5 . 1.30) (org-level-6 . 1.20)
+                  (org-level-7 . 1.15) (org-level-8 . 1.10)))
     (set-face-attribute
      (car face) nil
      :font (concat le/variable-font " black") :weight 'bold :height (cdr face)))
 
-  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
   (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
   (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
@@ -324,17 +324,44 @@
   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
-(use-package org :hook (org-mode . le/org-mode-setup)
-  :config
+(defun le/org-mode-setup ()
+  (setq org-preview-latex-image-directory (concat user-emacs-directory ".cache/"))
+  (setq evil-auto-indent nil)
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
   (general-define-key :states '(normal) :keymaps 'org-mode-map "gk" nil)
   (general-define-key :states '(normal) :keymaps 'org-mode-map "gj" nil)
-  (setq-default org-ellipsis " ++"
-                org-hide-leading-stars nil
-                org-hide-block-startup t
-                org-todo-keywords
-                '((sequence "TODO(t)" "FIX(f)" "URGENT(u)" "NOTE(n)"
-                            "WARN(w)" "|" "DONE(d!)")))
+  (le/leader-maps
+    "o"  '(:ignore t :which-key "Organization ...")
+    "ol" '(org-latex-preview :which-key "LaTeX Preview")
+    "op" '(org-toggle-pretty-entities :which-key "Pretty Entities")
+    "ox" '((unsafe-babel-execute "block") :which-key "Execute Source Block")
+    "oX" '((unsafe-babel-execute "buffer") :which-key "Execute Buffer"))
   (le/org-font-setup))
+
+(use-package org :hook (org-mode . le/org-mode-setup)
+  :config
+  (add-to-list 'org-modules 'org-habit)
+  (setq org-ellipsis " ++"
+        org-log-done 'time
+        org-directory le/org-path
+        org-return-follows-link t
+        org-log-into-drawer "LOGBOOK"
+        org-startup-folded 'content
+        org-archive-location (concat le/org-path "Archive.org::")
+        org-refile-targets '((nil :maxlevel . 3) (org-agenda-files :maxlevel . 3))
+        org-outline-path-complete-in-steps nil
+        org-refile-use-outline-path t
+        org-agenda-files (list
+                          (concat le/org-path "Agenda.org")
+                          "~/.emacs.d/Emacs.org")
+        org-todo-keywords
+        '((sequence "TODO(t)" "NOW(n)" "|" "DONE(d!)" "CANCEL(c!)"))))
+
+(use-package evil-org :after org
+  :config (require 'evil-org-agenda) (evil-org-agenda-set-keys))
 
 (use-package org-bullets :after org :hook (org-mode . org-bullets-mode)
   :custom (org-bullets-bullet-list '("◎" "○" "●" "○" "●" "○" "●")))
@@ -478,16 +505,24 @@
 
 ;; Cool Mode Line
 (use-package doom-modeline :init (doom-modeline-mode t))
-(use-package doom-themes
-  :config
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t)
-  ;; Setting theme based on time
+
+;; Theme Setting
+(defun le/set-theme()
+  "Setting theme based on time"
+  (interactive)
   (let* ((time-info (decode-time))
          (time (+ (nth 2 time-info) (/ (nth 1 time-info) 100.0))))
     (if (or (>= time 17.30) (<= time 8.30))
         (load-theme (nth 1 le/themes) t)
       (load-theme (nth 0 le/themes) t)))
+  (le/set-fonts)
+  (le/org-font-setup))
+
+(use-package doom-themes
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (le/set-theme)
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))
 
@@ -538,8 +573,7 @@
         initial-buffer-choice (lambda () (get-buffer "*dashboard*"))
         dashboard-banner-logo-title "Welcome to Le Emacs 🚀"
         dashboard-set-navigator t
-        dashboard-items '((agenda . 5) (bookmarks . 5)
-                          (projects . 5) (recents  . 5))
+        dashboard-items '((bookmarks . 5) (projects . 5) (recents  . 5))
         dashboard-navigator-buttons
         `(((,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
             "GitHub" "GitHub Profile"
@@ -563,3 +597,17 @@
   :config (setq beacon-blink-when-point-moves-vertically 5
                 beacon-blink-when-window-scrolls nil
                 beacon-blink-when-focused t))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(lua-mode vimrc-mode vimish-fold zoom zen-mode ws-butler writeroom-mode which-key vertico use-package undo-fu treemacs-magit treemacs-evil skewer-mode rainbow-delimiters projectile org-superstar org-roam org-evil org-bullets orderless olivetti marginalia lsp-ui lsp-treemacs lsp-pyright lsp-haskell indium hotfuzz highlight-indent-guides helpful git-gutter general evil-surround evil-snipe evil-org evil-commentary evil-collection emojify embark-consult doom-themes doom-modeline dired-single diff-hl dashboard corfu company-box centaur-tabs beacon auto-package-update all-the-icons-dired))
+ '(zoom-size '(0.618 . 0.618)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

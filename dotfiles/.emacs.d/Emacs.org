@@ -2,6 +2,7 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 
 * Welcome to KV Le's Emacs Configuration
+
 This is my literate Emacs configuration file that automatically updates my Emacs configuration based off of the contents within the source blocks (The generated file can be found @ [[file:init.el][init.el]]).
 
 This is actually pretty cool but I'm still wondering if this is actually worth the extra work. I mean commenting in the code seems fine TBH and it is more flexible in terms of changing things quickly. Org configuration is nice because it allows you to know what your configuration does better and keep it more organized.
@@ -11,15 +12,13 @@ This is actually pretty cool but I'm still wondering if this is actually worth t
 #+end_src
 
 ******* TODO Configure Org Roam
-
 ******* TODO Clean up configuration
-
-******* TODO Get LSP  and other language features working
-
-******* FIX Long (10+ second) start up times
+******* TODO Fix long (10+ second) start up times
 
 ** Emacs Server Setup
+
 This checks if a server is running and starts it if not. This allows me to start up one time and have every other time be fairly fast.
+
 #+begin_src emacs-lisp
   (require 'server)
   (unless (server-running-p) (server-start))
@@ -40,6 +39,7 @@ This checks if a server is running and starts it if not. This allows me to start
 
 ** Variables
 These are personal variables will propogate throughout the configuration when changed.
+
 #+begin_src emacs-lisp
   (defvar le/fixed-font-size 118)
   (defvar le/variable-font-size 110)
@@ -56,12 +56,14 @@ These are personal variables will propogate throughout the configuration when ch
   (defvar le/variable-font "Merriweather")
   (defvar le/backup-directory (concat user-emacs-directory "backups"))
   (defvar le/window-width 100)
+  (defvar le/org-path (expand-file-name "~/Documents/Notes/org-mode/"))
 #+end_src
 
 ** Windows Specific Configuration 😔
 /Sighs/... Why Windows gotta be so *WACK* 😡
 
 [[https://docs.oracle.com/cd/E19057-01/nscp.cal.svr.35/816-5523-10/appf.html][Legacy Time Resources]]
+
 #+begin_src emacs-lisp
   (when (eq system-type 'windows-nt)
     (message "IT'S WINDOWS")
@@ -90,7 +92,7 @@ These are personal variables will propogate throughout the configuration when ch
 
   (require 'use-package)
   (setq use-package-always-ensure t)
-  ;; (setq use-package-verbose t) ; For debugging
+  (setq use-package-verbose t) ; For debugging
 
   (use-package auto-package-update :custom
     (auto-package-update-interval 4)
@@ -107,6 +109,7 @@ Settings that setup things that are built into Emacs
   (recentf-mode t) ; Save recent files
   (savehist-mode t) ; Save minibuffer histories
   (save-place-mode t) ; Save file cursor placement
+  (fset 'yes-or-no-p 'y-or-n-p) ; y/n promps
   (setq select-enable-clipboard nil) ; Find out why evil auto-pastes into clipboard
   (setq-default indent-tabs-mode nil) ; Tabs to Spaces
   (setq-default delete-by-moving-to-trash t)
@@ -136,6 +139,7 @@ Settings that setup things that are built into Emacs
 #+end_src
 
 For some reason, displaying column line numbers make line by line scrolling mega laggy. I can't seem to fix it for anything though! 😡
+
 #+begin_src emacs-lisp
   (setq-default display-line-numbers-type 'visual ; Set to relative line numbers
                 display-line-numbers-width 5)
@@ -151,6 +155,7 @@ For some reason, displaying column line numbers make line by line scrolling mega
 #+end_src
 
 RIP smooth scrolling in Emacs. I pray this will be possible by 2050
+
 #+begin_src emacs-lisp
   (setq mouse-wheel-scroll-amount '(2 ((shift) . nil))
         mouse-wheel-progressive-speed nil
@@ -172,12 +177,14 @@ RIP smooth scrolling in Emacs. I pray this will be possible by 2050
     (set-face-attribute
      'variable-pitch nil :font le/variable-font :height le/variable-font-size))
 
-  (if (daemonp)
-      (add-hook 'after-make-frame-functions
-                (lambda (frame)
-                  (setq doom-modeline-icon t)
-                  (with-selected-frame frame (le/set-fonts))))
-    (le/set-fonts))
+  (when (daemonp)
+    (setq use-package-always-demand t)
+    (message "Daemon Mode")
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                (setq doom-modeline-icon t)
+                (with-selected-frame frame (le/set-fonts)))))
+  (le/set-fonts)
 #+end_src
 
 **** Backups/Autosaves
@@ -210,8 +217,11 @@ RIP smooth scrolling in Emacs. I pray this will be possible by 2050
 #+end_src
 
 ** Keybindings
+Section where most of my main keybindings are actually set
+
 *** Which Key
 Show available actions after inputting a the beginning of one. This helps with discoverablity
+
 #+begin_src emacs-lisp
   (use-package which-key
     :diminish which-key-mode
@@ -224,6 +234,7 @@ Show available actions after inputting a the beginning of one. This helps with d
 
 *** Evil 😈
 The good Vim stuff
+
 #+begin_src emacs-lisp
   (use-package undo-fu)
   (use-package evil
@@ -284,6 +295,7 @@ The good Vim stuff
 
 *** Leader Key
 Prevent Emacs Pinky and improve ergonomics with a key that lets me easily execute custom actions
+
 #+begin_src emacs-lisp
   ;; I feel like with how many mappings there are, I'll need this someday
   (defun le/nth-leader (n &optional after)
@@ -310,42 +322,43 @@ Prevent Emacs Pinky and improve ergonomics with a key that lets me easily execut
       "tt" '(consult-theme :which-key "Choose Theme")
       "gg" '(magit :which-key "Magit")
       "/" '(consult-line :which-key "Fuzzy Find in Buffer")
+      "?" '(consult-line-multi :which-key "Fuzzy Find across Buffers")
 
-      "b"  '(:ignore t :which-key "Buffer ...")
+      "b"  '(:ignore t :which-key "Buffer...")
       "bk" '(kill-this-buffer :which-key "Kill This Buffer")
       "bK" '(kill-buffer :which-key "Kill Some Buffer")
 
-      "f"  '(:ignore t :which-key "Find ...")
+      "f"  '(:ignore t :which-key "Find...")
       "fb" '(consult-buffer :which-key "Find Buffers")
+      "fB" '(consult-bookmark :which-key "Find Bookmarks")
       "fe" '(treemacs :which-key "File Tree")
       "fE" '(dired-jump :which-key "File Explorer")
       "ff" '(project-find-file :which-key "Find File in Project")
       "fg" '(consult-ripgrep :which-key "Grep Project")
-      "fr" '(consult-recent-file :which-key "Find Recent Files")
+      ;; Consult buffer is better than consult find recent lol
+      "fr" '(consult-buffer :which-key "Find Recent Files")
 
-      "x"  '(:ignore t :which-key "Execute ...")
+      "x"  '(:ignore t :which-key "Execute...")
       "xr" '(eval-region :which-key "Execute Region")
       "xb" '(eval-buffer :which-key "Execute Buffer")
       "xe" '(eval-last-sexp :which-key "Execute Expression")
 
-      "o"  '(:ignore t :which-key "Organization ...")
+      "o"  '(:ignore t :which-key "Organization...")
+      "oa" '(org-agenda :which-key "Agenda")
       "oo" '(consult-outline :which-key "Outline")
-      "ol" '(org-latex-preview :which-key "LaTeX Preview")
-      "op" '(org-toggle-pretty-entities :which-key "Pretty Entities")
-      "ox" '(org-execute-src-block :which-key "Execute Source Block")
-      "oX" '(org-execute-buffer :which-key "Execute Buffer")
 
       "w" (general-simulate-key "C-w")
       "h" (general-simulate-key "C-h")
       "pp" '(projectile-command-map :which-key "Projectile")
       (le/nth-leader 2) (general-simulate-key "M-x")))
-      #+end_src
+#+end_src
 
 ** Completion Setup
 These are the various packages that allow me to show various suggestions in an efficient manner.
 
 *** Vertico
 The vertical completion UI for most things with Marginalia to help with annotations
+
 #+begin_src emacs-lisp
   (use-package vertico :custom (vertico-cycle t) :init (vertico-mode))
   (use-package emacs
@@ -364,6 +377,7 @@ The vertical completion UI for most things with Marginalia to help with annotati
 
 *** Orderless
 Determine how completions are sorted and filtered
+
 #+begin_src emacs-lisp
   (use-package orderless :init
     (defun le/flex-style (pattern _index _total)
@@ -378,6 +392,7 @@ Determine how completions are sorted and filtered
 
 *** Company Mode
 Completion UI for in region text
+
 #+begin_src emacs-lisp
   (use-package company :hook (lsp-mode . company-mode)
     :custom (company-minimum-prefix-length 2) (company-idle-delay 0.25))
@@ -386,6 +401,7 @@ Completion UI for in region text
 
 *** Corfu
 Seems like a cool completion UI but it doesn't really work for me atm 😥
+
 #+begin_src emacs-lisp :tangle no
   (use-package corfu
     :custom
@@ -393,8 +409,8 @@ Seems like a cool completion UI but it doesn't really work for me atm 😥
     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
     (corfu-quit-no-match t)        ;; Automatically quit if there is no match
     :bind (:map corfu-map
-           ("C-n" . corfu-next)
-           ("C-p" . corfu-previous))
+                ("C-n" . corfu-next)
+                ("C-p" . corfu-previous))
     :init
     (corfu-global-mode))
 #+end_src
@@ -402,28 +418,25 @@ Seems like a cool completion UI but it doesn't really work for me atm 😥
 ** Org Mode
 A strong organization framework to help me organize my life. (TBH it's making me sink more time than I'll be saving XD)
 
+*** General
 #+begin_src emacs-lisp
-  (defun le/org-mode-setup ()
-    (setq org-preview-latex-image-directory (concat user-emacs-directory ".cache/"))
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (visual-line-mode 1))
+  (defun unsafe-babel-execute (type)
+    (let ((org-confirm-babel-evaluate nil))
+      (if (equal type "buffer")
+          (org-babel-execute-buffer)
+        (org-babel-execute-src-block))))
 
   (defun le/org-font-setup ()
     ;; Set faces for heading levels
-    (dolist (face '((org-level-1 . 2.00)
-                    (org-level-2 . 1.75)
-                    (org-level-3 . 1.50)
-                    (org-level-4 . 1.40)
-                    (org-level-5 . 1.30)
-                    (org-level-6 . 1.20)
-                    (org-level-7 . 1.15)
-                    (org-level-8 . 1.10)))
+    (dolist (face '((org-level-1 . 2.00) (org-level-2 . 1.75)
+                    (org-level-3 . 1.50) (org-level-4 . 1.40)
+                    (org-level-5 . 1.30) (org-level-6 . 1.20)
+                    (org-level-7 . 1.15) (org-level-8 . 1.10)))
       (set-face-attribute
        (car face) nil
        :font (concat le/variable-font " black") :weight 'bold :height (cdr face)))
 
-    (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
     (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
     (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
     (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
@@ -431,18 +444,48 @@ A strong organization framework to help me organize my life. (TBH it's making me
     (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
     (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
-  (use-package org :hook (org-mode . le/org-mode-setup)
-    :config
+  (defun le/org-mode-setup ()
+    (setq org-preview-latex-image-directory (concat user-emacs-directory ".cache/"))
+    (setq evil-auto-indent nil)
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
     (general-define-key :states '(normal) :keymaps 'org-mode-map "gk" nil)
     (general-define-key :states '(normal) :keymaps 'org-mode-map "gj" nil)
-    (setq-default org-ellipsis " ++"
-                  org-hide-leading-stars nil
-                  org-hide-block-startup t
-                  org-todo-keywords
-                  '((sequence "TODO(t)" "FIX(f)" "URGENT(u)" "NOTE(n)"
-                              "WARN(w)" "|" "DONE(d!)")))
+    (le/leader-maps
+      "o"  '(:ignore t :which-key "Organization ...")
+      "ol" '(org-latex-preview :which-key "LaTeX Preview")
+      "op" '(org-toggle-pretty-entities :which-key "Pretty Entities")
+      "ox" '((unsafe-babel-execute "block") :which-key "Execute Source Block")
+      "oX" '((unsafe-babel-execute "buffer") :which-key "Execute Buffer"))
     (le/org-font-setup))
 
+  (use-package org :hook (org-mode . le/org-mode-setup)
+    :config
+    (add-to-list 'org-modules 'org-habit)
+    (setq org-ellipsis " ++"
+          org-log-done 'time
+          org-directory le/org-path
+          org-return-follows-link t
+          org-log-into-drawer "LOGBOOK"
+          org-startup-folded 'content
+          org-archive-location (concat le/org-path "Archive.org::")
+          org-refile-targets '((nil :maxlevel . 3) (org-agenda-files :maxlevel . 3))
+          org-outline-path-complete-in-steps nil
+          org-refile-use-outline-path t
+          org-agenda-files (list
+                            (concat le/org-path "Agenda.org")
+                            "~/.emacs.d/Emacs.org")
+          org-todo-keywords
+          '((sequence "TODO(t)" "NOW(n)" "|" "DONE(d!)" "CANCEL(c!)"))))
+
+  (use-package evil-org :after org
+    :config (require 'evil-org-agenda) (evil-org-agenda-set-keys))
+#+end_src
+
+*** UI
+#+begin_src emacs-lisp
   (use-package org-bullets :after org :hook (org-mode . org-bullets-mode)
     :custom (org-bullets-bullet-list '("◎" "○" "●" "○" "●" "○" "●")))
 
@@ -467,6 +510,7 @@ A strong organization framework to help me organize my life. (TBH it's making me
 
 *** Org Tangle
 Auto generating configuration file from this one
+
 #+begin_src emacs-lisp
   (defun le/tangle-config ()
     (when (string-equal (buffer-file-name)
@@ -569,7 +613,7 @@ Auto generating configuration file from this one
     :config
     (autoload 'projectile-project-root "projectile")
     (setq consult-project-root-function #'projectile-project-root))
-    #+end_src
+#+end_src
 
 *** UI
 #+begin_src emacs-lisp
@@ -609,16 +653,24 @@ Auto generating configuration file from this one
 
   ;; Cool Mode Line
   (use-package doom-modeline :init (doom-modeline-mode t))
-  (use-package doom-themes
-    :config
-    (setq doom-themes-enable-bold t
-          doom-themes-enable-italic t)
-    ;; Setting theme based on time
+
+  ;; Theme Setting
+  (defun le/set-theme()
+    "Setting theme based on time"
+    (interactive)
     (let* ((time-info (decode-time))
            (time (+ (nth 2 time-info) (/ (nth 1 time-info) 100.0))))
       (if (or (>= time 17.30) (<= time 8.30))
           (load-theme (nth 1 le/themes) t)
         (load-theme (nth 0 le/themes) t)))
+    (le/set-fonts)
+    (le/org-font-setup))
+
+  (use-package doom-themes
+    :config
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t)
+    (le/set-theme)
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
 
@@ -669,8 +721,7 @@ Auto generating configuration file from this one
           initial-buffer-choice (lambda () (get-buffer "*dashboard*"))
           dashboard-banner-logo-title "Welcome to Le Emacs 🚀"
           dashboard-set-navigator t
-          dashboard-items '((agenda . 5) (bookmarks . 5)
-                            (projects . 5) (recents  . 5))
+          dashboard-items '((bookmarks . 5) (projects . 5) (recents  . 5))
           dashboard-navigator-buttons
           `(((,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
               "GitHub" "GitHub Profile"
@@ -697,6 +748,8 @@ Auto generating configuration file from this one
 #+end_src
 
 ** Thoughts About Emacs
+
+*** General
 One thing I really admire about Emacs is that its so frikin extensible. I love that you can almost do anything with it. For example, in contrast to Vim/Neovim, your keybindings are mapped to functions rather than magically assigned by some C code. It really is cool that I can break down every keybinding into a function in Emacs. Also, having most of the editor APIs in the configuration language (Elisp) makes it even more extensible. The package ecosystem is actually so vast and it seems really cool to make one. I mean, Evil, the Vim emulation layer I use, is almost identical to my Vim workflow. There are some things I miss like a coherent jump list, marks, and etc but they're fairly small. Also, Emacs has embraced GUI and that has allowed for those "small" but noticeable graphical improvements which I appreciate.
 
 However, here's what I dislike about Emacs. I don't like how it seems stuck in the past with its development and ecosystem. It just feels archaic at times. What makes Emacs modern is that the community supplies packages on top of Emacs to make up for its quite terrible defaults. I much prefer Neovim's style of development, extensible yet fast developing core with good community support (Though I wish they were a bit more progressive with features that could drop some Vim compatability). Elisp is also not ideal. Admittedly, I'm not the most experienced when it comes to Elisp, but it just seems filled with a lot of little quirks that you just have to remember and seemingly bloated rules. I don't mind things like a more functional style or the endless nested parenthesis, but I do mind things like how the variable and function namespaces are seperate and the usage of symbols (like why do we need quotes, hashtags, commas, etc). This might be my inexperience, but Elisp is not fun to learn. I can definitely see it being fun if it were cleaned up though (I need to try something like Clojure, Scheme, or Common Lisp). Lastly, I don't like how slow Emacs is. It takes ~10 seconds on a lean startup and ~30 seconds to start up with all the plugins. Scrolling is also atrocious (flicker and lag central) with simple things like a line number column. Everything just feels slower than Neovim or VSCode, or heck, even IntelliJ. It's not 2fps bad, but its definitely slow.
@@ -704,3 +757,12 @@ However, here's what I dislike about Emacs. I don't like how it seems stuck in t
 I don't know if I'll keep on using Emacs, but I do appreciate that it exists. It seems like a great project and one that I wish more editors would take more inspiration from. Emacs is super powerful and I will say it: It is the most extensible, bar none. I just don't know if that is for me, seeing that it isn't fast and it takes a fat while to be efficient in it (it's been about a week and I just got to LSP lol)
 
 Well that was a long rant ✌
+
+*** Org Mode
+Okay, so Org Mode, from what I understand, is a monolithic ecosystems of Emacs-centered tools and formats that are used to organize your life. It can do so many cool things. Org Babel lets you do literate programming, allowing the easy creation of code explainations. Org Tangle leverages Org Babel automatically generating configurations from these files. Org Agenda allows for rich task metadata, keeping track of *all* your activities and plan out your day. Org Roam allows you to create an interlinked knowledge web promoting quick ideation. Org mode is just so vast and it encompasses so many areas. It really can do anything when it comes to anything remotely related to organization.
+
+However, after trying to use it for a week, it really seems encumbered. I have been using Obsidian, a markdown based notetaking app, since the beginning of 2020. It has served me fairly well and it has proven to help me take more notes (I took none before). It is fairly extensible and has a lot of cool graphical features (the graph view is actually so cool). When trying out Org mode, I noticed that I need a lot of configuration to get anything close to the user experience I got with Obsidian out of the box. And by a lot of configuration, this was a week of /full/ days of trying to configure Emacs. Now, I wouldn't mind if my configuration payed out, but in this case, I haven't felt the payout yet. It's not bad by any means, but it hasn't really been worth the extra effort over my Obsidian setup. Even now, I just use Vim to edit those markdown files and have a live markdown preview (literally 100x faster than trying to preview LaTeX fragments on Emacs). Markdown (while it has many flaws) is adopted by so many more people and that has so many benefits. Honestly, because of that, Markdown has the better apps, more support, and isn't lacking in many of the features /most/ normal people would use. I tried Orgzly and again, it isn't bad, but not nearly worth all the trouble I've gone through. I can see why people really into organization can dive into Org Mode and make it their organizational man-cave, but its so much work and here's the biggest problem for me: it is stuck in Emacs (and therefore you computer). While the Org format is plain text, the ecosystem and a vast majority of its tools are Emacs based. This has made portability quite atrocious for me so far.
+
+Despite my complaints, I will try to continue using it. I won't try to go as hard anymore trying to configure it, but I do see a lot of value in its more niche features like literate programming (speaking of, it's really jank for me lol). I like the ideals behind Org mode but I don't know if I'll stick with it. We'll see down the road.
+
+Sorry for the long (probably uneducated) rant once again ✌
