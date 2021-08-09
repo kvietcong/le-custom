@@ -1,0 +1,2 @@
+* Welcome to my Emacs Folder
+Check out my configuration at [[./Emacs.org]] or if you want to see the generated code from it, see [[./init.el]]. My configuration before I moved to Org+Babel is found at [[./init-pre-tangle.el]]. Well, that's about it for Emacs ✌
