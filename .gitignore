@@ -1,6 +1,8 @@
+*.db
+**/cache
+
 **/BetterDiscord/*.json
 **/BetterDiscord/**/*.json
-**/cache
 
 # Vim Stuff
 **/nvim/plugin
@@ -14,16 +16,16 @@
 **/.emacs.d/emojis
 **/.emacs.d/places
 **/.emacs.d/server
+**/.emacs.d/.cache
+**/.emacs.d/eshell
 **/.emacs.d/recentf
 **/.emacs.d/backups
-**/.emacs.d/.cache
 **/.emacs.d/history
 **/.emacs.d/transient
+**/.emacs.d/bookmarks
 **/.emacs.d/auto-save-list
+**/.emacs.d/.lsp-session-v1
 **/.emacs.d/projectile.cache
+**/.emacs.d/.org-id-locations
 **/.emacs.d/.last-package-update-day
 **/.emacs.d/projectile-bookmarks.eld
-/dotfiles/.emacs.d/.lsp-session-v1
-/dotfiles/.emacs.d/eshell/
-/dotfiles/.emacs.d/bookmarks
-*.db
