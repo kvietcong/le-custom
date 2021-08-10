@@ -99,9 +99,10 @@
               display-line-numbers-width 5)
 (global-display-line-numbers-mode t) ; Enable line numbers
 
-;; Disable for some modes
+;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
                 term-mode-hook
+                markdown-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
                 eshell-mode-hook))
@@ -397,11 +398,11 @@
 (use-package org-bullets :after org :hook (org-mode . org-bullets-mode)
   :custom (org-bullets-bullet-list '("◎" "○" "●" "○" "●" "○" "●")))
 
-(defun le/org-mode-visual-fill ()
+(defun le/visual-fill ()
   (setq visual-fill-column-width le/window-width
         visual-fill-column-center-text t)
   (visual-fill-column-mode t))
-(use-package visual-fill-column :hook (org-mode . le/org-mode-visual-fill))
+(use-package visual-fill-column :hook ((markdown-mode org-mode) . le/visual-fill))
 
 (add-hook 'org-mode-hook
           '(lambda ()
@@ -438,21 +439,29 @@
 
 (use-package lsp-pyright :mode ("\\.py\\'" . python-mode))
 
+(defun le/markdown-font-setup ()
+  "Setup/Reset Markdown Font Faces" (interactive)
+  (dolist (face '((markdown-header-face-1 . 2.5)
+                  (markdown-header-face-2 . 2.25)
+                  (markdown-header-face-3 . 2.0)
+                  (markdown-header-face-4 . 1.5)
+                  (markdown-header-face-5 . 1.25)))
+    (set-face-attribute
+     (car face) nil
+     :font (concat le/variable-font " black") :weight 'bold :height (cdr face)))
+  (visual-line-mode 1)
+  (variable-pitch-mode 1)
+  (markdown-toggle-math nil)
+  (set-face-attribute
+   'markdown-code-face nil :foreground "white" :inherit '(shadow fixed-pitch))
+  (set-face-attribute
+   'markdown-math-face nil :foreground "white" :inherit '(shadow fixed-pitch)))
+
 ;; Markdown
 (use-package markdown-mode
   :mode ("\\.md\\'" . markdown-mode)
-  :config
-  (setq markdown-command "multimarkdown")
-  (defun le/set-markdown-header-font-sizes ()
-    (dolist (face '((markdown-header-face-1 . 2.5)
-                    (markdown-header-face-2 . 2.0)
-                    (markdown-header-face-3 . 1.5)
-                    (markdown-header-face-4 . 1.2)
-                    (markdown-header-face-5 . 1.1)))
-      (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
-  (defun le/markdown-mode-hook ()
-    (le/set-markdown-header-font-sizes))
-  (add-hook 'markdown-mode-hook 'le/markdown-mode-hook))
+  :hook (markdown-mode . le/markdown-font-setup)
+  :config (setq markdown-enable-wiki-links t markdown-enable-math nil))
 
 ;; Git Interface
 (use-package magit :commands (magit magit-status))
@@ -491,7 +500,7 @@
   ([remap describe-key] . helpful-key))
 
 ;; Project Stuff
-(use-package projectile :defer t
+(use-package projectile :defer 2
   :diminish projectile-mode :config (projectile-mode)
   :init
   (when (file-directory-p "~/Documents/Projects")
@@ -499,7 +508,7 @@
   (setq projectile-switch-project-action #'projectile-dired))
 
 ;; Some rich actions
-(use-package consult :defer t
+(use-package consult :defer 2
   :config
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-root-function #'projectile-project-root))
