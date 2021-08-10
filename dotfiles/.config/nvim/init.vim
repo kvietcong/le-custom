@@ -97,6 +97,8 @@ vnoremap <C-c> "+y<Esc>
 " Custom Navigation Stuff
 nnoremap <expr> j v:count ? "j" : "gj"
 nnoremap <expr> k v:count ? "k" : "gk"
+vnoremap <expr> j v:count ? "j" : "gj"
+vnoremap <expr> k v:count ? "k" : "gk"
 nnoremap N Nzzzv
 nnoremap n nzzzv
 nnoremap gm gM
