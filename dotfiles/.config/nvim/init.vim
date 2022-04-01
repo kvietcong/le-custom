@@ -43,9 +43,9 @@ set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 if has("win32") || has("win64")
     " Make Powershell work :)
     let &shell = "pwsh"
-    let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
-    let &shellredir = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
-    let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+    let &shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
+    let &shellredir = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+    let &shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
     set shellquote= shellxquote=
 endif
 
@@ -67,8 +67,8 @@ endif
 :command Q q
 
 " Highlight characters in column 81 and 101
-:1match ErrorMsg '\%101v.'
-:2match WarningMsg '\%81v.'
+:1match ErrorMsg "\%101v."
+:2match WarningMsg "\%81v."
 " Disable for Markdown and Text
 autocmd FileType markdown,text 1match none
 autocmd FileType markdown,text 2match none
@@ -117,10 +117,6 @@ nnoremap <M-O> O<Esc>
 nnoremap \\ <C-d>
 nnoremap \|\| <C-u>
 
-nnoremap gh <C-w>h
-nnoremap gj <C-w>j
-nnoremap gk <C-w>k
-nnoremap gl <C-w>l
 nnoremap <Leader>w <C-w>
 nnoremap <C-Up> <C-w>-
 nnoremap <C-Down> <C-w>+
@@ -171,6 +167,9 @@ function RefreshColor()
     execute "colorscheme ".current
 endfunction
 nnoremap <F5> :call RefreshColor()<Enter>
+
+let g:user_emmet_install_global = 0
+autocmd FileType html,css EmmetInstall
 
 " ======================
 " == GUI Vim settings ==

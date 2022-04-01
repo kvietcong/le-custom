@@ -20,7 +20,7 @@
   (save-some-buffers) (kill-emacs))
 
 (defvar le/fixed-font-size 118)
-(defvar le/variable-font-size 110)
+(defvar le/variable-font-size 120)
 (defvar le/themes ; Day/Night Theme
   (list 'doom-gruvbox-light 'doom-nord))
 (defvar le/leader "<SPC>")
@@ -34,7 +34,7 @@
 (defvar le/variable-font "Merriweather")
 (defvar le/backup-directory (concat user-emacs-directory "backups"))
 (defvar le/window-width 100)
-(defvar le/org-path (expand-file-name "~/Documents/Notes/org-mode/"))
+(defvar le/org-path (expand-file-name "~/Documents/org-mode/"))
 
 (when (eq system-type 'windows-nt)
   (message "IT'S WINDOWS")
@@ -381,6 +381,7 @@
         org-habit-graph-column 50
         org-habit-following-days 1
         org-habit-preceding-days 30
+        org-habit-show-habits-only-for-today nil
 
         org-archive-location (concat le/org-path "Archive.org::")
         org-default-notes-file (concat le/org-path "Agenda.org")
@@ -389,7 +390,7 @@
         org-todo-keywords
         '((sequence "TODO(t)" "DOING(d)" "LATER(l)" "|" "DONE(D!)" "CANCEL(c!)"))
         org-capture-templates
-        '(("t" "Todo" entry (file "~/Documents/Notes/org-mode/Agenda.org")
+        '(("t" "Todo" entry (file "~/Documents/org-mode/Agenda.org")
            "* TODO %?\n  %i\n  %a" :prepend t))))
 
 (use-package evil-org :after org
@@ -441,21 +442,19 @@
 
 (defun le/markdown-font-setup ()
   "Setup/Reset Markdown Font Faces" (interactive)
-  (dolist (face '((markdown-header-face-1 . 2.5)
-                  (markdown-header-face-2 . 2.25)
-                  (markdown-header-face-3 . 2.0)
-                  (markdown-header-face-4 . 1.5)
-                  (markdown-header-face-5 . 1.25)))
+  (dolist (face '((markdown-header-face-1 . 3.0)
+                  (markdown-header-face-2 . 2.5)
+                  (markdown-header-face-3 . 2.25)
+                  (markdown-header-face-4 . 2)
+                  (markdown-header-face-5 . 1.5)))
     (set-face-attribute
      (car face) nil
      :font (concat le/variable-font " black") :weight 'bold :height (cdr face)))
   (visual-line-mode 1)
   (variable-pitch-mode 1)
   (markdown-toggle-math nil)
-  (set-face-attribute
-   'markdown-code-face nil :foreground "white" :inherit '(shadow fixed-pitch))
-  (set-face-attribute
-   'markdown-math-face nil :foreground "white" :inherit '(shadow fixed-pitch)))
+  (set-face-attribute 'markdown-code-face nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'markdown-math-face nil :inherit '(shadow fixed-pitch)))
 
 ;; Markdown
 (use-package markdown-mode
@@ -555,9 +554,13 @@
   "Setting theme based on time" (interactive)
   (let* ((time-info (decode-time))
          (time (+ (nth 2 time-info) (/ (nth 1 time-info) 100.0))))
+    (dolist (theme custom-enabled-themes) (disable-theme theme))
     (if (or (>= time 17.30) (<= time 8.30))
         (load-theme (nth 1 le/themes) :no-confirm)
-      (load-theme (nth 0 le/themes) :no-confirm))))
+      (load-theme (nth 0 le/themes) :no-confirm)))
+  (le/set-fonts)
+  (when (bound-and-true-p org-mode) (le/org-font-setup))
+  (when (bound-and-true-p markdown-mode) (le/markdown-font-setup)))
 
 (use-package doom-themes :hook (after-init . le/set-theme)
   :config
@@ -639,3 +642,12 @@
   :config (setq beacon-blink-when-point-moves-vertically 5
                 beacon-blink-when-window-scrolls nil
                 beacon-blink-when-focused t))
+
+;; This doesn't work with Vertico atm. Check back later b/c really nice UI
+(use-package mini-frame :after evil :disabled t
+  :custom
+  (custom-set-variables
+   '(mini-frame-show-parameters
+     '((top . 0.25)
+       (width . 0.75)
+       (left . 0.5)))))

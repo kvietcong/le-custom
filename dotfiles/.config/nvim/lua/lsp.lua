@@ -18,7 +18,6 @@ local function setup()
             spell = true;
             emoji = true;
             buffer = true;
-            orgmode = true;
             nvim_lsp = true;
             nvim_lua = true;
             treesitter = true;
@@ -29,21 +28,21 @@ local function setup()
 
     local on_attach = function(client, buff)
         map("n gd           :lua vim.lsp.buf.definition()<Enter>", nil, buff)
-        map("n gD           :lua vim.lsp.buf.declaration()<Enter>", nil, buff)
-        map("n gi           :lua vim.lsp.buf.implementation()<Enter>", nil, buff)
+        map("n <Leader>rn   :lua vim.lsp.buf.rename()<Enter>", nil, buff)
         map("n <Leader>cs   :lua vim.lsp.buf.signature_help()<Enter>", nil, buff)
         map("n <Leader>ch   :lua vim.lsp.buf.hover()<Enter>", nil, buff)
-        map("n gr           :lua vim.lsp.buf.rename()<Enter>", nil, buff)
         map("n <Leader>ca   :lua vim.lsp.buf.code_action()<Enter>", nil, buff)
         map("n <Leader>cf   :lua vim.lsp.buf.formatting()<Enter>", nil, buff)
     end
 
     -- TODO: For some reason, the extracted VSCode servers (HTML, CSS) don't work on Windows :(
-    local servers = { "pyright", "hls", "clangd", "tsserver", "html", "cssls" }
+    local servers = { "tsserver", "pyright", "hls", "clangd", "cssls", "html", "rust_analyzer", "emmet_ls" }
     for _, server in pairs(servers) do
-        require("lspconfig")[server].setup {
+        local settings = {
             on_attach = on_attach
         }
+
+        require("lspconfig")[server].setup(settings)
     end
 
     -- Lua Specific Server Configuration

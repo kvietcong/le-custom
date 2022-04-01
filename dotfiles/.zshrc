@@ -70,3 +70,6 @@ kitty + complete setup zsh | source /dev/stdin
 # Variables
 export EDITOR=nvim
 export VISUAL=nvim
+
+# Starship
+eval "$(starship init zsh)"

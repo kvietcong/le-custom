@@ -1,0 +1,65 @@
+format = """
+$username\
+$directory\
+$git_branch$git_status\
+$fill\
+$nodejs$rust$haskell$lua$java\
+$time
+[ λ ](fg:#ECEFF4 bg:#4C566A)[](fg:#4C566A bg:#ECEFF4)[ ](fg:#ECEFF4)"""
+
+[fill]
+symbol = " "
+
+[username]
+show_always = true
+style_user = "bg:#5E81AC"
+style_root = "bg:#5E81AC"
+format = "[ 🚀 KV Le  ]($style)"
+
+[directory]
+style = "bg:#BF616A fg:#ECEFF4"
+format = "[ 📂 $path  ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+truncate_to_repo = false
+use_os_path_sep = false
+
+[git_branch]
+symbol = ""
+style = "bg:#A3BE8C fg:#4C566A"
+format = "[ $symbol $branch ]($style)"
+
+[git_status]
+style = "bg:#A3BE8C fg:#4C566A"
+format = "[($all_status$ahead_behind )]($style)"
+
+[nodejs]
+symbol = ""
+style = "bg:#EBCB8B fg:#4C566A"
+format = "[ $symbol JavaScript ($version) ]($style)"
+
+[java]
+symbol = "☕"
+style = "bg:#D08770 fg:#ECEFF4"
+format = "[ $symbol Java ($version) ]($style)"
+
+[rust]
+symbol = ""
+style = "bg:#BF616A"
+format = "[ $symbol Rust ($version) ]($style)"
+
+[haskell]
+symbol = "λ"
+style = "bg:#B48EAD fg:#4C566A"
+format = "[ $symbol Haskell ($version) ]($style)"
+
+[lua]
+symbol = "🌙"
+style = "bg:#B47EAD fg:#4C566A"
+format = "[ $symbol Lua ($version) ]($style)"
+
+[time]
+disabled = false
+time_format = " 📅 %a, %b %e 🕝 %R "
+style = "bg:#8FBCBB fg:#4C566A"
+format = "[$time]($style)"

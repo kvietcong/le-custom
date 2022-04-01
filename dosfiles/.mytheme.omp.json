@@ -5,7 +5,7 @@
       "alignment": "left",
       "segments": [
         {
-          "background": "#2f2f2f",
+          "background": "#2F2F2F",
           "foreground": "#26C6DA",
           "leading_diamond": "▓",
           "properties": {

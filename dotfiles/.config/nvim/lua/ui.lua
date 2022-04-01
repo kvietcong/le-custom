@@ -71,6 +71,7 @@ local function setup()
 
     -- Indenting
     vim.g.indent_blankline_char = "│"
+    vim.g.indent_blankline_enabled = 0
     -- Colored indents
     -- vim.cmd [[highlight Indent1 guifg=#88C0D0 guibg=NONE gui=nocombine]]
     -- vim.cmd [[highlight Indent2 guifg=#8FBCBB guibg=NONE gui=nocombine]]
