@@ -60,6 +60,6 @@ format = "[ $symbol Lua ($version) ]($style)"
 
 [time]
 disabled = false
-time_format = " 📅 %a, %b %e 🕝 %R "
+time_format = " 📅 %a, %b%e 🕝 %R "
 style = "bg:#8FBCBB fg:#4C566A"
 format = "[$time]($style)"
