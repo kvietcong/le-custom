@@ -59,13 +59,15 @@ alias rice="cd ~/linux-things/dotfiles"
 alias compat="sudo mount --bind ~/.local/share/Steam/steamapps/compatdata/"
 alias gpusage="watch -d -n 0.5 nvidia-smi"
 
-source $HOME/.config/le-agnoster.zsh-theme
+# source $HOME/.config/le-agnoster.zsh-theme
 
 # Color Scheme Application (wpgtk)
 # (cat $HOME/.config/wpg/sequences &)
 
 # Proper Kitty autocompletion
-kitty + complete setup zsh | source /dev/stdin
+# kitty + complete setup zsh | source /dev/stdin
+
+eval "$(zoxide init zsh)"
 
 # Variables
 export EDITOR=nvim

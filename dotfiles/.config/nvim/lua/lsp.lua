@@ -52,20 +52,20 @@ local function setup()
     if vim.fn.has("win32") == 1 then
         sumneko_root = "D:/Custom Binaries/lua-language-server-2.3/"
         sumneko_binary = sumneko_root .. "/bin/lua-language-server"
+        local runtime_path = vim.split(package.path, ';')
+        table.insert(runtime_path, "lua/?.lua")
+        table.insert(runtime_path, "lua/?/init.lua")
+        require("lspconfig").sumneko_lua.setup {
+            cmd = { sumneko_binary, "-E", sumneko_root .. "main.lua" };
+            settings = { Lua = {
+                runtime = { version = "LuaJIT", path = runtime_path },
+                diagnostics = { globals = { "vim" } },
+                workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+                telemetry = { enable = false }
+            }},
+            on_attach = on_attach
+        }
     end
-    local runtime_path = vim.split(package.path, ';')
-    table.insert(runtime_path, "lua/?.lua")
-    table.insert(runtime_path, "lua/?/init.lua")
-    require("lspconfig").sumneko_lua.setup {
-        cmd = { sumneko_binary, "-E", sumneko_root .. "main.lua" };
-        settings = { Lua = {
-            runtime = { version = "LuaJIT", path = runtime_path },
-            diagnostics = { globals = { "vim" } },
-            workspace = { library = vim.api.nvim_get_runtime_file("", true) },
-            telemetry = { enable = false }
-        }},
-        on_attach = on_attach
-    }
 end
 
 return { setup = setup }
