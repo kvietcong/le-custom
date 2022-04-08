@@ -50,9 +50,10 @@ local function setup()
     map("n <Leader>fe :NvimTreeToggle<Enter>")
 
     -- Wiki Vim
+    vim.g.wiki_mappings_use_defaults = "none"
     vim.g.wiki_root = "~/Documents/Notes"
     vim.g.wiki_link_extension = ".md"
-    vim.g.wiki_filetypes = { "md", "wiki", "markdown" }
+    vim.g.wiki_filetypes = { "md", "markdown" }
     vim.g.wiki_journal = {
         name = "Journal",
         frequency = "daily",
@@ -60,6 +61,10 @@ local function setup()
             daily = "%Y-%m-%d"
         }
     }
+    vim.g.wiki_index_name = "- Index -.md"
+    map("n <Leader>ww <Plug>(wiki-index)")
+    map("n <Enter> <Plug>(wiki-link-follow)")
+    map("n <Leader>wb <Plug>(wiki-graph-find-backlinks)")
 
     -- Lua Pad
     require("luapad").config { count_limit = 50000 }

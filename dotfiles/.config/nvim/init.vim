@@ -33,7 +33,7 @@ set splitbelow splitright " Splits occur below or to the right of the current wi
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
 let mapleader = "\<Space>" " Set the leader key
-set guifont=FiraCode\ NF:h16 " Set a font for GUI things
+set guifont=CodeNewRoman\ NF:h16 " Set a font for GUI things
 set backspace=indent,eol,start " More robust backspacing
 set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
@@ -175,8 +175,8 @@ autocmd FileType html,css EmmetInstall
 " == GUI Vim settings ==
 " ======================
 if exists("g:neovide")
-    let g:neovide_transparency=0.95
-    let g:neovide_refresh_rate=144
+    let g:neovide_transparency=0.93
+    let g:neovide_refresh_rate=165
     let g:neovide_cursor_trail_length=0.5
     let g:neovide_cursor_animation_length=0.1
     let g:neovide_cursor_antialiasing=v:true
