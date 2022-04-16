@@ -2,6 +2,7 @@
 HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.cache/zsh/history
+EDITOR=nvim
 
 setopt autocd extendedglob notify
 setopt COMPLETE_ALIASES
@@ -47,19 +48,16 @@ bindkey -M menuselect "^P" vi-up-line-or-history
 bindkey -M menuselect "^N" vi-down-line-or-history
 
 # Custom lines
-alias ls="ls --color=auto"
-alias nf="neofetch"
-alias la="ls -A"
+alias ls="exa --icons"
+alias la="ls -a"
 alias mv="mv -i"
 alias rm="rm -I"
 alias cp="cp -i"
 alias grep="grep --color=auto"
 alias vim="nvim"
-alias rice="cd ~/linux-things/dotfiles"
+alias rice="cd ~/le-custom/dotfiles"
 alias compat="sudo mount --bind ~/.local/share/Steam/steamapps/compatdata/"
 alias gpusage="watch -d -n 0.5 nvidia-smi"
-
-# source $HOME/.config/le-agnoster.zsh-theme
 
 # Color Scheme Application (wpgtk)
 # (cat $HOME/.config/wpg/sequences &)
@@ -75,3 +73,4 @@ export VISUAL=nvim
 
 # Starship
 eval "$(starship init zsh)"
+

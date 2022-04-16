@@ -4,6 +4,7 @@ window:
   dynamic_padding: true
   title: Alacritty
   dynamic_title: true
+  opacity: 0.75
   padding:
     x: 0
     y: 0
@@ -13,10 +14,11 @@ scrolling:
 
 font:
   size: 12.0
+  offset:
+    x: 0
+    y: 5
   normal:
-    family: Monaco
-
-background_opacity: 0.9
+    family: CodeNewRoman NF
 
 cursor:
   style: Block
@@ -27,7 +29,7 @@ mouse:
   double_click: { threshold: 300 }
   triple_click: { threshold: 300 }
   hide_when_typing: false
-  url:
+  hint:
     launcher:
       program: xdg-open
       args: []

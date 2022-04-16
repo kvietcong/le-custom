@@ -23,15 +23,18 @@ end
 --- @param options? string Extra options. Default options are `noremap` and `silent`
 --- @param buff? string Buffer for local mappings
 local function map(keymapping, options, buff)
-    if options == nil then
+    --- EWWWWWW Why did I do this
+    if options == "DEFAULT" then
         options = { noremap = true, silent = true }
-    else
+    elseif options ~= nil then
         options = split(options)
         local new_options = {}
         for _, option in pairs(options) do
             new_options[option] = true
         end
         options = new_options
+    else
+        options = {}
     end
     keymapping = split(keymapping)
     local function get_command(split_keymap)
