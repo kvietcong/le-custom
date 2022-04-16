@@ -14,8 +14,8 @@ set $idle swayidle -w \
     timeout 90 '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
         resume 'swaymsg "output * dpms on"' \
     lock '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
-    after-resume 'swaymsg "output * dpms on"' \
     unlock 'swaymsg "output * dpms on"' \
+    after-resume 'swaymsg "output * dpms on"' \
     before-sleep 'swaylock -fFe -i /tmp/lockscreen.png'
 
 set $statusbar waybar
@@ -38,8 +38,9 @@ input type:touchpad {
       natural_scroll enabled
 }
 
-bindsym $mod+grave exec swaymsg "output * dpms on"
-bindsym $mod+shift+grave exec swaymsg "output * dpms off"
+# For toggling screen on Pinebook Pro b/c it's wack
+# Can take a couple tries to turn on
+bindsym $mod+grave exec swaymsg "output eDP-1 dpms toggle"
 
 # Apply Theme
 output eDP-1 scale 1.15
