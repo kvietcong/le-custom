@@ -1,0 +1,57 @@
+# global variables
+set $super Mod4
+set $mod $super
+
+set $left h
+set $down j
+set $up k
+set $right l
+
+set $term alacritty
+set $theme /etc/sway/themes/matcha-blue
+set $idle swayidle -w \
+    timeout 120 'swaylock -fFe -i /tmp/lockscreen.png' \
+    timeout 90 '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
+        resume 'swaymsg "output * dpms on"' \
+    lock '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
+    after-resume 'swaymsg "output * dpms on"' \
+    unlock 'swaymsg "output * dpms on"' \
+    before-sleep 'swaylock -fFe -i /tmp/lockscreen.png'
+
+set $statusbar waybar
+set $shutdown wlogout --buttons-per-row 3
+
+set $appmenu wofi --show drun --prompt "Application Launcher" | xargs swaymsg exec --
+set $menu wofi --show run --exec-search --prompt "Run Command" | xargs swaymsg exec --
+set $selwin sws.sh --dmenu-cmd "wofi --show dmenu" --format "%W | %A - %T"
+set $help swhelp.sh --conf $HOME/.config/wofi/swhelp --location 7 --xoffset 15 --yoffset -30
+
+# Input
+input type:keyboard {
+    xkb_layout "us"
+    xkb_options caps:escape
+}
+
+input type:touchpad {
+      dwt enabled
+      tap enabled
+      natural_scroll enabled
+}
+
+bindsym $mod+grave exec swaymsg "output * dpms on"
+bindsym $mod+shift+grave exec swaymsg "output * dpms off"
+
+# Apply Theme
+output eDP-1 scale 1.15
+include $theme
+set $background ~/le-custom/media/origin_of_nature_by_julian_tomasini.jpg
+output * bg $background fill
+hide_edge_borders smart
+default_border pixel 2
+gaps inner 8
+
+# Modes
+include ~/.config/sway/modes/*
+
+# include additional configs e.g. to autostart applications
+include /etc/sway/config.d/*
