@@ -20,8 +20,10 @@ set noshowmode " Disable native mode indicator (No need for two)
 set lazyredraw
 set scrolloff=3 " Ensure at least some number of lines is above/below the cursor
 set history=500
+set nofoldenable
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
+set conceallevel=2
 set timeoutlen=350 " Delay for things to happen with multi key bindings
 set viminfo='100,f1 " Save marks and stuff
 set inccommand=split " Live update of commands like substitution
@@ -37,6 +39,7 @@ set guifont=CodeNewRoman\ NF:h16 " Set a font for GUI things
 set backspace=indent,eol,start " More robust backspacing
 set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
+set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 
@@ -116,6 +119,9 @@ nnoremap <M-O> O<Esc>
 " I have to find a more ergonomic way to scroll up and down
 nnoremap \\ <C-d>
 nnoremap \|\| <C-u>
+
+" #TODO Should I keep this?
+autocmd FileType markdown noremap <buffer> <Tab> zA
 
 nnoremap <Leader>w <C-w>
 nnoremap <C-Up> <C-w>-

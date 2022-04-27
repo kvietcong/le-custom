@@ -1,4 +1,4 @@
-# global variables
+# Setting Things up
 set $super Mod4
 set $mod $super
 
@@ -7,19 +7,18 @@ set $down j
 set $up k
 set $right l
 
+set $statusbar waybar
+set $shutdown wlogout --buttons-per-row 3
 set $term alacritty
 set $theme /etc/sway/themes/matcha-blue
 set $idle swayidle -w \
-    timeout 120 'swaylock -fFe -i /tmp/lockscreen.png' \
-    timeout 90 '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
+    timeout 240 'swaylock -fFe -i /tmp/lockscreen.png' \
+    timeout 80 '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
         resume 'swaymsg "output * dpms on"' \
     lock '~/bin/create_lock_image.sh ; swaymsg "output * dpms off"' \
     unlock 'swaymsg "output * dpms on"' \
     after-resume 'swaymsg "output * dpms on"' \
     before-sleep 'swaylock -fFe -i /tmp/lockscreen.png'
-
-set $statusbar waybar
-set $shutdown wlogout --buttons-per-row 3
 
 set $appmenu wofi --show drun --prompt "Application Launcher" | xargs swaymsg exec --
 set $menu wofi --show run --exec-search --prompt "Run Command" | xargs swaymsg exec --
@@ -42,7 +41,7 @@ input type:touchpad {
 # Can take a couple tries to turn on
 bindsym $mod+grave exec swaymsg "output eDP-1 dpms toggle"
 
-# Apply Theme
+# Theming
 output eDP-1 scale 1.15
 include $theme
 set $background ~/le-custom/media/origin_of_nature_by_julian_tomasini.jpg
@@ -51,8 +50,10 @@ hide_edge_borders smart
 default_border pixel 2
 gaps inner 8
 
-# Modes
+# Various modes to be in
 include ~/.config/sway/modes/*
 
-# include additional configs e.g. to autostart applications
+# Include additional configs e.g. to autostart applications
 include /etc/sway/config.d/*
+
+exec "systemctl --user import-environment SWAYSOCK"

@@ -88,6 +88,15 @@ local function setup()
     map("t <C-q>        <C-\\><C-n>:FloatermKill<Enter>")
     map("t <C-t><C-n>   <C-\\><C-n>:FloatermNew<Enter>")
 
+    -- Markdown
+    vim.g.vim_markdown_math = 1
+    vim.g.vim_markdown_frontmatter = 1
+    vim.g.vim_markdown_strikethrough = 1
+    vim.g.vim_markdown_folding_level = 6
+    vim.g.vim_markdown_auto_insert_bullets = 0
+    vim.g.vim_markdown_new_list_item_indent = 0
+    vim.g.vim_markdown_override_folding_text = 1
+
     -- Which Key (Hotkey reminders)
     local wk = require("which-key")
     wk.setup()

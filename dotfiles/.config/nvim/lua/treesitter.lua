@@ -66,7 +66,7 @@ local function setup()
     }
 
     require("zen-mode").setup {
-        window = { width = 102, number = true },
+        window = { width = 88, number = true },
         plugins = { options = { ruler = true }},
         gitsigns = { enable = true },
         on_open = function() end,
