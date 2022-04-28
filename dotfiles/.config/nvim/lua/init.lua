@@ -16,3 +16,5 @@ safe_setup("navigation")
 safe_setup("treesitter")
 -- LSP Setup
 safe_setup("lsp")
+
+return "Yay!"

@@ -6,8 +6,6 @@ local function setup()
         rainbow = {
             enable = true,
             extended_mode = true,
-            colors = { "Cyan1", "PaleGreen1", "Magenta1", "Gold1" },
-            termcolors = { 51, 121, 201, 220 }
         },
         refactor = {
             highlight_definitions = { enable = true },

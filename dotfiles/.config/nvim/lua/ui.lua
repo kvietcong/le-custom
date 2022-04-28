@@ -55,10 +55,6 @@ local function setup()
     --  This plugin doesn't work with Lua or Rust so I'm using two
     --  Rainbow Plugins XD
     vim.g.rainbow_active = 1
-    vim.g.rainbow_conf = {
-        guifgs = {"Cyan1", "PaleGreen1", "Magenta1", "Gold1"},
-        ctermfgs = { 51, 121, 201, 220 }
-    }
 
     -- Haskell Improvements
     vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
