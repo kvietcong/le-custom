@@ -66,20 +66,12 @@ local function setup()
     vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
 
     -- Indent blankline
-    vim.opt.list = true
-    vim.opt.listchars:append("space:⋅")
-    vim.opt.listchars:append("eol:↴")
     require("indent_blankline").setup {
         char = "┊",
-        show_current_context_start = true,
-        show_trailing_blankline_indent = true,
-        space_char_blankline = " ",
-    }
-
-    require("indent_blankline").setup {
         space_char_blankline = " ",
         show_current_context = true,
         show_current_context_start = true,
+        show_trailing_blankline_indent = true,
     }
 
     -- Terminal Stuff

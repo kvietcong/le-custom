@@ -1,4 +1,6 @@
 -- Remaking my config based off of the starter lua config @ https://github.com/nvim-lua/kickstart.nvim
+local helpers = require("helpers")
+local is_day = helpers.is_day
 
 -- Install packer
 local packer_bootstrap
@@ -18,10 +20,7 @@ local packer = require("packer")
 
 packer.startup(function(use)
     use "wbthomason/packer.nvim" -- Package manager
-    use "tpope/vim-fugitive" -- Git commands in nvim
-    use "tpope/vim-rhubarb" -- Fugitive-companion to interact with github
     use "numToStr/Comment.nvim" -- "gc" to comment visual regions/lines
-    use "ludovicchabant/vim-gutentags" -- Automatic tags management
     use { "nvim-telescope/telescope.nvim", requires = { "nvim-lua/plenary.nvim" } } -- UI to select things (files, grep results, open buffers...)
     use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
     use "shaunsingh/nord.nvim" -- Theme inspired by cool stuff
@@ -41,59 +40,48 @@ packer.startup(function(use)
     end
 end)
 
---Set highlight on search
-vim.o.hlsearch = false
+-- Colorscheme Options
+vim.g.nord_borders = true
+vim.g.gruvbox_material_enable_italic = 1
+vim.g.gruvbox_material_background = "soft"
+vim.g.gruvbox_material_diagnostic_virtual_text = 1
+vim.g.gruvbox_material_diagnostic_text_highlight = 1
+vim.g.gruvbox_material_diagnostic_line_highlight = 1
 
---Make line numbers default
-vim.wo.number = true
-
---Enable mouse mode
-vim.o.mouse = "a"
-
---Enable break indent
-vim.o.breakindent = true
-
---Save undo history
-vim.opt.undofile = true
-
---Case insensitive searching UNLESS /C or capital in search
-vim.o.ignorecase = true
-vim.o.smartcase = true
-
---Decrease update time
-vim.o.updatetime = 250
-vim.wo.signcolumn = "yes"
-
---Set colorscheme
-vim.o.termguicolors = true
-vim.cmd [[colorscheme nord]]
-
--- Set completeopt to have a better completion experience
-vim.o.completeopt = "menuone,noselect"
-
---Set statusbar
-require("lualine").setup {
-    options = {
-        icons_enabled = false,
-        theme = "nord",
-        component_separators = "|",
-        section_separators = "",
-    },
+-- Select day/night colorscheme
+local lualine_colors = {
+    nord = "nord",
+    ["gruvbox-material"] = "gruvbox_light",
 }
+local colorschemes = { day = "gruvbox-material", night = "nord" }
+local colorscheme
+if is_day() then
+    colorscheme = colorschemes.day
+    vim.cmd[[set background=light]]
+else
+    colorscheme = colorschemes.night
+end
 
---Enable Comment.nvim
+-- Set Colorscheme
+vim.cmd("colorscheme " .. colorscheme)
+
+-- Set Status Bar
+require("lualine").setup { options = {
+    icons_enabled = true,
+    theme = lualine_colors[colorscheme],
+    component_separators = "|",
+    section_separators = "",
+}}
+
+-- Setup Easy Commenting
 require("Comment").setup()
 
---Remap space as leader key
-vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+-- Remap space as leader key #TODO
+-- vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
+-- vim.g.mapleader = " "
+-- vim.g.maplocalleader = " "
 
---Remap for dealing with word wrap
-vim.keymap.set("n", "k", "v:count == 0 ? "gk" : "k"", { expr = true, silent = true })
-vim.keymap.set("n", "j", "v:count == 0 ? "gj" : "j"", { expr = true, silent = true })
-
--- Highlight on yank
+-- Highlight on yank #TODO
 local highlight_group = vim.api.nvim_create_augroup("YankHighlight", { clear = true })
 vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()
@@ -106,11 +94,20 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- Indent blankline
 require("indent_blankline").setup {
     char = "┊",
-    show_trailing_blankline_indent = false,
+    space_char_blankline = " ",
+    show_current_context = true,
+    show_current_context_start = true,
+    show_trailing_blankline_indent = true,
 }
 
 -- Gitsigns
 require("gitsigns").setup()
+
+-- Color Previews in Code
+require("colorizer").setup()
+
+-- Fancy TODO Highlighting
+require("todo-comments").setup()
 
 -- Telescope
 require("telescope").setup {
@@ -121,26 +118,47 @@ require("telescope").setup {
                 ["<C-d>"] = false,
             },
         },
-    },
+        layout_config = {
+            prompt_position = "top",
+        },
+        layout_strategy = "flex",
+        sorting_strategy = "ascending",
+        set_env = { ["COLORTERM"] = "truecolor" },
+    }
 }
+-- map("n <Leader>fa   :Telescope<Enter>")
+-- map("n <Leader>fb   :Telescope buffers<Enter>")
+-- map("n <Leader>fr   :Telescope oldfiles<Enter>")
+-- map("n <Leader>fg   :Telescope live_grep<Enter>")
+-- map("n <Leader>fh   :Telescope help_tags<Enter>")
+-- map("n <Leader>fm   :Telescope man_pages<Enter>")
+-- map("n <Leader>ff   :Telescope find_files<Enter>")
+-- map("n <Leader>ft   :Telescope treesitter<Enter>")
+-- map("n <Leader>fT   :TodoTelescope<Enter>")
+-- map("n <Leader>fs   :Telescope lsp_document_symbols<Enter>")
+-- map("n <Leader>fd   :Telescope lsp_document_diagnostics<Enter>")
+-- map("n gr           :Telescope lsp_references<Enter>")
+-- map("n z=           :Telescope spell_suggest<Enter>")
+-- map("n <Leader>/    :Telescope current_buffer_fuzzy_find<Enter>")
+-- map("n <Leader>?    :Telescope live_grep<Enter>")
 
--- Enable telescope fzf native
-require("telescope").load_extension "fzf"
+-- Enable telescope fzf native #TODO
+-- require("telescope").load_extension "fzf"
 
---Add leader shortcuts
-vim.keymap.set("n", "<leader><space>", require("telescope.builtin").buffers)
-vim.keymap.set("n", "<leader>sf", function()
-    require("telescope.builtin").find_files { previewer = false }
-end)
-vim.keymap.set("n", "<leader>/", require("telescope.builtin").current_buffer_fuzzy_find)
-vim.keymap.set("n", "<leader>sh", require("telescope.builtin").help_tags)
-vim.keymap.set("n", "<leader>st", require("telescope.builtin").tags)
-vim.keymap.set("n", "<leader>sd", require("telescope.builtin").grep_string)
-vim.keymap.set("n", "<leader>sp", require("telescope.builtin").live_grep)
-vim.keymap.set("n", "<leader>so", function()
-    require("telescope.builtin").tags { only_current_buffer = true }
-end)
-vim.keymap.set("n", "<leader>?", require("telescope.builtin").oldfiles)
+-- Add leader shortcuts #TODO
+-- vim.keymap.set("n", "<leader><space>", require("telescope.builtin").buffers)
+-- vim.keymap.set("n", "<leader>sf", function()
+--     require("telescope.builtin").find_files { previewer = false }
+-- end)
+-- vim.keymap.set("n", "<leader>/", require("telescope.builtin").current_buffer_fuzzy_find)
+-- vim.keymap.set("n", "<leader>sh", require("telescope.builtin").help_tags)
+-- vim.keymap.set("n", "<leader>st", require("telescope.builtin").tags)
+-- vim.keymap.set("n", "<leader>sd", require("telescope.builtin").grep_string)
+-- vim.keymap.set("n", "<leader>sp", require("telescope.builtin").live_grep)
+-- vim.keymap.set("n", "<leader>so", function()
+--     require("telescope.builtin").tags { only_current_buffer = true }
+-- end)
+-- vim.keymap.set("n", "<leader>?", require("telescope.builtin").oldfiles)
 
 -- Treesitter configuration
 -- Parsers must be installed manually via :TSInstall
@@ -195,11 +213,11 @@ require("nvim-treesitter.configs").setup {
     },
 }
 
--- Diagnostic keymaps
-vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float)
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
+-- Diagnostic keymaps #TODO
+-- vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float)
+-- vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
+-- vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
+-- vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
 
 -- LSP settings
 local lspconfig = require "lspconfig"
@@ -270,7 +288,7 @@ lspconfig.sumneko_lua.setup {
 }
 
 -- luasnip setup
-local luasnip = require "luasnip"
+local luasnip = require("luasnip")
 
 -- nvim-cmp setup
 local cmp = require "cmp"
@@ -312,3 +330,4 @@ cmp.setup {
         { name = "luasnip" },
     },
 }
+

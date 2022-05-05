@@ -14,6 +14,7 @@ set title " Change Terminal Title
 set hidden " Allow you to change buffers without saving
 set confirm
 set mouse=a " Allow mouse usage
+set undofile
 set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
@@ -23,6 +24,8 @@ set history=500
 set nofoldenable
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
+set updatetime=250
+set signcolumn=yes
 set conceallevel=2
 set timeoutlen=350 " Delay for things to happen with multi key bindings
 set viminfo='100,f1 " Save marks and stuff
@@ -35,8 +38,9 @@ set splitbelow splitright " Splits occur below or to the right of the current wi
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
 let mapleader = "\<Space>" " Set the leader key
-set guifont=CodeNewRoman\ NF:h16 " Set a font for GUI things
 set backspace=indent,eol,start " More robust backspacing
+set list listchars=eol:↴,space:⋅
+set guifont=CodeNewRoman\ NF:h16 " Set a font for GUI things
 set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
 set breakindent breakindentopt=shift:0
