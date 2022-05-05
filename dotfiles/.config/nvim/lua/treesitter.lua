@@ -6,8 +6,6 @@ local function setup()
         rainbow = {
             enable = true,
             extended_mode = true,
-            colors = { "Cyan1", "PaleGreen1", "Magenta1", "Gold1" },
-            termcolors = { 51, 121, 201, 220 }
         },
         refactor = {
             highlight_definitions = { enable = true },
@@ -66,7 +64,7 @@ local function setup()
     }
 
     require("zen-mode").setup {
-        window = { width = 102, number = true },
+        window = { width = 88, number = true },
         plugins = { options = { ruler = true }},
         gitsigns = { enable = true },
         on_open = function() end,
