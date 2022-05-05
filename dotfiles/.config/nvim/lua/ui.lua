@@ -35,8 +35,8 @@ local function setup_colors()
     vim.cmd("colorscheme "..colorscheme)
     require("lualine").setup { options = {
         theme = lualine_colors[colorscheme],
-        section_separators = {},
-        component_separators = {"|"},
+        section_separators = "",
+        component_separators = "|",
     }}
 end
 
@@ -65,14 +65,22 @@ local function setup()
     vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
     vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
 
-    -- Indenting
-    vim.g.indent_blankline_char = "│"
-    vim.g.indent_blankline_enabled = 0
-    -- Colored indents
-    -- vim.cmd [[highlight Indent1 guifg=#88C0D0 guibg=NONE gui=nocombine]]
-    -- vim.cmd [[highlight Indent2 guifg=#8FBCBB guibg=NONE gui=nocombine]]
-    -- vim.cmd [[highlight Indent3 guifg=#81A1C1 guibg=NONE gui=nocombine]]
-    -- vim.g.indent_blankline_char_highlight_list = { "Indent1", "Indent2", "Indent3" }
+    -- Indent blankline
+    vim.opt.list = true
+    vim.opt.listchars:append("space:⋅")
+    vim.opt.listchars:append("eol:↴")
+    require("indent_blankline").setup {
+        char = "┊",
+        show_current_context_start = true,
+        show_trailing_blankline_indent = true,
+        space_char_blankline = " ",
+    }
+
+    require("indent_blankline").setup {
+        space_char_blankline = " ",
+        show_current_context = true,
+        show_current_context_start = true,
+    }
 
     -- Terminal Stuff
     vim.g.floaterm_width = 0.9
