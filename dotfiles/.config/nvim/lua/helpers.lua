@@ -34,7 +34,7 @@ local function map(keymapping, options, buff)
         end
         options = new_options
     else
-        options = {}
+        options = { noremap = true }
     end
     keymapping = split(keymapping)
     local function get_command(split_keymap)
