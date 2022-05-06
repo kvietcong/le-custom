@@ -60,6 +60,7 @@ packer.startup(function(use)
     use "shaunsingh/nord.nvim"
     use "p00f/nvim-ts-rainbow"
     use "lewis6991/gitsigns.nvim"
+    use "sainnhe/gruvbox-material"
     use "folke/todo-comments.nvim"
     use "nvim-lualine/lualine.nvim"
     use "neovimhaskell/haskell-vim"
