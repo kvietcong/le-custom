@@ -24,6 +24,7 @@ local function setup()
                 }
             },
             -- TODO: Find out why custom text objects are not working
+            -- Today (5/5/2022) I found out why. I put it under refacotor 🤦
             textobjects = {
                 lsp_interop = { enable = true },
                 select = {

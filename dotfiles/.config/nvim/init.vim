@@ -21,7 +21,6 @@ set noshowmode " Disable native mode indicator (No need for two)
 set lazyredraw
 set scrolloff=3 " Ensure at least some number of lines is above/below the cursor
 set history=500
-set nofoldenable
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
 set updatetime=250
@@ -30,7 +29,6 @@ set conceallevel=2
 set timeoutlen=350 " Delay for things to happen with multi key bindings
 set viminfo='100,f1 " Save marks and stuff
 set inccommand=split " Live update of commands like substitution
-" set foldmethod=syntax " Folds are made through syntax
 set jumpoptions+=stack
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
@@ -46,6 +44,7 @@ set smartindent cindent autoindent " Better indenting
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
+set foldenable foldopen foldmethod=syntax foldlevel=100 " Dang I wish I could do both syntax and indent folding
 
 if has("win32") || has("win64")
     " Make Powershell work :)
@@ -124,9 +123,6 @@ nnoremap <M-O> O<Esc>
 nnoremap \\ <C-d>
 nnoremap \|\| <C-u>
 
-" #TODO Should I keep this?
-autocmd FileType markdown noremap <buffer> <Tab> zA
-
 nnoremap <Leader>w <C-w>
 nnoremap <C-Up> <C-w>-
 nnoremap <C-Down> <C-w>+
@@ -197,3 +193,4 @@ elseif exists("g:fvim_loaded")
     FVimFontAntialias v:true
     FVimUIMultiGrid v:false
 endif
+
