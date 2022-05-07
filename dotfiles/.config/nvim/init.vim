@@ -44,7 +44,7 @@ set smartindent cindent autoindent " Better indenting
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
-set foldenable foldopen foldmethod=syntax foldlevel=100 " Dang I wish I could do both syntax and indent folding
+set foldenable foldmethod=syntax foldlevel=100 " Dang I wish I could do both syntax and indent folding
 
 if has("win32") || has("win64")
     " Make Powershell work :)
