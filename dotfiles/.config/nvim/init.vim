@@ -37,7 +37,7 @@ set relativenumber number " Show relative number lines with regular number line 
 filetype plugin indent on " Enable filetype detection and indentation
 let mapleader = "\<Space>" " Set the leader key
 set backspace=indent,eol,start " More robust backspacing
-set list listchars=eol:↴,space:⋅
+set list listchars=eol:↴
 set guifont=CodeNewRoman\ NF:h16 " Set a font for GUI things
 set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
@@ -58,6 +58,8 @@ endif
 " Entry into Lua config
 if has("nvim")
     lua require("init")
+else
+    colorscheme nord
 endif
 
 " Case/Typo Insensitive Saving/Quitting

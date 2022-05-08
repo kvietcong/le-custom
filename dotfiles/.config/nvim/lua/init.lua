@@ -1,5 +1,23 @@
 -- Remaking my config based off of the starter lua config @ https://github.com/nvim-lua/kickstart.nvim
 
+-- Nord Palette Reference
+-- nord1:   #2E3440
+-- nord2:   #3B4252
+-- nord3:   #434C5E
+-- nord4:   #4C566A
+-- nord5:   #D8DEE9
+-- nord6:   #E5E9F0
+-- nord7:   #ECEFF4
+-- nord8:   #8FBCBB
+-- nord9:   #88C0D0
+-- nord10:  #81A1C1
+-- nord11:  #5E81AC
+-- nord12:  #BF616A
+-- nord13:  #D08770
+-- nord14:  #EBCB8B
+-- nord15:  #A3BE8C
+-- nord16:  #B48EAD
+
 --- Retrieve Current Time
 --- @return table Table with Hour, Minute, and Formatted String
 local function get_time()
@@ -17,6 +35,8 @@ local function is_day()
     return hour > 6 and hour < 18
 end
 
+local is_startup = vim.v.vim_did_enter == 0
+
 -- Install packer
 local packer_bootstrap
 local install_path = vim.fn.stdpath("data").."/site/pack/packer/start/packer.nvim"
@@ -29,8 +49,8 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
 end
 
 -- This is for auto-sourcing
--- local packer_group = vim.api.nvim_create_augroup("Packer", { clear = true })
--- vim.api.nvim_create_autocmd("BufWritePost", { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" })
+local packer_group = vim.api.nvim_create_augroup("Packer", { clear = true })
+vim.api.nvim_create_autocmd("BufWritePost", { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" })
 
 local packer = require("packer")
 
@@ -46,27 +66,36 @@ packer.startup(function(use)
     -- Quality of Life
     use "mattn/emmet-vim"
     use "tpope/vim-repeat"
-    use "tpope/vim-surround"
+    use "monaqa/dial.nvim"
+    use "nacro90/numb.nvim"
     use "wellle/targets.vim"
+    use "wellle/context.vim"
+    use "jghauser/mkdir.nvim"
+    use "abecodes/tabout.nvim"
     use "voldikss/vim-floaterm"
-    use "numToStr/Comment.nvim"
+    use "echasnovski/mini.nvim"
     use "rafcamlet/nvim-luapad"
     use "TimUntersberger/neogit"
-    use "ggandor/lightspeed.nvim"
+    -- use "ggandor/lightspeed.nvim"
+    use "ggandor/leap.nvim" -- Trying this out over lightspeed and I like it so far
     use "kyazdani42/nvim-tree.lua"
 
     -- Pretty Things
-    use "luochen1990/rainbow"
+    use "edluffy/specs.nvim"
+    use "rcarriga/nvim-notify"
     use "shaunsingh/nord.nvim"
     use "p00f/nvim-ts-rainbow"
+    use "rmehri01/onenord.nvim"
+    use "stevearc/dressing.nvim"
     use "lewis6991/gitsigns.nvim"
+    -- use "arcticicestudio/nord-vim"
     use "sainnhe/gruvbox-material"
     use "folke/todo-comments.nvim"
     use "nvim-lualine/lualine.nvim"
     use "neovimhaskell/haskell-vim"
+    use "haringsrob/nvim_context_vt"
     use "norcalli/nvim-colorizer.lua"
     use "akinsho/nvim-bufferline.lua"
-    use "lukas-reineke/indent-blankline.nvim"
 
     -- Writing
     use "lervag/wiki.vim"
@@ -81,6 +110,7 @@ packer.startup(function(use)
     use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
 
     -- Treesitter
+    use "lewis6991/spellsitter.nvim"
     use "nvim-treesitter/nvim-treesitter"
     use "nvim-treesitter/nvim-treesitter-refactor"
     use "nvim-treesitter/nvim-treesitter-textobjects"
@@ -110,23 +140,125 @@ end)
 local wk = require("which-key")
 wk.setup()
 
--- Setup Easy Commenting
-require("Comment").setup({})
+-- Line Peeking
+require("numb").setup()
+
+-- Context
+require("nvim_context_vt").setup({})
+
+-- Tabout
+require("tabout").setup({
+    act_as_shift_tab = true,
+})
+
+-- Leap Movement
+require("leap").setup({
+    special_keys = {
+        repeat_search = "<Enter>",
+        next_match    = ";",
+        prev_match    = ",",
+        next_group    = "<Space>",
+        prev_group    = "<Tab>",
+        eol           = "<Space>",
+    },
+})
+require("leap").set_default_keymaps()
+
+vim.api.nvim_set_keymap("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
+vim.api.nvim_set_keymap("n", "<C-x>", require("dial.map").dec_normal(), {noremap = true})
+vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_visual(), {noremap = true})
+vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_visual(), {noremap = true})
+vim.api.nvim_set_keymap("v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true})
+vim.api.nvim_set_keymap("v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true})
+
+local augend = require("dial.augend")
+require("dial.config").augends:register_group({
+    default = {
+        augend.integer.alias.hex,
+        augend.constant.alias.bool,
+        augend.integer.alias.binary,
+        augend.constant.alias.alpha,
+        augend.constant.alias.Alpha,
+        augend.integer.alias.decimal,
+        augend.date.alias["%Y-%m-%d"],
+        augend.date.alias["%Y/%m/%d"],
+        augend.constant.alias.ja_weekday_full,
+        augend.constant.new{ elements = {"let", "const"} },
+    },
+    visual = {
+        augend.integer.alias.hex,
+        augend.constant.alias.bool,
+        augend.integer.alias.binary,
+        augend.constant.alias.alpha,
+        augend.constant.alias.Alpha,
+        augend.integer.alias.decimal,
+        augend.date.alias["%Y-%m-%d"],
+        augend.date.alias["%Y/%m/%d"],
+        augend.constant.alias.ja_weekday_full,
+        augend.constant.new{ elements = {"let", "const"} },
+    },
+})
 
 -- Gitsigns (Sidebar Git Indicators)
-require("gitsigns").setup()
+require("gitsigns").setup {
+    current_line_blame = true,
+    current_line_blame_opts = {
+        virt_text_pos = "right_align",
+        delay = 100,
+    },
+}
+wk.register({
+    ["<Leader>"] = {
+        g = {
+            name = "(g)it",
+            b = { ":Gitsigns blame_line<Enter>", "(g)it (b)lame line" },
+            d = { ":Gitsigns diffthis<Enter>", "(g)it (d)iff" },
+            D = { ":Gitsigns toggle_deleted<Enter>", "(g)it toggle (D)eleted" },
+            p = { ":Gitsigns preview_hunk<Enter>", "(g)it (p)review hunk" },
+            RRR = { ":Gitsigns reset_hunk<Enter>", "(g)it (R)eset hunk (DANGER!!!)" },
+        },
+    },
+})
 
--- Git Porcelin for Neovim
-require("neogit").setup()
+-- Git Porcelain for Neovim
+require("neogit").setup({
+    kind = "vsplit"
+})
+wk.register({["<Leader>gg"] = { ":Neogit<Enter>", "(g)it Neo(g)it" }})
 
 -- Color Previews in Code
-require("colorizer").setup()
+require("colorizer").setup({"*"}, {
+    RGB      = true,
+    RRGGBB   = true,
+    names    = true,
+    RRGGBBAA = true,
+    rgb_fn   = true,
+    hsl_fn   = true,
+    css      = true,
+    css_fn   = true,
+    mode     = "background",
+})
 
 -- Fancy TODO Highlighting
-require("todo-comments").setup()
+if is_startup then
+    require("todo-comments").setup()
+end
 
 -- Colorscheme Options
+vim.g.nord_italic = true
 vim.g.nord_borders = true
+vim.g.nord_contrast = true
+vim.g.nord_disable_background = true
+vim.g.nord_cursorline_transparent = true
+
+require("onenord").setup ({
+    theme = "dark",
+    fade_nc = false,
+    disable = {
+        background = true,
+    },
+})
+
 vim.g.gruvbox_material_enable_italic = 1
 vim.g.gruvbox_material_background = "soft"
 vim.g.gruvbox_material_diagnostic_virtual_text = 1
@@ -134,43 +266,38 @@ vim.g.gruvbox_material_diagnostic_text_highlight = 1
 vim.g.gruvbox_material_diagnostic_line_highlight = 1
 
 -- Select day/night colorscheme
-local lualine_colors = {
-    nord = "nord",
-    ["gruvbox-material"] = "gruvbox_light",
-}
 local colorschemes = { day = "gruvbox-material", night = "nord" }
 local colorscheme
-if is_day() then
+if false and is_day() then
     colorscheme = colorschemes.day
     vim.cmd[[set background=light]]
 else
+    vim.cmd[[set background=dark]]
     colorscheme = colorschemes.night
 end
 
 -- Set Colorscheme
 vim.cmd("colorscheme " .. colorscheme)
+vim.api.nvim_command("highlight NonText guifg=#6C768A")
 
 -- Set Status Bar
-require("lualine").setup { options = {
-    icons_enabled = true,
-    theme = lualine_colors[colorscheme],
-    component_separators = "|",
-    section_separators = "",
-}}
-
--- Indent blankline
-require("indent_blankline").setup {
-    char = "┊",
-    space_char_blankline = " ",
-    show_current_context = true,
-    show_current_context_start = true,
-    show_trailing_blankline_indent = true,
+require("lualine").setup {
+    options = {
+        icons_enabled = true,
+        component_separators = "|",
+        section_separators = "",
+    },
 }
 
---  Configuration for colorful matching brackets
---  This plugin doesn't work with Lua or Rust so I'm using two
---  Rainbow Plugins XD
-vim.g.rainbow_active = 1
+-- UI "Dressing"
+require("dressing").setup()
+
+-- Fancy Notifications
+require("notify").setup({
+    stages = "slide",
+    timeout = 3000
+})
+vim.notify = require("notify")
 
 -- Haskell Improvements
 vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
@@ -237,8 +364,9 @@ wk.register({
             name = "(f)ind something (Telescope Pickers)",
             a = { ":Telescope<Enter>", "(a)ll built in pickers" },
             b = { ":Telescope buffers<Enter>", "(b)uffers" },
-            d = { ":Telescope diagnostics<Enter>", "[d]iagnostics" },
-            E = { ":Telescope emoji<Enter>", "[E]mojis ✨" },
+            c = { [[<CMD>lua require("telescope.builtin").commands()<Enter>]], "(c)ommands" }, -- OKAY WTFRIK. Colon works except here. I'm confused
+            d = { ":Telescope diagnostics<Enter>", "(d)iagnostics" },
+            E = { ":Telescope emoji<Enter>", "(E)mojis ✨" },
             f = { ":Telescope find_files<Enter>", "(f)iles" },
             g = { ":Telescope live_grep<Enter>", "(g)rep project" },
             h = { ":Telescope help_tags<Enter>", "(h)elp" },
@@ -351,6 +479,7 @@ require("nvim-treesitter.configs").setup {
         },
     },
 }
+require("spellsitter").setup()
 
 -- LSP setup
 local lsp_servers = {
@@ -376,23 +505,23 @@ local on_attach = function(_, bufnr)
 
     wk.register({
         g = {
-            name = "[g]o to",
-            d = { vim.lsp.buf.definition, "[g]o to [d]efinition" },
-            D = { vim.lsp.buf.declaration, "[g]o to [D]eclaration" },
-            i = { vim.lsp.buf.implementation, "[g]o to [i]mplementation" },
-            r = { vim.lsp.buf.references, "[g]o to [r]eferences" },
+            name = "(g)o to",
+            d = { vim.lsp.buf.definition, "(g)o to (d)efinition" },
+            D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
+            i = { vim.lsp.buf.implementation, "(g)o to (i)mplementation" },
+            r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
         },
         ["<Leader>"] = {
             c = {
-                name = "[c]ode",
-                a = { vim.lsp.buf.code_action, "[c]ode [a]ction" },
-                f = { vim.lsp.buf.formatting, "[c]ode [f]ormatting" },
-                h = { vim.lsp.buf.hover, "[c]ode [h]over" },
-                s = { vim.lsp.buf.signature_help, "[c]ode [s]ignature" },
-                t = { vim.lsp.buf.type_definition, "[c]ode [t]ype" },
+                name = "(c)ode",
+                a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
+                f = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
+                h = { vim.lsp.buf.hover, "(c)ode (h)over" },
+                s = { vim.lsp.buf.signature_help, "(c)ode (s)ignature" },
+                t = { vim.lsp.buf.type_definition, "(c)ode (t)ype" },
             },
-            fs = { ":Telescope lsp_document_symbols<Enter>", "[s]ymbols" },
-            rn = { vim.lsp.buf.rename, "[r]e[n]ame symbol" },
+            fs = { ":Telescope lsp_document_symbols<Enter>", "(s)ymbols" },
+            rn = { vim.lsp.buf.rename, "(r)e(n)ame symbol" },
         },
     }, { buffer = bufnr });
 end
@@ -417,14 +546,16 @@ local lsp_settings = {
     }
 }
 
-for _, server in ipairs(lsp_servers) do
-    local setup = {}
-    if lsp_settings[server] ~= nil then
-        setup = lsp_settings[server]
+if is_startup then -- Only load LSPs on startup
+    for _, server in ipairs(lsp_servers) do
+        local setup = {}
+        if lsp_settings[server] ~= nil then
+            setup = lsp_settings[server]
+        end
+        setup.on_attach = on_attach
+        setup.capabilities = capabilities
+        require("lspconfig")[server].setup(setup)
     end
-    setup.on_attach = on_attach
-    setup.capabilities = capabilities
-    require("lspconfig")[server].setup(setup)
 end
 
 require("lsp_signature").setup({
@@ -454,24 +585,25 @@ cmp.setup {
             behavior = cmp.ConfirmBehavior.Replace,
             select = true,
         },
-        ["<Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-                luasnip.expand_or_jump()
-            else
-                fallback()
-            end
-        end, { "i", "s" }),
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
-            else
-                fallback()
-            end
-        end, { "i", "s" }),
+        -- Tab Cycling
+        -- ["<Tab>"] = cmp.mapping(function(fallback)
+        --     if cmp.visible() then
+        --         cmp.select_next_item()
+        --     elseif luasnip.expand_or_jumpable() then
+        --         luasnip.expand_or_jump()
+        --     else
+        --         fallback()
+        --     end
+        -- end, { "i", "s" }),
+        -- ["<S-Tab>"] = cmp.mapping(function(fallback)
+        --     if cmp.visible() then
+        --         cmp.select_prev_item()
+        --     elseif luasnip.jumpable(-1) then
+        --         luasnip.jump(-1)
+        --     else
+        --         fallback()
+        --     end
+        -- end, { "i", "s" }),
     }),
     sources = cmp.config.sources(
         {
@@ -488,32 +620,108 @@ cmp.setup {
     ),
 }
 
+-- Automatically make directory upon save
+require("mkdir")
+
+-- mini.nvim (Collection of Plugins) Setup
+require("mini.cursorword").setup({ delay = 500 })
+require("mini.trailspace").setup({})
+-- Disable Trailing Space Highlights in Certain Buffers
+vim.api.nvim_create_autocmd({"BufEnter"}, {
+    callback = function()
+        local bufferName = vim.api.nvim_eval[[bufname()]]
+        local tabPageNumber = vim.api.nvim_eval[[tabpagenr()]]
+        if bufferName == "NvimTree_" .. tabPageNumber then
+            require("mini.trailspace").unhighlight()
+        end
+    end,
+})
+-- Trim Space on Save
+vim.api.nvim_create_autocmd({"BufWritePre"}, {
+    callback = function()
+        require("mini.trailspace").trim()
+    end,
+})
+require("mini.comment").setup({})
+require("mini.indentscope").setup({
+    symbol = "⟫",
+})
+vim.api.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
+require("mini.pairs").setup({})
+require("mini.starter").setup({
+    header =[[
+__      __          _                                              _  __  __   __
+\ \    / / ___     | |     __      ___    _ __     ___      o O O | |/ /  \ \ / /
+ \ \/\/ / / -_)    | |    / _|    / _ \  | '  \   / -_)    o      | ' <    \ V /
+  \_/\_/  \___|   _|_|_   \__|_   \___/  |_|_|_|  \___|   TS__[O] |_|\_\   _\_/_
+_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"|
+"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']],
+})
+require("mini.sessions").setup({}) -- This doesn't work on Windows for some reason
+require("mini.surround").setup({
+    custom_surroundings = {
+        ["|"] = { output = { left = "|", right = "|" }},
+    },
+    -- TODO: Think About This
+    -- WARNING: THINK ABOUT IT VERY CAREFULLY
+    mappings = {
+        add = "ys",
+        delete = "ds",
+        find = "gS",
+        find_left = "gs",
+        highlight = "",
+        replace = "cs",
+        update_n_lines = "",
+    },
+    n_lines = 100,
+})
+
 -- Bufferline (Easy Tabs)
 require("bufferline").setup { options = {
     show_close_icon = false,
     diagnostics = "nvim_lsp",
-    seperator_style = "thick"
+    separator_style = "thick",
+    -- tab_size = 25,
+    offsets = {
+        {
+            filetype = "NvimTree",
+            text = "File Explorer",
+            text_align = "left",
+        },
+    },
 }}
 wk.register({
-    ["<Leader>bk"] = { ":bd<Enter>", "[b]uffer [k]ill" },
+    ["<Leader>bc"] = { ":bd<Enter>", "(b)uffer (c)lose" },
     ["<M-l>"] = { ":BufferLineCycleNext<Enter>", "buffer next" },
     ["<M-h>"] = { ":BufferLineCyclePrev<Enter>", "buffer prev" },
-    ["<Leader>bn"] = { ":BufferLineCycleNext<Enter>", "[b]uffer [n]ext" },
-    ["<Leader>bp"] = { ":BufferLineCyclePrev<Enter>", "[b]uffer [p]rev" },
+    ["<Leader>bl"] = { ":BufferLineCycleNext<Enter>", "(b)uffer next" },
+    ["<Leader>bh"] = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
     ["<M-j>"] = { ":BufferLineMoveNext<Enter>", "buffer move next" },
     ["<M-k>"] = { ":BufferLineMovePrev<Enter>", "buffer move prev" },
-    ["<Leader>bmn"] = { ":BufferLineMoveNext<Enter>", "[b]uffer [m]ove [n]ext" },
-    ["<Leader>bmp"] = { ":BufferLineMovePrev<Enter>", "[b]uffer [m]ove [p]rev" },
+    ["<Leader>bj"] = { ":BufferLineMoveNext<Enter>", "(b)uffer move next" },
+    ["<Leader>bk"] = { ":BufferLineMovePrev<Enter>", "(b)uffer move prev" },
 });
 
 -- Neovim tree (File explorer)
-require("nvim-tree").setup()
-vim.g.nvim_tree_indent_markers = 1
-vim.g.nvim_tree_git_hl = 1
-vim.g.nvim_tree_add_trailing = 1
+require("nvim-tree").setup({
+    view = {
+        width = 36,
+        relativenumber = true,
+
+    },
+    renderer = {
+        indent_markers = {
+            enable = true,
+        },
+    },
+    diagnostics = {
+        enable = true,
+        show_on_dirs = true,
+    },
+})
 wk.register({
-    ["<Leader>fe"] = { ":NvimTreeToggle<Enter>", "[f]ile [e]xplorer ([f]ind [e]xplorer)"
-}});
+    ["<Leader>fe"] = { ":NvimTreeToggle<Enter>", "(f)ile (e)xplorer ((f)ind (e)xplorer)"}
+});
 
 -- Wiki Vim
 vim.g.wiki_mappings_use_defaults = "none"
@@ -532,9 +740,9 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
     pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
     callback = function(eventInfo)
         wk.register({
-            ["<Leader>ww"] = { "<Plug>(wiki-index)", "[w]iki [w]iki-index" },
+            ["<Leader>ww"] = { "<Plug>(wiki-index)", "(w)iki (w)iki-index" },
             ["<Enter>"] = { "<Plug>(wiki-link-follow)", "Go To Wiki Link" },
-            ["<Leader>wb"] = { "<Plug>(wiki-graph-find-backlinks)", "[w]iki [b]acklinks" },
+            ["<Leader>wb"] = { "<Plug>(wiki-graph-find-backlinks)", "(w)iki (b)acklinks" },
         }, { buffer = eventInfo.buf });
     end
 })
@@ -543,16 +751,16 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
 require("luapad").config { count_limit = 50000 }
 
 -- Lightspeed Setup (Allows for repeat searches with ; and ,)
-vim.cmd [[
-    let g:lightspeed_last_motion = ""
-    augroup lightspeed_last_motion
-    autocmd!
-    autocmd User LightspeedSxEnter let g:lightspeed_last_motion = "sx"
-    autocmd User LightspeedFtEnter let g:lightspeed_last_motion = "ft"
-    augroup end
-    map <expr> ; g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_;_sx" : "<Plug>Lightspeed_;_ft"
-    map <expr> , g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_,_sx" : "<Plug>Lightspeed_,_ft"
-]]
+-- vim.cmd [[
+--     let g:lightspeed_last_motion = ""
+--     augroup lightspeed_last_motion
+--     autocmd!
+--     autocmd User LightspeedSxEnter let g:lightspeed_last_motion = "sx"
+--     autocmd User LightspeedFtEnter let g:lightspeed_last_motion = "ft"
+--     augroup end
+--     map <expr> ; g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_;_sx" : "<Plug>Lightspeed_;_ft"
+--     map <expr> , g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_,_sx" : "<Plug>Lightspeed_,_ft"
+-- ]]
 
 -- Zen Mode (Minimal Mode)
 require("zen-mode").setup {
@@ -563,7 +771,7 @@ require("zen-mode").setup {
     on_close = function() end
 }
 wk.register({
-    ["<Leader>z"] = { ":ZenMode<Enter>", "[z]en mode" },
+    ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
 });
 
 -- Misc Mappings
@@ -574,14 +782,8 @@ wk.register({
         r       = "Remove from Dictionary",
         u       = "Undo Last Dictionary Action"
     },
-    h = { name  = "Git Signs" },
-    z = { name  = "Zen Mode" },
+    w = { name = "(w)indow (Ctrl-w)" },
     c = {
-        name = "Code",
-        a    = "Action",
-        f    = "Format",
-        h    = "Help (Hover Docs)",
-        s    = "Signature",
         ["-"] = "Comment Banner (--)",
         ["="] = "Comment Banner (==)",
         ["/"] = "Comment Banner (//)",
