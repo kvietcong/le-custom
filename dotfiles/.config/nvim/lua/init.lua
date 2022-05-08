@@ -1,5 +1,11 @@
 -- Remaking my config based off of the starter lua config @ https://github.com/nvim-lua/kickstart.nvim
 
+-- TODO:
+-- 1.Organize configuration order!
+-- 2. Make Starter not highlight the 80th line (../init.vim has highlight groups)
+-- 3. Configure Neovide Variables (Move from ../init.vim)
+--      - Make sure multigrid is enabled for Windows
+
 -- Nord Palette Reference
 -- nord1:   #2E3440
 -- nord2:   #3B4252
@@ -36,6 +42,7 @@ local function is_day()
 end
 
 local is_startup = vim.v.vim_did_enter == 0
+local is_neovide = vim.g.neovide ~= nil
 
 -- Install packer
 local packer_bootstrap
@@ -145,6 +152,17 @@ require("numb").setup()
 
 -- Context
 require("nvim_context_vt").setup({})
+vim.g.context_add_mappings = 0
+vim.cmd[[
+if !exists('##WinScrolled')
+    nnoremap <silent> <expr> <C-Y> context#util#map('<C-Y>')
+    nnoremap <silent> <expr> <C-E> context#util#map('<C-E>')
+    nnoremap <silent> <expr> zz    context#util#map('zz')
+    nnoremap <silent> <expr> zb    context#util#map('zb')
+endif
+
+nnoremap <silent> <expr> zt context#util#map_zt()
+]]
 
 -- Tabout
 require("tabout").setup({
@@ -206,6 +224,7 @@ require("gitsigns").setup {
         virt_text_pos = "right_align",
         delay = 100,
     },
+    current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary> ",
 }
 wk.register({
     ["<Leader>"] = {
@@ -222,7 +241,12 @@ wk.register({
 
 -- Git Porcelain for Neovim
 require("neogit").setup({
-    kind = "vsplit"
+    kind = "vsplit",
+    mappings = {
+        status = {
+            ["<Escape>"] = "Close",
+        },
+    },
 })
 wk.register({["<Leader>gg"] = { ":Neogit<Enter>", "(g)it Neo(g)it" }})
 
@@ -248,7 +272,7 @@ end
 vim.g.nord_italic = true
 vim.g.nord_borders = true
 vim.g.nord_contrast = true
-vim.g.nord_disable_background = true
+vim.g.nord_disable_background = not is_neovide
 vim.g.nord_cursorline_transparent = true
 
 require("onenord").setup ({
@@ -366,7 +390,6 @@ wk.register({
             b = { ":Telescope buffers<Enter>", "(b)uffers" },
             c = { [[<CMD>lua require("telescope.builtin").commands()<Enter>]], "(c)ommands" }, -- OKAY WTFRIK. Colon works except here. I'm confused
             d = { ":Telescope diagnostics<Enter>", "(d)iagnostics" },
-            E = { ":Telescope emoji<Enter>", "(E)mojis ✨" },
             f = { ":Telescope find_files<Enter>", "(f)iles" },
             g = { ":Telescope live_grep<Enter>", "(g)rep project" },
             h = { ":Telescope help_tags<Enter>", "(h)elp" },
