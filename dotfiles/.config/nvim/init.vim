@@ -183,7 +183,7 @@ autocmd FileType html,css EmmetInstall
 " == GUI Vim settings ==
 " ======================
 if exists("g:neovide")
-    let g:neovide_transparency=0.93
+    let g:neovide_transparency=0.95
     let g:neovide_refresh_rate=165
     let g:neovide_cursor_trail_length=0.5
     let g:neovide_cursor_animation_length=0.1
