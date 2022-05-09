@@ -1,11 +1,17 @@
 -- Remaking my config based off of the starter lua config @ https://github.com/nvim-lua/kickstart.nvim
 
--- TODO:
--- 1.Organize configuration order!
--- 2. Make Starter not highlight the 80th line (../init.vim has highlight groups)
--- 3. Configure Neovide Variables (Move from ../init.vim)
---      - Make sure multigrid is enabled for Windows
---      - Find out why Windows emoji selector doesn't work with Neovide
+--[[ TODO:
+- Organize configuration order!
+- Make Starter not highlight the 80th line (../init.vim has highlight groups)
+- Configure Neovide Variables (Move from ../init.vim)
+    - Make sure multigrid is enabled for Windows
+    - Find out why Windows emoji selector doesn't work with Neovide
+- See if I can bring most of my Obsidian Workflow into Vim
+- Check out if some of the Mini.nvim plugins will suit my needs
+    - Surround and pairs are acting up in some fairly common cases so
+      I need to checkout that.
+- Add autocommand to disable git blame on small columns
+]]
 
 -- Nord Palette Reference
 -- nord1:   #2E3440
@@ -25,14 +31,62 @@
 -- nord15:  #A3BE8C
 -- nord16:  #B48EAD
 
+function dump(o)
+    if type(o) == "table" then
+        local s = "{ "
+        for k,v in pairs(o) do
+            if type(k) ~= "number" then k = "\""..k.."\"" end
+            s = s .. "["..k.."] = " .. dump(v) .. ","
+        end
+        return s .. "} "
+    else
+        return tostring(o)
+    end
+end
+
 --- Retrieve Current Time
 --- @return table Table with Hour, Minute, and Formatted String
-local function get_time()
+local function get_time(format)
+    local format_table = {
+        weekday_short = "%a",
+        weekday = "%A",
+        month_name_short = "%b",
+        month_name = "%B",
+        day = "%d",
+        hour_12 = "%I",
+        hour = "%H",
+        minute = "%M",
+        am_pm = "%p",
+        month = "%m",
+        second = "%S",
+        weekday_num = "%w",
+        date = "%x",
+        time = "%X",
+        year = "%Y",
+        year_short = "%y",
+    }
+
+    if format ~= nil and format ~= "" then
+        if format == "HELP" then
+            return format_table
+        end
+        return os.date(format)
+    end
     return {
         hour = tonumber(os.date("%H")),
         minute = tonumber(os.date("%M")),
-        string = os.date("%H:%M")
+        second = tonumber(os.date("%S")),
+        my_date = os.date("%Y-%m-%dT%H:%M:%S"),
+        format = os.date,
     }
+end
+GetTime = get_time -- Make get_time global
+vim.api.nvim_create_user_command("GetTime", function(info)
+    print(dump(get_time(info.args)))
+end, {}) -- For now, you need to wrap in quotes
+
+local function get_my_date()
+    return get_time("%Y-%m-%dT%H:%M:%S")
 end
 
 --- Retrieve Day Status
@@ -417,14 +471,17 @@ require("nvim-treesitter.configs").setup {
         "ocaml", "python", "regex", "scheme", "svelte",
         "swift", "toml", "vim", "yaml", "wgsl", "tsx",
     },
-    highlight = { enable = true },
+    highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = true, -- WARN: Decide to keep or not
+    },
     rainbow = {
         enable = true,
         extended_mode = true,
     },
     incremental_selection = {
         enable = true,
-        keymaps = {
+        keymaps = { -- TODO: Look more at these
             init_selection = "gnn",
             node_incremental = "grn",
             scope_incremental = "grc",
@@ -605,9 +662,10 @@ cmp.setup {
         ["<C-e>"] = cmp.mapping({
             i = cmp.mapping.close(), c = cmp.mapping.close()
         }),
+        -- Enter Auto Confirm
         ["<CR>"] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Replace,
-            select = true,
+            select = false,
         },
         -- Tab Cycling
         -- ["<Tab>"] = cmp.mapping(function(fallback)
