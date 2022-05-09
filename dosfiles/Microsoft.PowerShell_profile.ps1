@@ -39,4 +39,4 @@ Invoke-Expression (& {
 
 Invoke-Expression (&starship init powershell)
 
-$NEOVIDE_MULTIGRID="true"
+$env:NEOVIDE_MULTIGRID="true"

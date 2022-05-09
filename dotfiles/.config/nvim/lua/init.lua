@@ -5,6 +5,7 @@
 -- 2. Make Starter not highlight the 80th line (../init.vim has highlight groups)
 -- 3. Configure Neovide Variables (Move from ../init.vim)
 --      - Make sure multigrid is enabled for Windows
+--      - Find out why Windows emoji selector doesn't work with Neovide
 
 -- Nord Palette Reference
 -- nord1:   #2E3440
@@ -714,15 +715,19 @@ require("bufferline").setup { options = {
     },
 }}
 wk.register({
-    ["<Leader>bc"] = { ":bd<Enter>", "(b)uffer (c)lose" },
+    ["<Leader>b"] = {
+        name = "(b)uffers",
+        q = { ":bd<Enter>", "(b)uffer (q)lose" },
+        c = { ":bd<Enter>", "(b)uffer (c)lose" },
+        l = { ":BufferLineCycleNext<Enter>", "(b)uffer next" },
+        h = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
+        j = { ":BufferLineMoveNext<Enter>", "(b)uffer move next" },
+        k = { ":BufferLineMovePrev<Enter>", "(b)uffer move prev" },
+    },
     ["<M-l>"] = { ":BufferLineCycleNext<Enter>", "buffer next" },
     ["<M-h>"] = { ":BufferLineCyclePrev<Enter>", "buffer prev" },
-    ["<Leader>bl"] = { ":BufferLineCycleNext<Enter>", "(b)uffer next" },
-    ["<Leader>bh"] = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
     ["<M-j>"] = { ":BufferLineMoveNext<Enter>", "buffer move next" },
     ["<M-k>"] = { ":BufferLineMovePrev<Enter>", "buffer move prev" },
-    ["<Leader>bj"] = { ":BufferLineMoveNext<Enter>", "(b)uffer move next" },
-    ["<Leader>bk"] = { ":BufferLineMovePrev<Enter>", "(b)uffer move prev" },
 });
 
 -- Neovim tree (File explorer)

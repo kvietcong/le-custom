@@ -126,10 +126,10 @@ nnoremap \\ <C-d>
 nnoremap \|\| <C-u>
 
 nnoremap <Leader>w <C-w>
-nnoremap <C-Up> <C-w>-
-nnoremap <C-Down> <C-w>+
-nnoremap <C-Left> <C-w><
-nnoremap <C-Right> <C-w>>
+nnoremap <C-S-Up> <C-w>+
+nnoremap <C-S-Down> <C-w>-
+nnoremap <C-Up> <C-w>>
+nnoremap <C-Down> <C-w><
 nnoremap <C-w>v <C-w>v<C-w><C-l>
 nnoremap <C-w><C-v> <C-w>v<C-w><C-l>
 
