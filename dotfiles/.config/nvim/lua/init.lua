@@ -1,10 +1,15 @@
 -- Remaking my config based off of the starter lua config @ https://github.com/nvim-lua/kickstart.nvim
 
--- TODO:
--- 1.Organize configuration order!
--- 2. Make Starter not highlight the 80th line (../init.vim has highlight groups)
--- 3. Configure Neovide Variables (Move from ../init.vim)
---      - Make sure multigrid is enabled for Windows
+--[[ TODO:
+- Organize configuration order!
+- Make Starter not highlight the 80th line (../init.vim has highlight groups)
+- Configure Neovide Variables (Move from ../init.vim)
+    - Make sure multigrid is enabled for Windows
+- See if I can bring most of my Obsidian Workflow into Vim
+- Check out if some of the Mini.nvim plugins will suit my needs
+    - Surround and pairs are acting up in some fairly common cases so
+      I need to checkout that.
+]]
 
 -- Nord Palette Reference
 -- nord1:   #2E3440
@@ -26,12 +31,44 @@
 
 --- Retrieve Current Time
 --- @return table Table with Hour, Minute, and Formatted String
-local function get_time()
+local function get_time(format)
+    local format_table = {
+        weekday_short = "%a",
+        weekday = "%A",
+        month_name_short = "%b",
+        month_name = "%B",
+        day = "%d",
+        hour_12 = "%I",
+        hour = "%H",
+        minute = "%M",
+        am_pm = "%p",
+        month = "%m",
+        second = "%S",
+        weekday_num = "%w",
+        date = "%x",
+        time = "%X",
+        year = "%Y",
+        year_short = "%y",
+    }
+
+    if format ~= nil then
+        if format == "HELP" then
+            return format_table
+        end
+        return os.date(format)
+    end
     return {
         hour = tonumber(os.date("%H")),
         minute = tonumber(os.date("%M")),
-        string = os.date("%H:%M")
+        second = tonumber(os.date("%S")),
+        my_date = os.date("%Y-%m-%dT%H:%M:%S"),
+        format = os.date,
     }
+end
+GetTime = get_time
+
+local function get_my_date()
+    return get_time("%Y-%m-%dT%H:%M:%S")
 end
 
 --- Retrieve Day Status
@@ -604,9 +641,10 @@ cmp.setup {
         ["<C-e>"] = cmp.mapping({
             i = cmp.mapping.close(), c = cmp.mapping.close()
         }),
+        -- Enter Auto Confirm
         ["<CR>"] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Replace,
-            select = true,
+            select = false,
         },
         -- Tab Cycling
         -- ["<Tab>"] = cmp.mapping(function(fallback)
