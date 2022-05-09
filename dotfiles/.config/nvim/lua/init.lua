@@ -9,6 +9,7 @@
 - Check out if some of the Mini.nvim plugins will suit my needs
     - Surround and pairs are acting up in some fairly common cases so
       I need to checkout that.
+- Add autocommand to disable git blame on small columns
 ]]
 
 -- Nord Palette Reference
@@ -28,6 +29,19 @@
 -- nord14:  #EBCB8B
 -- nord15:  #A3BE8C
 -- nord16:  #B48EAD
+
+function dump(o)
+    if type(o) == "table" then
+        local s = "{ "
+        for k,v in pairs(o) do
+            if type(k) ~= "number" then k = "\""..k.."\"" end
+            s = s .. "["..k.."] = " .. dump(v) .. ","
+        end
+        return s .. "} "
+    else
+        return tostring(o)
+    end
+end
 
 --- Retrieve Current Time
 --- @return table Table with Hour, Minute, and Formatted String
@@ -51,7 +65,7 @@ local function get_time(format)
         year_short = "%y",
     }
 
-    if format ~= nil then
+    if format ~= nil and format ~= "" then
         if format == "HELP" then
             return format_table
         end
@@ -65,7 +79,10 @@ local function get_time(format)
         format = os.date,
     }
 end
-GetTime = get_time
+GetTime = get_time -- Make get_time global
+vim.api.nvim_create_user_command("GetTime", function(info)
+    print(dump(get_time(info.args)))
+end, {}) -- For now, you need to wrap in quotes
 
 local function get_my_date()
     return get_time("%Y-%m-%dT%H:%M:%S")
@@ -453,14 +470,17 @@ require("nvim-treesitter.configs").setup {
         "ocaml", "python", "regex", "scheme", "svelte",
         "swift", "toml", "vim", "yaml", "wgsl", "tsx",
     },
-    highlight = { enable = true },
+    highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = true, -- WARN: Decide to keep or not
+    },
     rainbow = {
         enable = true,
         extended_mode = true,
     },
     incremental_selection = {
         enable = true,
-        keymaps = {
+        keymaps = { -- TODO: Look more at these
             init_selection = "gnn",
             node_incremental = "grn",
             scope_incremental = "grc",
