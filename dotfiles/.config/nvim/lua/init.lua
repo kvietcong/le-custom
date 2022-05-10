@@ -2,15 +2,12 @@
 
 --[[ TODO:
 - Organize configuration order!
-- Make Starter not highlight the 80th line (../init.vim has highlight groups)
 - Configure Neovide Variables (Move from ../init.vim)
-    - Make sure multigrid is enabled for Windows
     - Find out why Windows emoji selector doesn't work with Neovide
 - See if I can bring most of my Obsidian Workflow into Vim
 - Check out if some of the Mini.nvim plugins will suit my needs
     - Surround and pairs are acting up in some fairly common cases so
       I need to checkout that.
-- Add autocommand to disable git blame on small columns
 ]]
 
 -- Nord Palette Reference
@@ -31,7 +28,7 @@
 -- nord15:  #A3BE8C
 -- nord16:  #B48EAD
 
-function dump(o)
+local function dump(o)
     if type(o) == "table" then
         local s = "{ "
         for k,v in pairs(o) do
@@ -45,7 +42,6 @@ function dump(o)
 end
 
 --- Retrieve Current Time
---- @return table Table with Hour, Minute, and Formatted String
 local function get_time(format)
     local format_table = {
         weekday_short = "%a",
@@ -81,9 +77,9 @@ local function get_time(format)
     }
 end
 GetTime = get_time -- Make get_time global
-vim.api.nvim_create_user_command("GetTime", function(info)
-    print(dump(get_time(info.args)))
-end, {}) -- For now, you need to wrap in quotes
+vim.api.nvim_create_user_command("GetTime", function(command)
+    print(dump(get_time(command.args)))
+end, { nargs = "?" })
 
 local function get_my_date()
     return get_time("%Y-%m-%dT%H:%M:%S")
@@ -98,6 +94,7 @@ end
 
 local is_startup = vim.v.vim_did_enter == 0
 local is_neovide = vim.g.neovide ~= nil
+local is_fvim = vim.g.fvim_loaded ~= nil
 
 -- Install packer
 local packer_bootstrap
@@ -131,7 +128,6 @@ packer.startup(function(use)
     use "monaqa/dial.nvim"
     use "nacro90/numb.nvim"
     use "wellle/targets.vim"
-    use "wellle/context.vim"
     use "jghauser/mkdir.nvim"
     use "abecodes/tabout.nvim"
     use "voldikss/vim-floaterm"
@@ -155,7 +151,6 @@ packer.startup(function(use)
     use "folke/todo-comments.nvim"
     use "nvim-lualine/lualine.nvim"
     use "neovimhaskell/haskell-vim"
-    use "haringsrob/nvim_context_vt"
     use "norcalli/nvim-colorizer.lua"
     use "akinsho/nvim-bufferline.lua"
 
@@ -172,10 +167,14 @@ packer.startup(function(use)
     use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
 
     -- Treesitter
+    use "SmiteshP/nvim-gps"
     use "lewis6991/spellsitter.nvim"
+    use "haringsrob/nvim_context_vt"
+    use "romgrk/nvim-treesitter-context"
     use "nvim-treesitter/nvim-treesitter"
     use "nvim-treesitter/nvim-treesitter-refactor"
     use "nvim-treesitter/nvim-treesitter-textobjects"
+    use "JoosepAlviste/nvim-ts-context-commentstring"
 
     -- LSP
     use "neovim/nvim-lspconfig"
@@ -198,26 +197,29 @@ packer.startup(function(use)
     end
 end)
 
+-- GUI Settings
+if is_neovide then
+    vim.g.neovide_transparency=0.98
+    vim.g.neovide_refresh_rate=165
+    vim.g.neovide_cursor_trail_length=0.5
+    vim.g.neovide_cursor_animation_length=0.1
+    vim.g.neovide_cursor_antialiasing=true
+elseif is_fvim then
+    vim.cmd[[
+    FVimBackgroundComposition "blur"
+    FVimBackgroundOpacity 0.75
+    FVimBackgroundAltOpacity 0.75
+    FVimFontAntialias v:true
+    FVimUIMultiGrid v:false
+    ]]
+end
+
 -- Which Key (Mapping reminders)
 local wk = require("which-key")
 wk.setup()
 
 -- Line Peeking
-require("numb").setup()
-
--- Context
-require("nvim_context_vt").setup({})
-vim.g.context_add_mappings = 0
-vim.cmd[[
-if !exists('##WinScrolled')
-    nnoremap <silent> <expr> <C-Y> context#util#map('<C-Y>')
-    nnoremap <silent> <expr> <C-E> context#util#map('<C-E>')
-    nnoremap <silent> <expr> zz    context#util#map('zz')
-    nnoremap <silent> <expr> zb    context#util#map('zb')
-endif
-
-nnoremap <silent> <expr> zt context#util#map_zt()
-]]
+require("numb").setup({ number_only = true })
 
 -- Tabout
 require("tabout").setup({
@@ -274,7 +276,6 @@ require("dial.config").augends:register_group({
 
 -- Gitsigns (Sidebar Git Indicators)
 require("gitsigns").setup {
-    current_line_blame = true,
     current_line_blame_opts = {
         virt_text_pos = "right_align",
         delay = 100,
@@ -286,6 +287,7 @@ wk.register({
         g = {
             name = "(g)it",
             b = { ":Gitsigns blame_line<Enter>", "(g)it (b)lame line" },
+            B = { ":Gitsigns toggle_current_line_blame<Enter>", "toggle (g)it (B)lame line" },
             d = { ":Gitsigns diffthis<Enter>", "(g)it (d)iff" },
             D = { ":Gitsigns toggle_deleted<Enter>", "(g)it toggle (D)eleted" },
             p = { ":Gitsigns preview_hunk<Enter>", "(g)it (p)review hunk" },
@@ -365,6 +367,14 @@ require("lualine").setup {
         icons_enabled = true,
         component_separators = "|",
         section_separators = "",
+    },
+    sections = {
+        lualine_c = {
+            {
+                require("nvim-gps").get_location,
+                cond = require("nvim-gps").is_available
+            },
+        },
     },
 }
 
@@ -475,6 +485,9 @@ require("nvim-treesitter.configs").setup {
         enable = true,
         additional_vim_regex_highlighting = true, -- WARN: Decide to keep or not
     },
+    context_commentstring = {
+        enable = true
+    },
     rainbow = {
         enable = true,
         extended_mode = true,
@@ -543,24 +556,51 @@ require("nvim-treesitter.configs").setup {
             set_jumps = true, -- whether to set jumps in the jumplist
             goto_next_start = {
                 ["]m"] = "@function.outer",
-                ["]]"] = "@class.outer",
+                ["]c"] = "@class.outer",
             },
             goto_next_end = {
                 ["]M"] = "@function.outer",
-                ["]["] = "@class.outer",
+                ["]C"] = "@class.outer",
             },
             goto_previous_start = {
                 ["[m"] = "@function.outer",
-                ["[["] = "@class.outer",
+                ["[c"] = "@class.outer",
             },
             goto_previous_end = {
                 ["[M"] = "@function.outer",
-                ["[]"] = "@class.outer",
+                ["[C"] = "@class.outer",
             },
         },
     },
 }
 require("spellsitter").setup()
+require("nvim-gps").setup({
+    separator = " ▶ ",
+})
+require("treesitter-context").setup({
+    patterns = {
+        default = {
+            "class", "function", "method",
+            "for", "while", "if", "switch", "case",
+        },
+    },
+})
+require("nvim_context_vt").setup({
+    min_rows = 5,
+    custom_parser = function(node, _, _)
+        local start_row, _, end_row = node:range()
+        local lines = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), start_row, end_row, false)
+        if node:type() == "function" then return nil end
+
+        return "~> " .. lines[1]:match("^%s*(.-)%s*$") .. "…"
+    end,
+})
+
+-- Emmet Setup
+vim.cmd[[
+let g:user_emmet_install_global = 0
+autocmd FileType html,css EmmetInstall
+]]
 
 -- LSP setup
 local lsp_servers = {
@@ -590,7 +630,7 @@ local on_attach = function(_, bufnr)
             d = { vim.lsp.buf.definition, "(g)o to (d)efinition" },
             D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
             i = { vim.lsp.buf.implementation, "(g)o to (i)mplementation" },
-            r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
+            -- r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
         },
         ["<Leader>"] = {
             c = {
@@ -729,7 +769,6 @@ require("mini.indentscope").setup({
     symbol = "⟫",
 })
 vim.api.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
-require("mini.pairs").setup({})
 require("mini.starter").setup({
     header =[[
 __      __          _                                              _  __  __   __
@@ -739,13 +778,56 @@ __      __          _                                              _  __  __   _
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']],
 })
-require("mini.sessions").setup({}) -- This doesn't work on Windows for some reason
+local minisessions = require("mini.sessions")
+minisessions.setup({
+    verbose = { read = false, write = false, delete = false, },
+})
+vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function() minisessions.write("Last Session.vim", {}) end
+})
+local session_do = function(action, input)
+    if not input or input == "" then
+        if vim.v.this_session and vim.v.this_session ~= "" then
+            local split = vim.split(vim.v.this_session, "[\\/]")
+            minisessions[action](split[#split], {})
+            return
+        end
+        vim.notify(
+            "Please Give Session Name",
+            "error",
+            { title = "Session " .. action .. " Error" }
+        )
+    elseif not pcall(minisessions[action], input .. ".vim", {}) then
+        vim.notify(
+            "Session " .. action .. " Has Failed",
+            "error",
+            { title = "Session " .. action .. " Error" }
+        )
+    end
+end
+vim.api.nvim_create_user_command("SessionSave", function(command)
+    session_do("write", command.args)
+end, { nargs = "?" })
+vim.api.nvim_create_user_command("SessionLoad", function(command)
+    session_do("read", command.args)
+end, { nargs = "?" })
+wk.register({
+    ["<Leader>ss"] = { function()
+        local current_session = ""
+        if vim.v.this_session and vim.v.this_session ~= "" then
+            local split = vim.split(vim.v.this_session, "[\\/]")
+            current_session = vim.split(split[#split], ".vim", { plain = true })[1]
+        end
+        vim.api.nvim_input(":SessionSave " .. current_session)
+    end, "(s)ession (s)ave <Session Name>" },
+    ["<Leader>sl"] = { function() minisessions.select("read", {}) end, "(s)ession (l)oad <Session Name>" },
+    ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
+    ["<Leader>sL"] = { ":SessionLoad<Enter>", "current (s)ession re(L)oad" },
+}, { silent = false })
 require("mini.surround").setup({
     custom_surroundings = {
         ["|"] = { output = { left = "|", right = "|" }},
     },
-    -- TODO: Think About This
-    -- WARNING: THINK ABOUT IT VERY CAREFULLY
     mappings = {
         add = "ys",
         delete = "ds",
@@ -834,7 +916,9 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
 })
 
 -- Lua Pad (Quick Lua Testing)
-require("luapad").config { count_limit = 50000 }
+require("luapad").config({
+    count_limit = 50000
+})
 
 -- Lightspeed Setup (Allows for repeat searches with ; and ,)
 -- vim.cmd [[
@@ -863,7 +947,7 @@ wk.register({
 -- Misc Mappings
 wk.register({
     s = {
-        name    = "Spelling",
+        name    = "(s)essions/(s)pelling",
         a       = "Add to Dictionary",
         r       = "Remove from Dictionary",
         u       = "Undo Last Dictionary Action"
