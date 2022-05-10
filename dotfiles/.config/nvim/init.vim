@@ -19,7 +19,7 @@ set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
 set lazyredraw
-set scrolloff=3 " Ensure at least some number of lines is above/below the cursor
+" set scrolloff=3 " Ensure at least some number of lines is above/below the cursor
 set history=500
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
@@ -37,8 +37,8 @@ set relativenumber number " Show relative number lines with regular number line 
 filetype plugin indent on " Enable filetype detection and indentation
 let mapleader = "\<Space>" " Set the leader key
 set backspace=indent,eol,start " More robust backspacing
-set list listchars=eol:↴
-set guifont=CodeNewRoman\ NF:h16 " Set a font for GUI things
+" set list listchars=eol:↴
+set guifont=CodeNewRoman\ NF:h14 " Set a font for GUI things
 set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
 set breakindent breakindentopt=shift:0
@@ -62,24 +62,11 @@ else
     colorscheme nord
 endif
 
-" Case/Typo Insensitive Saving/Quitting
-:command WQ wq
-:command Wq wq
-:command Qw wq
-:command QW wq
-:command Ww wq
-:command Qq wq
-:command QQ wq
-:command WW wq
-:command W w
-:command Q q
-
-" Highlight characters in column 81 and 101
-:1match ErrorMsg "\%101v."
-:2match WarningMsg "\%81v."
-" Disable for Markdown and Text
-autocmd FileType markdown,text 1match none
-autocmd FileType markdown,text 2match none
+" Make capital quitting quit all
+:cabbrev wq wqa
+:cabbrev q qa
+:cabbrev WQ wq
+:cabbrev Q q
 
 " ==============
 " == Mappings ==
@@ -175,24 +162,3 @@ function RefreshColor()
     execute "colorscheme ".current
 endfunction
 nnoremap <F5> :call RefreshColor()<Enter>
-
-let g:user_emmet_install_global = 0
-autocmd FileType html,css EmmetInstall
-
-" ======================
-" == GUI Vim settings ==
-" ======================
-if exists("g:neovide")
-    let g:neovide_transparency=0.95
-    let g:neovide_refresh_rate=165
-    let g:neovide_cursor_trail_length=0.5
-    let g:neovide_cursor_animation_length=0.1
-    let g:neovide_cursor_antialiasing=v:true
-elseif exists("g:fvim_loaded")
-    FVimBackgroundComposition "blur"
-    FVimBackgroundOpacity 0.75
-    FVimBackgroundAltOpacity 0.75
-    FVimFontAntialias v:true
-    FVimUIMultiGrid v:false
-endif
-
