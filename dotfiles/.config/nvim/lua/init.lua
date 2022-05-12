@@ -2,12 +2,15 @@
 
 --[[ TODO:
 - Organize configuration order!
-- Configure Neovide Variables (Move from ../init.vim)
+- Configure Neovide Variables
     - Find out why Windows emoji selector doesn't work with Neovide
 - See if I can bring most of my Obsidian Workflow into Vim
 - Check out if some of the Mini.nvim plugins will suit my needs
     - Surround and pairs are acting up in some fairly common cases so
       I need to checkout that.
+- Check out :help ins-completion
+- Check out Lua Snips
+- Sort out nvim-cmp sources!
 ]]
 
 -- Nord Palette Reference
@@ -28,18 +31,7 @@
 -- nord15:  #A3BE8C
 -- nord16:  #B48EAD
 
-local function dump(o)
-    if type(o) == "table" then
-        local s = "{ "
-        for k,v in pairs(o) do
-            if type(k) ~= "number" then k = "\""..k.."\"" end
-            s = s .. "["..k.."] = " .. dump(v) .. ","
-        end
-        return s .. "} "
-    else
-        return tostring(o)
-    end
-end
+function P(thing) print(vim.inspect(thing)) end
 
 --- Retrieve Current Time
 local function get_time(format)
@@ -78,12 +70,17 @@ local function get_time(format)
 end
 GetTime = get_time -- Make get_time global
 vim.api.nvim_create_user_command("GetTime", function(command)
-    print(dump(get_time(command.args)))
+    print(vim.inspect(get_time(command.args)))
 end, { nargs = "?" })
 
 local function get_my_date()
-    return get_time("%Y-%m-%dT%H:%M:%S")
+    local my_date = get_time("%Y-%m-%dT%H:%M:%S")
+    vim.fn.setreg('"', my_date)
+    vim.notify("Placed: '" .. my_date .. "' into register \"", "info", {title = "Date Retrieved"})
 end
+vim.api.nvim_create_user_command("GetMyDate", function(_)
+    get_my_date()
+end, { nargs = "?" })
 
 --- Retrieve Day Status
 --- @return boolean
@@ -107,9 +104,17 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   vim.api.nvim_command("packadd packer.nvim")
 end
 
+-- Autocommand group for configuration
+local le_group = vim.api.nvim_create_augroup("LeConfiguration", { clear = true })
+
 -- This is for auto-sourcing
-local packer_group = vim.api.nvim_create_augroup("Packer", { clear = true })
-vim.api.nvim_create_autocmd("BufWritePost", { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" })
+vim.api.nvim_create_autocmd("BufWritePost", {
+    group = le_group,
+    pattern = { "init.lua", "init.vim" },
+    desc = "Auto re-source configuration files.",
+    command = "source <afile> | PackerCompile",
+})
+
 
 local packer = require("packer")
 
@@ -149,7 +154,6 @@ packer.startup(function(use)
     -- use "arcticicestudio/nord-vim"
     use "sainnhe/gruvbox-material"
     use "folke/todo-comments.nvim"
-    use "nvim-lualine/lualine.nvim"
     use "neovimhaskell/haskell-vim"
     use "norcalli/nvim-colorizer.lua"
     use "akinsho/nvim-bufferline.lua"
@@ -182,15 +186,25 @@ packer.startup(function(use)
     use "williamboman/nvim-lsp-installer"
 
     -- Completion
+    use "hrsh7th/cmp-calc"
     use "L3MON4D3/LuaSnip"
     use "hrsh7th/nvim-cmp"
     use "hrsh7th/cmp-path"
     use "f3fora/cmp-spell"
     use "hrsh7th/cmp-emoji"
+    use "tzachar/fuzzy.nvim"
     use "hrsh7th/cmp-buffer"
+    use "hrsh7th/cmp-cmdline"
+    use "ray-x/cmp-treesitter"
     use "hrsh7th/cmp-nvim-lsp"
+    use "hrsh7th/cmp-nvim-lua"
+    use "tzachar/cmp-fuzzy-path"
     use "uga-rosa/cmp-dictionary"
+    use "tzachar/cmp-fuzzy-buffer"
     use "saadparwaiz1/cmp_luasnip"
+    use "dmitmel/cmp-cmdline-history"
+    use "hrsh7th/cmp-nvim-lsp-signature-help"
+    use "hrsh7th/cmp-nvim-lsp-document-symbol"
 
     if packer_bootstrap then
         packer.sync()
@@ -200,7 +214,7 @@ end)
 -- GUI Settings
 if is_neovide then
     vim.g.neovide_transparency=0.98
-    vim.g.neovide_refresh_rate=165
+    vim.g.neovide_refresh_rate=120
     vim.g.neovide_cursor_trail_length=0.5
     vim.g.neovide_cursor_animation_length=0.1
     vim.g.neovide_cursor_antialiasing=true
@@ -217,6 +231,9 @@ end
 -- Which Key (Mapping reminders)
 local wk = require("which-key")
 wk.setup()
+
+-- Global Status Line
+vim.go.laststatus = 3
 
 -- Line Peeking
 require("numb").setup({ number_only = true })
@@ -320,11 +337,6 @@ require("colorizer").setup({"*"}, {
     mode     = "background",
 })
 
--- Fancy TODO Highlighting
-if is_startup then
-    require("todo-comments").setup()
-end
-
 -- Colorscheme Options
 vim.g.nord_italic = true
 vim.g.nord_borders = true
@@ -361,23 +373,6 @@ end
 vim.cmd("colorscheme " .. colorscheme)
 vim.api.nvim_command("highlight NonText guifg=#6C768A")
 
--- Set Status Bar
-require("lualine").setup {
-    options = {
-        icons_enabled = true,
-        component_separators = "|",
-        section_separators = "",
-    },
-    sections = {
-        lualine_c = {
-            {
-                require("nvim-gps").get_location,
-                cond = require("nvim-gps").is_available
-            },
-        },
-    },
-}
-
 -- UI "Dressing"
 require("dressing").setup()
 
@@ -404,6 +399,11 @@ vim.g.vim_markdown_strikethrough = 1
 vim.g.vim_markdown_auto_insert_bullets = 0
 vim.g.vim_markdown_new_list_item_indent = 0
 
+-- Fancy TODO Highlighting
+if is_startup then
+    require("todo-comments").setup()
+end
+
 -- Floating Terminal Stuff
 vim.g.floaterm_width = 0.9
 vim.g.floaterm_height = 0.9
@@ -421,12 +421,12 @@ wk.register({
 }, { mode = "t" });
 
 -- Highlight on yank
-local highlight_group = vim.api.nvim_create_augroup("YankHighlight", { clear = true })
 vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()
         vim.highlight.on_yank()
     end,
-    group = highlight_group,
+    group = le_group,
+    desc = "Highlight yanked text.",
     pattern = "*",
 })
 
@@ -690,10 +690,16 @@ local luasnip = require("luasnip")
 -- nvim-cmp setup
 local cmp = require("cmp")
 cmp.setup {
+    view = {
+        entries = "custom",
+    },
     snippet = {
         expand = function(args)
             luasnip.lsp_expand(args.body)
         end,
+    },
+    experimental = {
+        ghost_text = true,
     },
     mapping = cmp.mapping.preset.insert({
         ["<C-k>"] = cmp.mapping.scroll_docs(-4),
@@ -727,20 +733,46 @@ cmp.setup {
         --     end
         -- end, { "i", "s" }),
     }),
-    sources = cmp.config.sources(
-        {
-            { name = "luasnip" },
-            { name = "nvim_lsp" },
-            { name = "emoji", option = { insert = true } },
-        },
-        {
-            { name = "path" },
-            { name = "spell" },
-            { name = "buffer" },
-            { name = "dictionary" },
-        }
-    ),
+    sources = {
+        { name = "nvim_lsp" },
+        { name = "nvim_lsp_signature_help" },
+        { name = "nvim_lua" },
+        -- { name = "fuzzy_path" },
+        { name = "path" },
+        { name = "luasnip" },
+        { name = "emoji", option = { insert = true } },
+        { name = "calc" },
+        { name = "treesitter" },
+        -- { name = "fuzzy_buffer", keyword_length = 4, max_item_count = 5 },
+        { name = "buffer", keyword_length = 4, max_item_count = 5 },
+        { name = "spell", keyword_length = 4, max_item_count = 5 },
+        { name = "dictionary", keyword_length = 4, max_item_count = 5 },
+    },
 }
+
+for _, command_type in pairs({":", "@"}) do
+    require("cmp").setup.cmdline(command_type, {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {
+            { name = "cmdline" },
+            { name = "cmdline_history" },
+            { name = "path" },
+            { name = "calc" },
+            { name = "fuzzy_path" },
+        },
+    })
+end
+for _, command_type in pairs({"/", "?"}) do
+    require("cmp").setup.cmdline(command_type, {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {
+            { name = "nvim_lsp_document_symbol" },
+            { name = "fuzzy_buffer" },
+            { name = "buffer" },
+            { name = "cmdline_history" },
+        },
+    })
+end
 
 -- Automatically make directory upon save
 require("mkdir")
@@ -750,18 +782,22 @@ require("mini.cursorword").setup({ delay = 500 })
 require("mini.trailspace").setup({})
 -- Disable Trailing Space Highlights in Certain Buffers
 vim.api.nvim_create_autocmd({"BufEnter"}, {
+    group = le_group,
+    desc = "Disable trailing space highlighting in certain buffers.",
     callback = function()
         local bufferName = vim.api.nvim_eval[[bufname()]]
         local tabPageNumber = vim.api.nvim_eval[[tabpagenr()]]
         if bufferName == "NvimTree_" .. tabPageNumber then
-            require("mini.trailspace").unhighlight()
+            MiniTrailspace.unhighlight()
         end
     end,
 })
 -- Trim Space on Save
 vim.api.nvim_create_autocmd({"BufWritePre"}, {
+    group = le_group,
+    desc = "Trim trailing spaces on save.",
     callback = function()
-        require("mini.trailspace").trim()
+        MiniTrailspace.trim()
     end,
 })
 require("mini.comment").setup({})
@@ -778,18 +814,33 @@ __      __          _                                              _  __  __   _
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']],
 })
-local minisessions = require("mini.sessions")
-minisessions.setup({
-    verbose = { read = false, write = false, delete = false, },
+-- Close buffers that don't restore from a session
+local close_bad_buffers = function()
+    require("zen-mode").close()
+    vim.notify.dismiss({ silent = true, pending = true })
+    local buffer_numbers = vim.api.nvim_list_bufs()
+    for _, buffer_number in pairs(buffer_numbers) do
+        -- local buffer_name = vim.api.nvim_buf_get_name(buffer_number)
+        local buffer_type = vim.api.nvim_buf_get_option(buffer_number, "buftype")
+        if buffer_type == "nofile" then
+            vim.api.nvim_buf_delete(buffer_number, { force = true })
+        end
+    end
+end
+require("mini.sessions").setup({
+    hooks = { pre = { write = close_bad_buffers }, },
+    verbose = { read = true, write = true, delete = true, },
 })
 vim.api.nvim_create_autocmd("VimLeavePre", {
-    callback = function() minisessions.write("Last Session.vim", {}) end
+    group = le_group,
+    desc = "Save current session for restoration.",
+    callback = function() MiniSessions.write("Last Session.vim", {}) end
 })
 local session_do = function(action, input)
     if not input or input == "" then
         if vim.v.this_session and vim.v.this_session ~= "" then
             local split = vim.split(vim.v.this_session, "[\\/]")
-            minisessions[action](split[#split], {})
+            MiniSessions[action](split[#split], {})
             return
         end
         vim.notify(
@@ -797,7 +848,7 @@ local session_do = function(action, input)
             "error",
             { title = "Session " .. action .. " Error" }
         )
-    elseif not pcall(minisessions[action], input .. ".vim", {}) then
+    elseif not pcall(MiniSessions[action], input .. ".vim", {}) then
         vim.notify(
             "Session " .. action .. " Has Failed",
             "error",
@@ -820,9 +871,25 @@ wk.register({
         end
         vim.api.nvim_input(":SessionSave " .. current_session)
     end, "(s)ession (s)ave <Session Name>" },
-    ["<Leader>sl"] = { function() minisessions.select("read", {}) end, "(s)ession (l)oad <Session Name>" },
+    ["<Leader>sl"] = { function()
+        MiniSessions.select("read", {})
+    end, "(s)ession (l)oad <Session Name>" },
     ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
     ["<Leader>sL"] = { ":SessionLoad<Enter>", "current (s)ession re(L)oad" },
+    ["<Leader>sd"] = { function()
+        MiniSessions.select("delete", {})
+    end, "(s)ession (d)elete" },
+    ["<Leader>sn"] = { function()
+        local current_session = vim.v.this_session
+        local message = "You are currently not in a session"
+        if current_session ~= nil then
+            message = "You are currently in session `" .. current_session .. "`"
+        end
+        vim.notify(message, "info", { title = "Sessions" })
+    end, "current (s)ession (n)otify" },
+    ["<Leader>sq"] = { function()
+        vim.api.nvim_set_vvar("this_session", "")
+    end, "(s)ession (q)uit", },
 }, { silent = false })
 require("mini.surround").setup({
     custom_surroundings = {
@@ -837,7 +904,48 @@ require("mini.surround").setup({
         replace = "cs",
         update_n_lines = "",
     },
-    n_lines = 100,
+    n_lines = 1,
+})
+require("mini.statusline").setup({
+    set_vim_settings = false,
+    content = {
+        active = function()
+            -- TODO: Add colors :D
+            local os_symbols = {
+                unix = "", -- e712
+                dos = "", -- e70f
+                mac = "", -- e711
+            }
+            local gps = require("nvim-gps")
+            local gps_string = gps.is_available() and gps.get_location() or nil
+
+            local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
+            mode = mode:upper()
+
+            local git = MiniStatusline.section_git({ trunc_width = 75 })
+            local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75 })
+            local filename = vim.fn.expand("%:~:.")
+
+            local fileinfo = MiniStatusline.section_fileinfo({ trunc_width = 120 })
+            local os = vim.bo.fileformat
+            local os_symbol = os_symbols[os]
+            if os_symbol then fileinfo = fileinfo:gsub(os, os_symbol) end
+
+            local location      = "%l:%v (%p%%)"
+
+            local status_line = MiniStatusline.combine_groups({
+                { hl = mode_hl,                  strings = { mode } },
+                { hl = 'MiniStatuslineDevinfo',  strings = { git, diagnostics } },
+                '%<', -- Mark general truncate point
+                { hl = 'MiniStatuslineFilename', strings = { gps_string } },
+                '%=', -- End left alignment
+                { hl = 'MiniStatuslineFilename', strings = { filename } },
+                { hl = 'MiniStatuslineFileinfo', strings = { fileinfo } },
+                { hl = mode_hl,                  strings = { location } },
+            })
+            return status_line
+        end
+    },
 })
 
 -- Bufferline (Easy Tabs)
@@ -892,6 +1000,8 @@ wk.register({
 });
 
 -- Wiki Vim
+-- TODO: Find out how VimWiki does ISO week number.
+vim.g.wiki_name = "- Index -"
 vim.g.wiki_mappings_use_defaults = "none"
 vim.g.wiki_root = "~/Documents/Notes"
 vim.g.wiki_link_extension = ".md"
@@ -905,6 +1015,8 @@ vim.g.wiki_journal = {
 }
 vim.g.wiki_index_name = "- Index -.md"
 vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+    group = le_group,
+    desc = "Set wiki keybindings for current buffer.",
     pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
     callback = function(eventInfo)
         wk.register({
