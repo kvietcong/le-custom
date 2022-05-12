@@ -41,6 +41,7 @@ set backspace=indent,eol,start " More robust backspacing
 set guifont=CodeNewRoman\ NF:h14 " Set a font for GUI things
 set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
+set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
@@ -63,10 +64,8 @@ else
 endif
 
 " Make capital quitting quit all
-:cabbrev wq wqa
-:cabbrev q qa
-:cabbrev WQ wq
-:cabbrev Q q
+:cabbrev WQ wqa
+:cabbrev Q qa
 
 " ==============
 " == Mappings ==
@@ -153,7 +152,7 @@ autocmd BufReadPost *
     \ | endif
 
 " Refresh Colorscheme
-function RefreshColor()
+function! RefreshColor()
     if exists("g:colors_name")
         let current = g:colors_name
     else
