@@ -13,25 +13,7 @@
 - Sort out nvim-cmp sources!
 ]]
 
--- Nord Palette Reference
--- nord1:   #2E3440
--- nord2:   #3B4252
--- nord3:   #434C5E
--- nord4:   #4C566A
--- nord5:   #D8DEE9
--- nord6:   #E5E9F0
--- nord7:   #ECEFF4
--- nord8:   #8FBCBB
--- nord9:   #88C0D0
--- nord10:  #81A1C1
--- nord11:  #5E81AC
--- nord12:  #BF616A
--- nord13:  #D08770
--- nord14:  #EBCB8B
--- nord15:  #A3BE8C
--- nord16:  #B48EAD
-
--- Install packer
+-- Install packer if needed
 local packer_bootstrap
 local install_path = vim.fn.stdpath("data").."/site/pack/packer/start/packer.nvim"
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
@@ -41,18 +23,6 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   })
   vim.api.nvim_command("packadd packer.nvim")
 end
-
--- Autocommand group for configuration
-local le_group = vim.api.nvim_create_augroup("LeConfiguration", { clear = true })
-
--- This is for auto-sourcing
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = le_group,
-    pattern = { "init.lua", "init.vim" },
-    desc = "Auto re-source configuration files.",
-    command = "source <afile> | PackerCompile",
-})
-
 
 local packer = require("packer")
 
@@ -134,6 +104,7 @@ packer.startup(function(use)
     use "hrsh7th/cmp-buffer"
     use "hrsh7th/cmp-cmdline"
     use "ray-x/cmp-treesitter"
+    use "onsails/lspkind.nvim"
     use "hrsh7th/cmp-nvim-lsp"
     use "hrsh7th/cmp-nvim-lua"
     use "tzachar/cmp-fuzzy-path"
@@ -152,45 +123,40 @@ packer.startup(function(use)
     end
 end)
 
+-- Have Plugins Cached for Speed
 require("impatient")
 
+-- Autocommand group for configuration
+local le_group = vim.api.nvim_create_augroup("LeConfiguration", { clear = true })
+
+-- This is for auto-sourcing
+vim.api.nvim_create_autocmd("BufWritePost", {
+    group = le_group,
+    pattern = { "init.lua", "init.vim" },
+    desc = "Auto re-source configuration files.",
+    command = "source <afile> | PackerCompile",
+})
+
+local plenary = require("plenary")
+
+plenary.reload.reload_module("helpers")
 local helpers = require("helpers")
 
--- Print Helper
-function P(thing) print(vim.inspect(thing)) end
-
-local get_time = helpers.get_time
-vim.api.nvim_create_user_command("GetTime", function(command)
-    local time = get_time(command.args)
-    print(vim.inspect(time))
-    if type(time) ~= "string" then return end
-    vim.fn.setreg('"', time)
-    vim.notify(
-        "Placed: '" .. time .. "' into register \"",
-        "info",
-        { title = "Time Retrieved" }
-    )
+vim.api.nvim_create_user_command("GetDate", function(command)
+    local time = helpers.get_date(command.args)
+    if type(time) == "string" then
+        helpers.set_register_and_notify(time, nil, "Date Prepared")
+    end
 end, { nargs = "?" })
 
-local function get_my_date()
-    local my_date = get_time("%Y-%m-%dT%H:%M:%S")
-    vim.fn.setreg('"', my_date)
-    vim.notify(
-        "Placed: '" .. my_date .. "' into register \"",
-        "info",
-        { title = "Date Retrieved" }
-    )
-end
-vim.api.nvim_create_user_command("GetMyDate", function(_)
-    get_my_date()
-end, { nargs = "?" })
+vim.api.nvim_create_user_command("GetMyDate", function()
+    helpers.set_register_and_notify(helpers.get_date().my_date)
+end, {})
 
---- Retrieve Day Status
---- @return boolean
-local function is_day()
-    local hour = get_time().hour
+local is_day = (function()
+    local hour = helpers.get_date().hour
     return hour > 6 and hour < 18
-end
+end)()
 
 local is_startup = vim.fn.has("vim_starting") == 1
 local is_neovide = vim.g.neovide ~= nil
@@ -200,6 +166,11 @@ local is_wsl = vim.fn.has("wsl") == 1
 local is_win = vim.fn.has("win32") == 1
 -- local is_unix = vim.fn.has("unix") == 1
 -- local is_linux = vim.fn.has("linux") == 1
+
+-- Ensure old timers are cleaned upon reloading
+if not is_startup then
+    vim.fn.timer_stopall()
+end
 
 -- GUI Settings
 if is_neovide then
@@ -247,13 +218,13 @@ require("leap").setup({
 require("leap").set_default_keymaps()
 
 -- Gitsigns (Sidebar Git Indicators)
-require("gitsigns").setup {
+require("gitsigns").setup({
     current_line_blame_opts = {
         virt_text_pos = "right_align",
         delay = 100,
     },
     current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary> ",
-}
+})
 wk.register({
     ["<Leader>"] = {
         g = {
@@ -271,6 +242,7 @@ wk.register({
 -- Git Porcelain for Neovim
 require("neogit").setup({
     kind = "vsplit",
+    disable_commit_confirmation = true,
     mappings = {
         status = {
             ["<Escape>"] = "Close",
@@ -313,19 +285,26 @@ vim.g.gruvbox_material_diagnostic_virtual_text = 1
 vim.g.gruvbox_material_diagnostic_text_highlight = 1
 vim.g.gruvbox_material_diagnostic_line_highlight = 1
 
--- Select day/night colorscheme
+-- Select day/night colorscheme every 15 minutes
 local colorschemes = { day = "gruvbox-material", night = "nord" }
-local colorscheme
-if is_day() then
-    colorscheme = colorschemes.day
-    vim.cmd[[set background=light]]
-else
-    vim.cmd[[set background=dark]]
-    colorscheme = colorschemes.night
-end
+local set_colorscheme = function(_--[[timer_id]])
+    local colorscheme
+    if is_day then
+        colorscheme = colorschemes.day
+        vim.cmd[[set background=light]]
+    else
+        vim.cmd[[set background=dark]]
+        colorscheme = colorschemes.night
+    end
 
--- Set Colorscheme
-vim.cmd("colorscheme " .. colorscheme)
+    -- Set Colorscheme
+    vim.cmd("colorscheme " .. colorscheme)
+end
+set_colorscheme()
+ColorschemeTimer = vim.fn.timer_start(1000 * 60 * 15,
+    set_colorscheme, { ["repeat"] = -1 })
+
+-- Make Virtual text visible with transparent backgrounds
 vim.api.nvim_command("highlight NonText guifg=#6C768A")
 
 -- UI "Dressing"
@@ -354,8 +333,47 @@ vim.g.vim_markdown_strikethrough = 1
 vim.g.vim_markdown_auto_insert_bullets = 0
 vim.g.vim_markdown_new_list_item_indent = 0
 
+-- Wiki Vim
+vim.g.wiki_name = "- Index -"
+vim.g.wiki_mappings_use_defaults = "none"
+vim.g.wiki_root = "~/Documents/Notes"
+vim.g.wiki_filetypes = { "md", "markdown" }
+vim.g.wiki_journal = {
+    name = "Journal/Weekly Reviews",
+    frequency = "weekly",
+    date_format = {
+        daily = "%Y-%m-%d",
+        weekly = "%Y-W%V",
+    }
+}
+vim.g.wiki_index_name = "- Index -.md"
+vim.g.wiki_link_toggle_on_follow = false
+vim.api.nvim_create_autocmd({"BufEnter"}, {
+    group = le_group,
+    desc = "Set note-taking keybindings for current buffer.",
+    pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
+    callback = function(eventInfo)
+        wk.register({
+            ["<Leader>n"] = {
+                name = "(n)otes",
+                i = { "<Plug>(wiki-index)", "(n)ote (i)ndex" },
+                b = { "<Plug>(wiki-graph-find-backlinks)", "(n)ote (b)acklinks" },
+                t = { ":Toc<Enter>", "(n)ote (t)able of contents" },
+                w = {
+                    name = "(w)eekly",
+                    w = { "<Plug>(wiki-journal)", "(n)ote (w)eekly" },
+                    l = { "<Plug>(wiki-journal-next)", "(n)ote (w)eekly next" },
+                    h = { "<Plug>(wiki-journal-prev)", "(n)ote (w)eekly previous" },
+                },
+            },
+            ["<Enter>"] = { "<Plug>(wiki-link-follow)", "Go To Wiki Link" },
+            ["<Leader><Enter>"] = { "<Plug>(wiki-link-toggle)", "Create or Toggle Link" },
+        }, { buffer = eventInfo.buf });
+    end
+})
+
 -- Fancy TODO Highlighting
-if is_startup then
+if is_startup then -- Weirdly errors on re-sourcing
     require("todo-comments").setup()
 end
 
@@ -374,6 +392,18 @@ wk.register({
     ["<C-q>"] = { clean("<C-\\><C-n>:FloatermKill<Enter>"), "Quit/Kill The Current Terminal" },
     ["<C-t><C-n>"] = { clean("<C-\\><C-n>:FloatermNew<Enter>"), "Create New Terminal" },
 }, { mode = "t" });
+
+-- Zen Mode (Minimal Mode)
+require("zen-mode").setup({
+    window = { width = 88, number = true },
+    plugins = { options = { ruler = true }},
+    gitsigns = { enable = true },
+    on_open = function() end,
+    on_close = function() end
+})
+wk.register({
+    ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
+});
 
 -- Highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -438,7 +468,6 @@ require("nvim-treesitter.configs").setup {
     },
     highlight = {
         enable = true,
-        additional_vim_regex_highlighting = true, -- WARN: Decide to keep or not
     },
     context_commentstring = {
         enable = true
@@ -643,10 +672,12 @@ require("lsp_signature").setup({
 local luasnip = require("luasnip")
 
 -- nvim-cmp setup
+local lspkind = require("lspkind")
 local cmp = require("cmp")
 cmp.setup {
     view = {
         entries = "custom",
+        -- selection_order = "near_cursor",
     },
     snippet = {
         expand = function(args)
@@ -689,13 +720,13 @@ cmp.setup {
         -- end, { "i", "s" }),
     }),
     sources = {
+        { name = "emoji", option = { insert = true } },
         { name = "nvim_lsp" },
         { name = "nvim_lsp_signature_help" },
         { name = "nvim_lua" },
         -- { name = "fuzzy_path" },
         { name = "path" },
         { name = "luasnip" },
-        { name = "emoji", option = { insert = true } },
         { name = "calc" },
         { name = "treesitter" },
         -- { name = "fuzzy_buffer", keyword_length = 4, max_item_count = 5 },
@@ -703,7 +734,44 @@ cmp.setup {
         { name = "spell", keyword_length = 4, max_item_count = 5 },
         { name = "dictionary", keyword_length = 4, max_item_count = 5 },
     },
+    formatting = {
+        format = lspkind.cmp_format({
+            mode = "symbol_text",
+            menu = ({
+                buffer = "[Buffer]",
+                nvim_lsp = "[LSP]",
+                luasnip = "[LuaSnip]",
+                nvim_lua = "[Lua]",
+                treesitter = "[TreeSitter]",
+                nvim_lsp_signature_help = "[LSP Sig]",
+                path = "[Path]",
+                emoji = "[Emoji]",
+                calc = "[Calc]",
+                spell = "[Spell]",
+                dictionary = "[Spell]",
+            }),
+        })
+    },
 }
+-- TODO: Make completion stuff my theme later (someday... maybe)
+vim.cmd[[
+" gray
+highlight! CmpItemAbbrDeprecated guibg=NONE gui=strikethrough guifg=#808080
+" blue
+highlight! CmpItemAbbrMatch guibg=NONE guifg=#569CD6
+highlight! CmpItemAbbrMatchFuzzy guibg=NONE guifg=#569CD6
+" light blue
+highlight! CmpItemKindVariable guibg=NONE guifg=#9CDCFE
+highlight! CmpItemKindInterface guibg=NONE guifg=#9CDCFE
+highlight! CmpItemKindText guibg=NONE guifg=#9CDCFE
+" pink
+highlight! CmpItemKindFunction guibg=NONE guifg=#C586C0
+highlight! CmpItemKindMethod guibg=NONE guifg=#C586C0
+" front
+highlight! CmpItemKindKeyword guibg=NONE guifg=#D4D4D4
+highlight! CmpItemKindProperty guibg=NONE guifg=#D4D4D4
+highlight! CmpItemKindUnit guibg=NONE guifg=#D4D4D4
+]]
 
 for _, command_type in pairs({":", "@"}) do
     require("cmp").setup.cmdline(command_type, {
@@ -777,7 +845,8 @@ local close_bad_buffers = function()
     for _, buffer_number in pairs(buffer_numbers) do
         -- local buffer_name = vim.api.nvim_buf_get_name(buffer_number)
         local buffer_type = vim.api.nvim_buf_get_option(buffer_number, "buftype")
-        if buffer_type == "nofile" then
+        local is_modifiable = vim.api.nvim_buf_get_option(buffer_number, "modifiable")
+        if buffer_type == "nofile" or not is_modifiable then
             vim.api.nvim_buf_delete(buffer_number, { force = true })
         end
     end
@@ -819,46 +888,44 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
     desc = "Save current session for restoration.",
     callback = function() MiniSessions.write("Last Session.vim", {}) end
 })
-local session_do = function(action, input)
+local session_save_wrapper = function(input)
     if not input or input == "" then
         if vim.v.this_session and vim.v.this_session ~= "" then
-            local split = vim.split(vim.v.this_session, "[\\/]")
-            MiniSessions[action](split[#split], {})
+            local this_session_name = vim.fn.fnamemodify(vim.v.this_session, ":t")
+            MiniSessions.write(this_session_name, {})
             return
         end
         vim.notify(
             "Please Give Session Name",
             "error",
-            { title = "Session " .. action .. " Error" }
+            { title = "Session Write Error" }
         )
-    elseif not pcall(MiniSessions[action], input .. ".vim", {}) then
+    elseif not pcall(MiniSessions.write, input .. ".vim", {}) then
         vim.notify(
-            "Session " .. action .. " Has Failed",
+            "Session Write Has Failed (For Unknown Reasons)",
             "error",
-            { title = "Session " .. action .. " Error" }
+            { title = "Session Write Error" }
         )
     end
 end
 vim.api.nvim_create_user_command("SessionSave", function(command)
-    session_do("write", command.args)
-end, { nargs = "?" })
-vim.api.nvim_create_user_command("SessionLoad", function(command)
-    session_do("read", command.args)
+    session_save_wrapper(command.args)
 end, { nargs = "?" })
 wk.register({
     ["<Leader>ss"] = { function()
         local current_session = ""
         if vim.v.this_session and vim.v.this_session ~= "" then
-            local split = vim.split(vim.v.this_session, "[\\/]")
-            current_session = vim.split(split[#split], ".vim", { plain = true })[1]
+            current_session = vim.fn.fnamemodify(vim.v.this_session, ":t:r")
         end
         vim.api.nvim_input(":SessionSave " .. current_session)
     end, "(s)ession (s)ave <Session Name>" },
+    ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
     ["<Leader>sl"] = { function()
         MiniSessions.select("read", {})
     end, "(s)ession (l)oad <Session Name>" },
-    ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
-    ["<Leader>sL"] = { ":SessionLoad<Enter>", "current (s)ession re(L)oad" },
+    ["<Leader>sL"] = { function()
+        MiniSessions.read(nil, {})
+    end, "current (s)ession re(L)oad" },
     ["<Leader>sd"] = { function()
         MiniSessions.select("delete", { force = true })
     end, "(s)ession (d)elete" },
@@ -963,6 +1030,7 @@ wk.register({
         h = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
         j = { ":BufferLineMoveNext<Enter>", "(b)uffer move next" },
         k = { ":BufferLineMovePrev<Enter>", "(b)uffer move prev" },
+        o = { ":BO<Enter>", "(b)uffer (o)nly (Close all but this)" },
     },
     ["<M-l>"] = { ":BufferLineCycleNext<Enter>", "buffer next" },
     ["<M-h>"] = { ":BufferLineCyclePrev<Enter>", "buffer prev" },
@@ -991,34 +1059,6 @@ wk.register({
     ["<Leader>fe"] = { ":NvimTreeToggle<Enter>", "(f)ile (e)xplorer ((f)ind (e)xplorer)"}
 });
 
--- Wiki Vim
--- TODO: Find out how VimWiki does ISO week number.
-vim.g.wiki_name = "- Index -"
-vim.g.wiki_mappings_use_defaults = "none"
-vim.g.wiki_root = "~/Documents/Notes"
-vim.g.wiki_link_extension = ".md"
-vim.g.wiki_filetypes = { "md", "markdown" }
-vim.g.wiki_journal = {
-    name = "Journal",
-    frequency = "daily",
-    date_format = {
-        daily = "%Y-%m-%d"
-    }
-}
-vim.g.wiki_index_name = "- Index -.md"
-vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
-    group = le_group,
-    desc = "Set wiki keybindings for current buffer.",
-    pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
-    callback = function(eventInfo)
-        wk.register({
-            ["<Leader>ww"] = { "<Plug>(wiki-index)", "(w)iki (w)iki-index" },
-            ["<Enter>"] = { "<Plug>(wiki-link-follow)", "Go To Wiki Link" },
-            ["<Leader>wb"] = { "<Plug>(wiki-graph-find-backlinks)", "(w)iki (b)acklinks" },
-        }, { buffer = eventInfo.buf });
-    end
-})
-
 -- Lua Pad (Quick Lua Testing)
 require("luapad").config({
     count_limit = 50000
@@ -1036,18 +1076,6 @@ require("luapad").config({
 --     map <expr> , g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_,_sx" : "<Plug>Lightspeed_,_ft"
 -- ]]
 
--- Zen Mode (Minimal Mode)
-require("zen-mode").setup {
-    window = { width = 88, number = true },
-    plugins = { options = { ruler = true }},
-    gitsigns = { enable = true },
-    on_open = function() end,
-    on_close = function() end
-}
-wk.register({
-    ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
-});
-
 -- Misc Mappings
 wk.register({
     s = {
@@ -1061,6 +1089,9 @@ wk.register({
         ["-"] = "Comment Banner (--)",
         ["="] = "Comment Banner (==)",
         ["/"] = "Comment Banner (//)",
+    },
+    ["<Leader>"] = {
+        q = { ":qa<Enter>", "(q)uit all" },
     },
 }, { prefix     = "<Leader>" })
 
