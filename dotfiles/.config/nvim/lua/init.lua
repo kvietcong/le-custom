@@ -31,68 +31,6 @@
 -- nord15:  #A3BE8C
 -- nord16:  #B48EAD
 
-function P(thing) print(vim.inspect(thing)) end
-
---- Retrieve Current Time
-local function get_time(format)
-    local format_table = {
-        weekday_short = "%a",
-        weekday = "%A",
-        month_name_short = "%b",
-        month_name = "%B",
-        day = "%d",
-        hour_12 = "%I",
-        hour = "%H",
-        minute = "%M",
-        am_pm = "%p",
-        month = "%m",
-        second = "%S",
-        weekday_num = "%w",
-        date = "%x",
-        time = "%X",
-        year = "%Y",
-        year_short = "%y",
-    }
-
-    if format ~= nil and format ~= "" then
-        if format == "HELP" then
-            return format_table
-        end
-        return os.date(format)
-    end
-    return {
-        hour = tonumber(os.date("%H")),
-        minute = tonumber(os.date("%M")),
-        second = tonumber(os.date("%S")),
-        my_date = os.date("%Y-%m-%dT%H:%M:%S"),
-        format = os.date,
-    }
-end
-GetTime = get_time -- Make get_time global
-vim.api.nvim_create_user_command("GetTime", function(command)
-    print(vim.inspect(get_time(command.args)))
-end, { nargs = "?" })
-
-local function get_my_date()
-    local my_date = get_time("%Y-%m-%dT%H:%M:%S")
-    vim.fn.setreg('"', my_date)
-    vim.notify("Placed: '" .. my_date .. "' into register \"", "info", {title = "Date Retrieved"})
-end
-vim.api.nvim_create_user_command("GetMyDate", function(_)
-    get_my_date()
-end, { nargs = "?" })
-
---- Retrieve Day Status
---- @return boolean
-local function is_day()
-    local hour = get_time().hour
-    return hour > 6 and hour < 18
-end
-
-local is_startup = vim.v.vim_did_enter == 0
-local is_neovide = vim.g.neovide ~= nil
-local is_fvim = vim.g.fvim_loaded ~= nil
-
 -- Install packer
 local packer_bootstrap
 local install_path = vim.fn.stdpath("data").."/site/pack/packer/start/packer.nvim"
@@ -120,7 +58,8 @@ local packer = require("packer")
 
 packer.startup(function(use)
     use "wbthomason/packer.nvim"
-    use "dstein64/vim-startuptime" -- Run vim w/ `--startuptime`
+    use "dstein64/vim-startuptime" -- Run :StartupTime
+    use "lewis6991/impatient.nvim" -- Cache Lua Plugins
 
     -- Common Dependencies
     use "nvim-lua/popup.nvim"
@@ -130,7 +69,6 @@ packer.startup(function(use)
     -- Quality of Life
     use "mattn/emmet-vim"
     use "tpope/vim-repeat"
-    use "monaqa/dial.nvim"
     use "nacro90/numb.nvim"
     use "wellle/targets.vim"
     use "jghauser/mkdir.nvim"
@@ -206,10 +144,62 @@ packer.startup(function(use)
     use "hrsh7th/cmp-nvim-lsp-signature-help"
     use "hrsh7th/cmp-nvim-lsp-document-symbol"
 
+    packer.install()
+    packer.clean()
+
     if packer_bootstrap then
         packer.sync()
     end
 end)
+
+require("impatient")
+
+local helpers = require("helpers")
+
+-- Print Helper
+function P(thing) print(vim.inspect(thing)) end
+
+local get_time = helpers.get_time
+vim.api.nvim_create_user_command("GetTime", function(command)
+    local time = get_time(command.args)
+    print(vim.inspect(time))
+    if type(time) ~= "string" then return end
+    vim.fn.setreg('"', time)
+    vim.notify(
+        "Placed: '" .. time .. "' into register \"",
+        "info",
+        { title = "Time Retrieved" }
+    )
+end, { nargs = "?" })
+
+local function get_my_date()
+    local my_date = get_time("%Y-%m-%dT%H:%M:%S")
+    vim.fn.setreg('"', my_date)
+    vim.notify(
+        "Placed: '" .. my_date .. "' into register \"",
+        "info",
+        { title = "Date Retrieved" }
+    )
+end
+vim.api.nvim_create_user_command("GetMyDate", function(_)
+    get_my_date()
+end, { nargs = "?" })
+
+--- Retrieve Day Status
+--- @return boolean
+local function is_day()
+    local hour = get_time().hour
+    return hour > 6 and hour < 18
+end
+
+local is_startup = vim.fn.has("vim_starting") == 1
+local is_neovide = vim.g.neovide ~= nil
+local is_fvim = vim.g.fvim_loaded ~= nil
+local is_mac = vim.fn.has("mac") == 1
+local is_wsl = vim.fn.has("wsl") == 1
+local is_win = vim.fn.has("win32") == 1
+-- local is_unix = vim.fn.has("unix") == 1
+-- local is_linux = vim.fn.has("linux") == 1
 
 -- GUI Settings
 if is_neovide then
@@ -255,41 +245,6 @@ require("leap").setup({
     },
 })
 require("leap").set_default_keymaps()
-
-vim.api.nvim_set_keymap("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
-vim.api.nvim_set_keymap("n", "<C-x>", require("dial.map").dec_normal(), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_visual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_visual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true})
-
-local augend = require("dial.augend")
-require("dial.config").augends:register_group({
-    default = {
-        augend.integer.alias.hex,
-        augend.constant.alias.bool,
-        augend.integer.alias.binary,
-        augend.constant.alias.alpha,
-        augend.constant.alias.Alpha,
-        augend.integer.alias.decimal,
-        augend.date.alias["%Y-%m-%d"],
-        augend.date.alias["%Y/%m/%d"],
-        augend.constant.alias.ja_weekday_full,
-        augend.constant.new{ elements = {"let", "const"} },
-    },
-    visual = {
-        augend.integer.alias.hex,
-        augend.constant.alias.bool,
-        augend.integer.alias.binary,
-        augend.constant.alias.alpha,
-        augend.constant.alias.Alpha,
-        augend.integer.alias.decimal,
-        augend.date.alias["%Y-%m-%d"],
-        augend.date.alias["%Y/%m/%d"],
-        augend.constant.alias.ja_weekday_full,
-        augend.constant.new{ elements = {"let", "const"} },
-    },
-})
 
 -- Gitsigns (Sidebar Git Indicators)
 require("gitsigns").setup {
@@ -361,7 +316,7 @@ vim.g.gruvbox_material_diagnostic_line_highlight = 1
 -- Select day/night colorscheme
 local colorschemes = { day = "gruvbox-material", night = "nord" }
 local colorscheme
-if false and is_day() then
+if is_day() then
     colorscheme = colorschemes.day
     vim.cmd[[set background=light]]
 else
@@ -828,8 +783,36 @@ local close_bad_buffers = function()
     end
 end
 require("mini.sessions").setup({
-    hooks = { pre = { write = close_bad_buffers }, },
-    verbose = { read = true, write = true, delete = true, },
+    hooks = {
+        pre = {
+            write = close_bad_buffers,
+        },
+        post = {
+            read = function()
+                vim.notify(
+                    "Loaded Session: " .. vim.v.this_session,
+                    "info",
+                    { title = "Sessions" }
+                )
+            end,
+            write = function()
+                vim.notify(
+                    "Saved Session: " .. vim.v.this_session,
+                    "info",
+                    { title = "Sessions" }
+                )
+            end,
+            delete = function()
+                -- TODO: Maybe help improve
+                vim.notify(
+                    "Deleted Selected Session",
+                    "info",
+                    { title = "Sessions" }
+                )
+            end,
+        }
+    },
+    verbose = { read = false, write = false, delete = false, },
 })
 vim.api.nvim_create_autocmd("VimLeavePre", {
     group = le_group,
@@ -877,7 +860,7 @@ wk.register({
     ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
     ["<Leader>sL"] = { ":SessionLoad<Enter>", "current (s)ession re(L)oad" },
     ["<Leader>sd"] = { function()
-        MiniSessions.select("delete", {})
+        MiniSessions.select("delete", { force = true })
     end, "(s)ession (d)elete" },
     ["<Leader>sn"] = { function()
         local current_session = vim.v.this_session
@@ -916,17 +899,25 @@ require("mini.statusline").setup({
                 dos = "", -- e70f
                 mac = "", -- e711
             }
+            local current_os = os_symbols.unix
+            if is_win then current_os = os_symbols.dos
+            elseif is_mac then current_os = os_symbols.mac
+            elseif is_wsl then
+                current_os = os_symbols.dos .. "+" .. os_symbols.unix
+            end
+
             local gps = require("nvim-gps")
             local gps_string = gps.is_available() and gps.get_location() or nil
 
-            local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
+            local mode, mode_hl = MiniStatusline.section_mode({})
             mode = mode:upper()
 
-            local git = MiniStatusline.section_git({ trunc_width = 75 })
-            local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75 })
+            local git = MiniStatusline.section_git({})
+            local diagnostics = MiniStatusline.section_diagnostics({})
             local filename = vim.fn.expand("%:~:.")
 
-            local fileinfo = MiniStatusline.section_fileinfo({ trunc_width = 120 })
+            local fileinfo = MiniStatusline.section_fileinfo({})
+
             local os = vim.bo.fileformat
             local os_symbol = os_symbols[os]
             if os_symbol then fileinfo = fileinfo:gsub(os, os_symbol) end
@@ -934,14 +925,15 @@ require("mini.statusline").setup({
             local location      = "%l:%v (%p%%)"
 
             local status_line = MiniStatusline.combine_groups({
-                { hl = mode_hl,                  strings = { mode } },
-                { hl = 'MiniStatuslineDevinfo',  strings = { git, diagnostics } },
-                '%<', -- Mark general truncate point
-                { hl = 'MiniStatuslineFilename', strings = { gps_string } },
-                '%=', -- End left alignment
-                { hl = 'MiniStatuslineFilename', strings = { filename } },
-                { hl = 'MiniStatuslineFileinfo', strings = { fileinfo } },
-                { hl = mode_hl,                  strings = { location } },
+                { hl = mode_hl, strings = { mode } },
+                { hl = "MiniStatuslineDevinfo", strings = { git } },
+                { hl = "MiniStatuslineFilename", strings = { diagnostics } },
+                { hl = "MiniStatuslineDevinfo", strings = { gps_string } },
+                "%=", -- End left alignment
+                { hl = "MiniStatuslineDevinfo", strings = { current_os } },
+                { hl = mode_hl, strings = { filename } },
+                { hl = "MiniStatuslineFileinfo", strings = { fileinfo } },
+                { hl = mode_hl, strings = { location } },
             })
             return status_line
         end
@@ -1071,3 +1063,4 @@ wk.register({
         ["/"] = "Comment Banner (//)",
     },
 }, { prefix     = "<Leader>" })
+

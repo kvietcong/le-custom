@@ -47,8 +47,8 @@ set wildmenu wildmode=longest,list,full " Display completion matches in a status
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 set foldenable foldmethod=syntax foldlevel=100 " Dang I wish I could do both syntax and indent folding
 
-if has("win32") || has("win64")
-    " Make Powershell work :)
+" Make Powershell work :)
+if has("win32")
     let &shell = "pwsh"
     let &shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
     let &shellredir = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
@@ -161,3 +161,4 @@ function! RefreshColor()
     execute "colorscheme ".current
 endfunction
 nnoremap <F5> :call RefreshColor()<Enter>
+
