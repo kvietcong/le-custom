@@ -15,7 +15,7 @@
 
 -- Install packer if needed
 local packer_bootstrap
-local data_path = vim.fn.stdpath("data"):gsub("\\", "/")
+local data_path = vim.fn.stdpath("data")
 local install_path = data_path .. "/site/pack/packer/start/packer.nvim"
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   packer_bootstrap = vim.fn.system({
@@ -114,8 +114,6 @@ packer.startup(function(use)
     use "onsails/lspkind.nvim"
     use "hrsh7th/cmp-nvim-lsp"
     use "hrsh7th/cmp-nvim-lua"
-    use "tzachar/cmp-fuzzy-path"
-    use "uga-rosa/cmp-dictionary"
     use "tzachar/cmp-fuzzy-buffer"
     use "saadparwaiz1/cmp_luasnip"
     use "dmitmel/cmp-cmdline-history"
@@ -138,7 +136,7 @@ local is_mac = vim.fn.has("mac") == 1
 local is_wsl = vim.fn.has("wsl") == 1
 local is_win = vim.fn.has("win32") == 1
 -- local is_unix = vim.fn.has("unix") == 1
--- local is_linux = vim.fn.has("linux") == 1
+local is_linux = vim.fn.has("linux") == 1
 
 -- Things I want to get interactively
 Globals = {
@@ -791,15 +789,13 @@ cmp.setup {
         { name = "nvim_lsp" },
         { name = "nvim_lsp_signature_help" },
         { name = "nvim_lua" },
-        -- { name = "fuzzy_path" },
         { name = "path" },
         { name = "luasnip" },
         { name = "calc" },
         { name = "treesitter" },
-        -- { name = "fuzzy_buffer", keyword_length = 4, max_item_count = 5 },
-        { name = "buffer", keyword_length = 4, max_item_count = 5 },
-        { name = "spell", keyword_length = 4, max_item_count = 5 },
-        { name = "dictionary", keyword_length = 4, max_item_count = 5 },
+        { name = "spell" },
+        { name = "fuzzy_buffer", keyword_length = 4, max_item_count = 10 },
+        { name = "buffer", keyword_length = 4, max_item_count = 20 },
     },
     formatting = {
         format = lspkind.cmp_format({
@@ -815,11 +811,13 @@ cmp.setup {
                 emoji = "[Emoji]",
                 calc = "[Calc]",
                 spell = "[Spell]",
-                dictionary = "[Spell]",
+                fuzzy_buffer = "[Fzy Buffer]",
+                cmdline_history = "[CMD History]",
             }),
         })
     },
 }
+
 -- TODO: Make completion stuff my theme later (someday... maybe)
 vim.cmd[[
 " gray
@@ -845,10 +843,9 @@ for _, command_type in pairs({":", "@"}) do
         mapping = cmp.mapping.preset.cmdline(),
         sources = {
             { name = "cmdline" },
+            { name = "calc" },
             { name = "cmdline_history" },
             { name = "path" },
-            { name = "calc" },
-            { name = "fuzzy_path" },
         },
     })
 end
@@ -857,8 +854,8 @@ for _, command_type in pairs({"/", "?"}) do
         mapping = cmp.mapping.preset.cmdline(),
         sources = {
             { name = "nvim_lsp_document_symbol" },
-            { name = "fuzzy_buffer" },
             { name = "buffer" },
+            { name = "fuzzy_buffer" },
             { name = "cmdline_history" },
         },
     })
@@ -895,6 +892,20 @@ require("mini.comment").setup({})
 require("mini.indentscope").setup({
     symbol = "⟫",
 })
+vim.api.nvim_create_autocmd({"TermEnter"}, {
+    group = le_group,
+    callback = function()
+        MiniIndentscope.config.symbol_ = MiniIndentscope.config.symbol
+        MiniIndentscope.config.symbol = ""
+    end,
+})
+vim.api.nvim_create_autocmd({"TermLeave"}, {
+    group = le_group,
+    callback = function()
+        MiniIndentscope.config.symbol = MiniIndentscope.config.symbol_
+        MiniIndentscope.config.symbol_ = nil
+    end,
+})
 
 vim.api.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
 require("mini.starter").setup({
@@ -921,6 +932,10 @@ local close_bad_buffers = function()
     end
 end
 
+local session_path = data_path .. "/session/"
+if vim.fn.empty(vim.fn.glob(session_path)) > 0 then
+    vim.cmd("!mkdir " .. session_path)
+end
 require("mini.sessions").setup({
     hooks = {
         pre = {
@@ -989,7 +1004,7 @@ wk.register({
 
         local new_session_option = "[<<<Make New Session>>>]"
         local detected_names = {}
-        if current_session then
+        if current_session and current_session ~= "" then
             table.insert(detected_names, 1, current_session)
         end
         for detected, _ in pairs(MiniSessions.detected) do
@@ -1000,6 +1015,7 @@ wk.register({
         end
         table.insert(detected_names, new_session_option)
 
+        P(detected_names)
         vim.ui.select(
             detected_names,
             { prompt="Select Session to Save To (Current: " .. current_session .. ")" },
