@@ -15,7 +15,8 @@
 
 -- Install packer if needed
 local packer_bootstrap
-local install_path = vim.fn.stdpath("data").."/site/pack/packer/start/packer.nvim"
+local data_path = vim.fn.stdpath("data")
+local install_path = data_path .. "/site/pack/packer/start/packer.nvim"
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   packer_bootstrap = vim.fn.system({
       "git", "clone", "--depth", "1",
@@ -905,6 +906,10 @@ local close_bad_buffers = function()
     end
 end
 
+local session_path = data_path .. "/session/"
+if vim.fn.empty(vim.fn.glob(session_path)) > 0 then
+    vim.cmd("!mkdir " .. session_path)
+end
 require("mini.sessions").setup({
     hooks = {
         pre = {
@@ -973,7 +978,7 @@ wk.register({
 
         local new_session_option = "[<<<Make New Session>>>]"
         local detected_names = {}
-        if current_session then
+        if current_session and current_session ~= "" then
             table.insert(detected_names, 1, current_session)
         end
         for detected, _ in pairs(MiniSessions.detected) do
@@ -984,6 +989,7 @@ wk.register({
         end
         table.insert(detected_names, new_session_option)
 
+        P(detected_names)
         vim.ui.select(
             detected_names,
             { prompt="Select Session to Save To (Current: " .. current_session .. ")" },
