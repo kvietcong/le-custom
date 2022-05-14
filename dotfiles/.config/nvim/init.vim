@@ -9,7 +9,6 @@ set nocompatible " Screw vi compatibility XD
 " == General Settings ==
 " ======================
 syntax on " Enable syntax highlighting
-set spell " Spellcheck
 set title " Change Terminal Title
 set hidden " Allow you to change buffers without saving
 set confirm
@@ -32,6 +31,7 @@ set inccommand=split " Live update of commands like substitution
 set jumpoptions+=stack
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
+set spell spelllang=en_us " Spellcheck
 set splitbelow splitright " Splits occur below or to the right of the current window
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
@@ -67,7 +67,6 @@ endif
 :cabbrev WQ wqa
 :cabbrev Q qa
 
-:cabbrev lua lua =
 :command! BO %bd | e# | bd# " (Buffer Only) Close all buffers but the current one
 
 " ==============
