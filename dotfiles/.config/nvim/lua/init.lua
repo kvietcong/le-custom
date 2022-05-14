@@ -15,7 +15,8 @@
 
 -- Install packer if needed
 local packer_bootstrap
-local install_path = vim.fn.stdpath("data").."/site/pack/packer/start/packer.nvim"
+local data_path = vim.fn.stdpath("data"):gsub("\\", "/")
+local install_path = data_path .. "/site/pack/packer/start/packer.nvim"
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   packer_bootstrap = vim.fn.system({
       "git", "clone", "--depth", "1",
@@ -39,6 +40,7 @@ packer.startup(function(use)
     -- Quality of Life
     use "mattn/emmet-vim"
     use "tpope/vim-repeat"
+    use "gbprod/yanky.nvim"
     use "nacro90/numb.nvim"
     use "wellle/targets.vim"
     use "nanotee/zoxide.vim"
@@ -80,7 +82,7 @@ packer.startup(function(use)
     use "jvgrootveld/telescope-zoxide"
     use "nvim-telescope/telescope.nvim"
     use "olacin/telescope-gitmoji.nvim"
-    use "xiyaowong/telescope-emoji.nvim"
+    use "kvietcong/telescope-emoji.nvim"
     use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
 
     -- Treesitter
@@ -128,6 +130,26 @@ packer.startup(function(use)
     end
 end)
 
+-- Helpful Flags
+local is_startup = vim.fn.has("vim_starting") == 1
+local is_neovide = vim.g.neovide ~= nil
+local is_fvim = vim.g.fvim_loaded ~= nil
+local is_mac = vim.fn.has("mac") == 1
+local is_wsl = vim.fn.has("wsl") == 1
+local is_win = vim.fn.has("win32") == 1
+-- local is_unix = vim.fn.has("unix") == 1
+-- local is_linux = vim.fn.has("linux") == 1
+
+-- Things I want to get interactively
+Globals = {
+    data_path = data_path,
+}
+
+-- Ensure old timers are cleaned upon reloading
+if not is_startup then
+    vim.fn.timer_stopall()
+end
+
 -- Have Plugins Cached for Speed
 require("impatient")
 
@@ -163,20 +185,6 @@ local is_day = (function()
     local hour = helpers.get_date().hour
     return hour > 6 and hour < 18
 end)()
-
-local is_startup = vim.fn.has("vim_starting") == 1
-local is_neovide = vim.g.neovide ~= nil
-local is_fvim = vim.g.fvim_loaded ~= nil
-local is_mac = vim.fn.has("mac") == 1
-local is_wsl = vim.fn.has("wsl") == 1
-local is_win = vim.fn.has("win32") == 1
--- local is_unix = vim.fn.has("unix") == 1
--- local is_linux = vim.fn.has("linux") == 1
-
--- Ensure old timers are cleaned upon reloading
-if not is_startup then
-    vim.fn.timer_stopall()
-end
 
 -- GUI Settings
 if is_neovide then
@@ -423,16 +431,6 @@ wk.register({
     ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
 });
 
--- Highlight on yank
-vim.api.nvim_create_autocmd("TextYankPost", {
-    callback = function()
-        vim.highlight.on_yank()
-    end,
-    group = le_group,
-    desc = "Highlight yanked text.",
-    pattern = "*",
-})
-
 -- Telescope
 local actions = require("telescope.actions")
 local telescope = require("telescope")
@@ -481,6 +479,7 @@ wk.register({
             r = { ":Telescope oldfiles<Enter>", "(r)ecent files" },
             t = { ":TodoTelescope<Enter>", "(t)odo plugin telescope" },
             T = { ":Telescope treesitter<Enter>", "(T)reesitter symbols" },
+            y = { ":Telescope yank_history<Enter>", "(y)ank history" },
             z = { ":Telescope Zoxide list<Enter>", "(z)oxide" },
         },
         ["/"] = { ":Telescope current_buffer_fuzzy_find<Enter>", "Fuzzy Find In File" },
@@ -490,16 +489,33 @@ wk.register({
     gr = { ":Telescope lsp_references<Enter>", "Find References" },
     ["z="] = { ":Telescope spell_suggest<Enter>", "Spelling Suggestions" },
 });
+
 require("telescope-emoji").setup({
     action = function(emoji)
         helpers.set_register_and_notify(emoji.value)
     end,
 })
-telescope.load_extension("fzf")
 telescope.load_extension("emoji")
+
+require("yanky").setup({ })
+vim.keymap.set("n", "y", "<Plug>(YankyYank)", {})
+vim.keymap.set("x", "y", "<Plug>(YankyYank)", {})
+vim.keymap.set("n", "p", "<Plug>(YankyPutAfter)", {})
+vim.keymap.set("n", "P", "<Plug>(YankyPutBefore)", {})
+vim.keymap.set("x", "p", "<Plug>(YankyPutAfter)", {})
+vim.keymap.set("x", "P", "<Plug>(YankyPutBefore)", {})
+vim.keymap.set("n", "gp", "<Plug>(YankyGPutAfter)", {})
+vim.keymap.set("n", "gP", "<Plug>(YankyGPutBefore)", {})
+vim.keymap.set("x", "gp", "<Plug>(YankyGPutAfter)", {})
+vim.keymap.set("x", "gP", "<Plug>(YankyGPutBefore)", {})
+vim.api.nvim_set_keymap("n", "<c-n>", "<Plug>(YankyCycleForward)", {})
+vim.api.nvim_set_keymap("n", "<c-p>", "<Plug>(YankyCycleBackward)", {})
+
+telescope.load_extension("fzf")
 telescope.load_extension("zoxide")
 telescope.load_extension("heading")
 telescope.load_extension("gitmoji")
+telescope.load_extension("yank_history")
 
 -- Treesitter configuration
 require("nvim-treesitter.configs").setup {
