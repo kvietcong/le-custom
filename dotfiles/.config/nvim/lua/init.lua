@@ -1,6 +1,6 @@
 -- Remaking my config based off of the starter lua config @ https://github.com/nvim-lua/kickstart.nvim
 
---[[ TODO:
+--[[ TODO: General Configuration Things
 - Organize configuration order!
 - Configure Neovide Variables
     - Find out why Windows emoji selector doesn't work with Neovide
@@ -41,8 +41,10 @@ packer.startup(function(use)
     use "tpope/vim-repeat"
     use "nacro90/numb.nvim"
     use "wellle/targets.vim"
+    use "nanotee/zoxide.vim"
     use "jghauser/mkdir.nvim"
     use "abecodes/tabout.nvim"
+    use "folke/which-key.nvim"
     use "voldikss/vim-floaterm"
     use "echasnovski/mini.nvim"
     use "rafcamlet/nvim-luapad"
@@ -71,11 +73,14 @@ packer.startup(function(use)
     use "godlygeek/tabular"
     use "folke/zen-mode.nvim"
     use "preservim/vim-markdown"
+    use "crispgm/telescope-heading.nvim"
 
-    -- Finders
-    use "folke/which-key.nvim"
+    -- Pickers/Finders
     use "tversteeg/registers.nvim"
+    use "jvgrootveld/telescope-zoxide"
     use "nvim-telescope/telescope.nvim"
+    use "olacin/telescope-gitmoji.nvim"
+    use "xiyaowong/telescope-emoji.nvim"
     use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
 
     -- Treesitter
@@ -146,7 +151,8 @@ vim.api.nvim_create_user_command("GetDate", function(command)
     local time = helpers.get_date(command.args)
     if type(time) == "string" then
         helpers.set_register_and_notify(time, nil, "Date Prepared")
-    end
+    else P(time) end
+    return time
 end, { nargs = "?" })
 
 vim.api.nvim_create_user_command("GetMyDate", function()
@@ -358,7 +364,7 @@ vim.api.nvim_create_autocmd({"BufEnter"}, {
                 name = "(n)otes",
                 i = { "<Plug>(wiki-index)", "(n)ote (i)ndex" },
                 b = { "<Plug>(wiki-graph-find-backlinks)", "(n)ote (b)acklinks" },
-                t = { ":Toc<Enter>", "(n)ote (t)able of contents" },
+                t = { ":Telescope heading<Enter>", "(n)ote (t)able of contents" },
                 w = {
                     name = "(w)eekly",
                     w = { "<Plug>(wiki-journal)", "(n)ote (w)eekly" },
@@ -374,7 +380,19 @@ vim.api.nvim_create_autocmd({"BufEnter"}, {
 
 -- Fancy TODO Highlighting
 if is_startup then -- Weirdly errors on re-sourcing
-    require("todo-comments").setup()
+    require("todo-comments").setup({
+        highlight = {
+            keyword = "fg",
+            pattern = {
+                [[\s?(KEYWORDS):]],
+                [[#(KEYWORDS)(\s|$)]],
+            },
+        },
+        search = {
+            pattern = "(\\b(KEYWORDS):)|(#(KEYWORDS)\\b)",
+        },
+        comments_only = false
+    })
 end
 
 -- Floating Terminal Stuff
@@ -417,7 +435,8 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- Telescope
 local actions = require("telescope.actions")
-require("telescope").setup {
+local telescope = require("telescope")
+telescope.setup {
     defaults = {
         mappings = {
             i = {
@@ -430,7 +449,21 @@ require("telescope").setup {
         layout_strategy = "flex",
         sorting_strategy = "ascending",
         set_env = { ["COLORTERM"] = "truecolor" },
-    }
+    },
+    extensions = {
+        heading = {
+            treesitter = true,
+        },
+        gitmoji = {
+            action = function(entry)
+                vim.ui.input({ prompt = "Enter commit msg: " .. entry.value .. " "}, function(msg)
+                    if not msg then return end
+                    local commit_message = entry.value .. " " .. msg
+                    helpers.set_register_and_notify(commit_message, nil, "Commit Message Ready!")
+                end)
+            end,
+        },
+    },
 }
 wk.register({
     ["<Leader>"] = {
@@ -438,8 +471,9 @@ wk.register({
             name = "(f)ind something (Telescope Pickers)",
             a = { ":Telescope<Enter>", "(a)ll built in pickers" },
             b = { ":Telescope buffers<Enter>", "(b)uffers" },
-            c = { [[<CMD>lua require("telescope.builtin").commands()<Enter>]], "(c)ommands" }, -- OKAY WTFRIK. Colon works except here. I'm confused
+            c = { ":Telescope commands<Enter>", "(c)ommands" },
             d = { ":Telescope diagnostics<Enter>", "(d)iagnostics" },
+            E = { ":Telescope emoji<Enter>", "(E)mojis! 😎" },
             f = { ":Telescope find_files<Enter>", "(f)iles" },
             g = { ":Telescope live_grep<Enter>", "(g)rep project" },
             h = { ":Telescope help_tags<Enter>", "(h)elp" },
@@ -447,14 +481,25 @@ wk.register({
             r = { ":Telescope oldfiles<Enter>", "(r)ecent files" },
             t = { ":TodoTelescope<Enter>", "(t)odo plugin telescope" },
             T = { ":Telescope treesitter<Enter>", "(T)reesitter symbols" },
+            z = { ":Telescope Zoxide list<Enter>", "(z)oxide" },
         },
         ["/"] = { ":Telescope current_buffer_fuzzy_find<Enter>", "Fuzzy Find In File" },
         ["?"] = { ":Telescope live_grep<Enter>", "Fuzzy Find Across Project" },
+        gm = { ":Telescope gitmoji<Enter>", "(g)it (m)essage helper" },
     },
     gr = { ":Telescope lsp_references<Enter>", "Find References" },
     ["z="] = { ":Telescope spell_suggest<Enter>", "Spelling Suggestions" },
 });
-require("telescope").load_extension("fzf")
+require("telescope-emoji").setup({
+    action = function(emoji)
+        helpers.set_register_and_notify(emoji.value)
+    end,
+})
+telescope.load_extension("fzf")
+telescope.load_extension("emoji")
+telescope.load_extension("zoxide")
+telescope.load_extension("heading")
+telescope.load_extension("gitmoji")
 
 -- Treesitter configuration
 require("nvim-treesitter.configs").setup {
@@ -630,6 +675,12 @@ local on_attach = function(_, bufnr)
         },
     }, { buffer = bufnr });
 end
+vim.api.nvim_create_autocmd("User", {
+    pattern = "TelescopePreviewerLoaded",
+    callback = function() vim.opt_local.wrap = true end,
+    -- TODO: Open issue on why wrap only works after you go to the file
+    -- then come back
+})
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
@@ -823,10 +874,12 @@ vim.api.nvim_create_autocmd({"BufWritePre"}, {
         MiniTrailspace.trim()
     end,
 })
+
 require("mini.comment").setup({})
 require("mini.indentscope").setup({
     symbol = "⟫",
 })
+
 vim.api.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
 require("mini.starter").setup({
     header =[[
@@ -851,6 +904,7 @@ local close_bad_buffers = function()
         end
     end
 end
+
 require("mini.sessions").setup({
     hooks = {
         pre = {
@@ -859,14 +913,14 @@ require("mini.sessions").setup({
         post = {
             read = function()
                 vim.notify(
-                    "Loaded Session: " .. vim.v.this_session,
+                    "Loaded Session: " .. vim.fn.fnamemodify(vim.v.this_session, ":t:r"),
                     "info",
                     { title = "Sessions" }
                 )
             end,
             write = function()
                 vim.notify(
-                    "Saved Session: " .. vim.v.this_session,
+                    "Saved Session: " .. vim.fn.fnamemodify(vim.v.this_session, ":t:r"),
                     "info",
                     { title = "Sessions" }
                 )
@@ -889,10 +943,9 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function() MiniSessions.write("Last Session.vim", {}) end
 })
 local session_save_wrapper = function(input)
-    if not input or input == "" then
+    if not input or input == "" or input == "null" then
         if vim.v.this_session and vim.v.this_session ~= "" then
-            local this_session_name = vim.fn.fnamemodify(vim.v.this_session, ":t")
-            MiniSessions.write(this_session_name, {})
+            MiniSessions.write(nil, {})
             return
         end
         vim.notify(
@@ -917,7 +970,35 @@ wk.register({
         if vim.v.this_session and vim.v.this_session ~= "" then
             current_session = vim.fn.fnamemodify(vim.v.this_session, ":t:r")
         end
-        vim.api.nvim_input(":SessionSave " .. current_session)
+
+        local new_session_option = "[<<<Make New Session>>>]"
+        local detected_names = {}
+        if current_session then
+            table.insert(detected_names, 1, current_session)
+        end
+        for detected, _ in pairs(MiniSessions.detected) do
+            local name = vim.fn.fnamemodify(detected, ":t:r")
+            if name ~= current_session then
+                table.insert(detected_names, name)
+            end
+        end
+        table.insert(detected_names, new_session_option)
+
+        vim.ui.select(
+            detected_names,
+            { prompt="Select Session to Save To (Current: " .. current_session .. ")" },
+            function(selection)
+                if selection == new_session_option then
+                    vim.ui.input(
+                        { prompt = "Session Name to Save:" },
+                        function(input)
+                            session_save_wrapper(vim.fn.trim(input))
+                        end
+                    )
+                elseif selection then
+                    session_save_wrapper(selection)
+                end
+            end)
     end, "(s)ession (s)ave <Session Name>" },
     ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
     ["<Leader>sl"] = { function()
@@ -930,17 +1011,20 @@ wk.register({
         MiniSessions.select("delete", { force = true })
     end, "(s)ession (d)elete" },
     ["<Leader>sn"] = { function()
-        local current_session = vim.v.this_session
         local message = "You are currently not in a session"
+        local current_session = vim.v.this_session
         if current_session ~= nil then
-            message = "You are currently in session `" .. current_session .. "`"
+            local session_name = vim.fn.fnamemodify(current_session, ":t:r")
+            message = "You are currently in session `" .. session_name .. "` (" .. current_session .. ")"
         end
         vim.notify(message, "info", { title = "Sessions" })
     end, "current (s)ession (n)otify" },
     ["<Leader>sq"] = { function()
         vim.api.nvim_set_vvar("this_session", "")
+        vim.notify("You have left the session", "info", { title = "Sessions" })
     end, "(s)ession (q)uit", },
 }, { silent = false })
+
 require("mini.surround").setup({
     custom_surroundings = {
         ["|"] = { output = { left = "|", right = "|" }},

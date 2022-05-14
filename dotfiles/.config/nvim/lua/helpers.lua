@@ -1,9 +1,10 @@
 local helpers = {}
 
 -- Print Helper
-P = function(thing) print(vim.inspect(thing)) end
+P = function(...) vim.pretty_print(...) end
 
 local set_register_and_notify = function(item, message, title)
+    if type(message) == "function" then message = message(item) end
     message = message or ('"' .. item .. '" Ready to Paste!')
     vim.fn.setreg('"', item)
     vim.notify(message, "info", { title = title or "Register Set" })
