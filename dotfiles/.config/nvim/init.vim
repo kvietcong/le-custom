@@ -66,7 +66,9 @@ endif
 " Make capital quitting quit all
 :cabbrev WQ wqa
 :cabbrev Q qa
-:command BO %bd | e# | bd# " (Buffer Only) Close all buffers but the current one
+
+:cabbrev lua lua =
+:command! BO %bd | e# | bd# " (Buffer Only) Close all buffers but the current one
 
 " ==============
 " == Mappings ==
