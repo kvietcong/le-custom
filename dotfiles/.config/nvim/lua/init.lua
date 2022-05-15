@@ -778,19 +778,23 @@ cmp.setup {
         --     end
         -- end, { "i", "s" }),
     }),
-    sources = {
-        { name = "emoji", option = { insert = true } },
-        { name = "nvim_lsp", keyword_length = 4, },
-        { name = "nvim_lsp_signature_help", keyword_length = 5, },
-        { name = "nvim_lua", keyword_length = 4, },
-        { name = "path", keyword_length = 5, },
-        { name = "luasnip" },
-        { name = "calc" },
-        { name = "treesitter", keyword_length = 3, },
-        { name = "spell", keyword_length = 3, },
-        { name = "fuzzy_buffer", keyword_length = 5, max_item_count = 10 },
-        { name = "buffer", keyword_length = 4, max_item_count = 20 },
-    },
+    sources = cmp.config.sources(
+        {
+            { name = "emoji", option = { insert = true } },
+            { name = "nvim_lsp", keyword_length = 4, },
+            { name = "nvim_lsp_signature_help", keyword_length = 5, },
+            { name = "nvim_lua", keyword_length = 4, },
+            { name = "path", keyword_length = 5, },
+            { name = "luasnip" },
+            { name = "calc" },
+            { name = "treesitter", keyword_length = 3, },
+        },
+        {
+            { name = "spell", keyword_length = 3, },
+            { name = "fuzzy_buffer", keyword_length = 5, max_item_count = 10 },
+            { name = "buffer", keyword_length = 4, max_item_count = 20 },
+        }
+    ),
     formatting = {
         format = lspkind.cmp_format({
             mode = "symbol_text",
