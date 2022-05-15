@@ -883,10 +883,10 @@ vim.api.nvim_create_autocmd({"BufWritePre"}, {
 })
 
 require("mini.comment").setup({})
--- require("mini.indentscope").setup({
---     draw = { delay = 500 },
---     symbol = "⟫",
--- })
+require("mini.indentscope").setup({
+    draw = { delay = 500 },
+    symbol = "⟫",
+})
 vim.api.nvim_create_autocmd({"TermOpen"}, {
     group = le_group,
     callback = function()
@@ -1002,7 +1002,6 @@ wk.register({
         end
         table.insert(detected_names, new_session_option)
 
-        P(detected_names)
         vim.ui.select(
             detected_names,
             { prompt="Select Session to Save To (Current: " .. current_session .. ")" },
@@ -1021,7 +1020,22 @@ wk.register({
     end, "(s)ession (s)ave <Session Name>" },
     ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
     ["<Leader>sl"] = { function()
-        MiniSessions.select("read", {})
+        local current_session = nil
+        if vim.v.this_session and vim.v.this_session ~= "" then
+            current_session = vim.fn.fnamemodify(vim.v.this_session, ":t:r")
+        end
+        if current_session then
+            vim.ui.select(
+                { "Yes Save", "No Just Leave" },
+                { prompt = 'Save Session "' .. current_session .. '" Before Leaving?' },
+                function(_, index_selection)
+                    if index_selection == 1 then
+                        MiniSessions.write(nil, {})
+                    end
+                    MiniSessions.select("read", {})
+                end
+            )
+        end
     end, "(s)ession (l)oad <Session Name>" },
     ["<Leader>sL"] = { function()
         MiniSessions.read(nil, {})
@@ -1185,4 +1199,3 @@ wk.register({
         q = { ":qa<Enter>", "(q)uit all" },
     },
 }, { prefix     = "<Leader>" })
-
