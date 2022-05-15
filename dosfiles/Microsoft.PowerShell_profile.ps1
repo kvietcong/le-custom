@@ -1,7 +1,7 @@
 clear # Make sure everything is cleared first
 
 Set-Alias -Name vim -Value nvim
-# Set-Alias -Name cd -Value z -Option AllScope
+Set-Alias -Name cd -Value z -Option AllScope
 Set-PoshPrompt -Theme ~/.mytheme.omp.json
 
 # Vi Mode

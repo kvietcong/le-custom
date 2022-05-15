@@ -6,6 +6,7 @@
 
 # Vim Stuff
 **/nvim/plugin
+**/nvim/package-lock.json
 
 # Emacs Stuff
 *~

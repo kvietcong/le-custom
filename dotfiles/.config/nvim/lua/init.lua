@@ -11,6 +11,7 @@
 - Check out :help ins-completion
 - Check out Lua Snips
 - Sort out nvim-cmp sources!
+- Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
 ]]
 
 -- Install packer if needed
@@ -41,6 +42,7 @@ packer.startup(function(use)
     use "mattn/emmet-vim"
     use "tpope/vim-repeat"
     use "gbprod/yanky.nvim"
+    use "ggandor/leap.nvim"
     use "nacro90/numb.nvim"
     use "wellle/targets.vim"
     use "nanotee/zoxide.vim"
@@ -51,8 +53,6 @@ packer.startup(function(use)
     use "echasnovski/mini.nvim"
     use "rafcamlet/nvim-luapad"
     use "TimUntersberger/neogit"
-    -- use "ggandor/lightspeed.nvim"
-    use "ggandor/leap.nvim" -- Trying this out over lightspeed and I like it so far
     use "kyazdani42/nvim-tree.lua"
 
     -- Pretty Things
@@ -179,10 +179,10 @@ vim.api.nvim_create_user_command("GetMyDate", function()
     helpers.set_register_and_notify(helpers.get_date().my_date)
 end, {})
 
-local is_day = (function()
+local is_day = function()
     local hour = helpers.get_date().hour
     return hour > 6 and hour < 18
-end)()
+end
 
 -- GUI Settings
 if is_neovide then
@@ -301,7 +301,7 @@ vim.g.gruvbox_material_diagnostic_line_highlight = 1
 local colorschemes = { day = "gruvbox-material", night = "nord" }
 local set_colorscheme = function(_--[[timer_id]])
     local colorscheme
-    if is_day then
+    if is_day() then
         colorscheme = colorschemes.day
         vim.cmd[[set background=light]]
     else
@@ -404,6 +404,7 @@ end
 -- Floating Terminal Stuff
 vim.g.floaterm_width = 0.9
 vim.g.floaterm_height = 0.9
+vim.g.autoclose = 2
 -- Mapping in terminal mode is a bit weird in which-key right now
 local clean = function (mapping)
     return vim.api.nvim_replace_termcodes(mapping, true, true, true)
@@ -495,7 +496,7 @@ require("telescope-emoji").setup({
 })
 telescope.load_extension("emoji")
 
-require("yanky").setup({ })
+require("yanky").setup({})
 vim.keymap.set("n", "y", "<Plug>(YankyYank)", {})
 vim.keymap.set("x", "y", "<Plug>(YankyYank)", {})
 vim.keymap.set("n", "p", "<Plug>(YankyPutAfter)", {})
@@ -740,17 +741,10 @@ local luasnip = require("luasnip")
 local lspkind = require("lspkind")
 local cmp = require("cmp")
 cmp.setup {
-    view = {
-        entries = "custom",
-        -- selection_order = "near_cursor",
-    },
     snippet = {
         expand = function(args)
             luasnip.lsp_expand(args.body)
         end,
-    },
-    experimental = {
-        ghost_text = true,
     },
     mapping = cmp.mapping.preset.insert({
         ["<C-k>"] = cmp.mapping.scroll_docs(-4),
@@ -786,15 +780,15 @@ cmp.setup {
     }),
     sources = {
         { name = "emoji", option = { insert = true } },
-        { name = "nvim_lsp" },
-        { name = "nvim_lsp_signature_help" },
-        { name = "nvim_lua" },
-        { name = "path" },
+        { name = "nvim_lsp", keyword_length = 4, },
+        { name = "nvim_lsp_signature_help", keyword_length = 5, },
+        { name = "nvim_lua", keyword_length = 4, },
+        { name = "path", keyword_length = 5, },
         { name = "luasnip" },
         { name = "calc" },
-        { name = "treesitter" },
-        { name = "spell" },
-        { name = "fuzzy_buffer", keyword_length = 4, max_item_count = 10 },
+        { name = "treesitter", keyword_length = 3, },
+        { name = "spell", keyword_length = 3, },
+        { name = "fuzzy_buffer", keyword_length = 5, max_item_count = 10 },
         { name = "buffer", keyword_length = 4, max_item_count = 20 },
     },
     formatting = {
@@ -889,21 +883,14 @@ vim.api.nvim_create_autocmd({"BufWritePre"}, {
 })
 
 require("mini.comment").setup({})
-require("mini.indentscope").setup({
-    symbol = "⟫",
-})
-vim.api.nvim_create_autocmd({"TermEnter"}, {
+-- require("mini.indentscope").setup({
+--     draw = { delay = 500 },
+--     symbol = "⟫",
+-- })
+vim.api.nvim_create_autocmd({"TermOpen"}, {
     group = le_group,
     callback = function()
-        MiniIndentscope.config.symbol_ = MiniIndentscope.config.symbol
-        MiniIndentscope.config.symbol = ""
-    end,
-})
-vim.api.nvim_create_autocmd({"TermLeave"}, {
-    group = le_group,
-    callback = function()
-        MiniIndentscope.config.symbol = MiniIndentscope.config.symbol_
-        MiniIndentscope.config.symbol_ = nil
+        vim.b.miniindentscope_disable = true
     end,
 })
 
@@ -1179,18 +1166,6 @@ wk.register({
 require("luapad").config({
     count_limit = 50000
 })
-
--- Lightspeed Setup (Allows for repeat searches with ; and ,)
--- vim.cmd [[
---     let g:lightspeed_last_motion = ""
---     augroup lightspeed_last_motion
---     autocmd!
---     autocmd User LightspeedSxEnter let g:lightspeed_last_motion = "sx"
---     autocmd User LightspeedFtEnter let g:lightspeed_last_motion = "ft"
---     augroup end
---     map <expr> ; g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_;_sx" : "<Plug>Lightspeed_;_ft"
---     map <expr> , g:lightspeed_last_motion == "sx" ? "<Plug>Lightspeed_,_sx" : "<Plug>Lightspeed_,_ft"
--- ]]
 
 -- Misc Mappings
 wk.register({
