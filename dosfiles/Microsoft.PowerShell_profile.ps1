@@ -1,14 +1,14 @@
-clear # Make sure everything is cleared first
-
 Set-Alias -Name vim -Value nvim
 Set-Alias -Name cd -Value z -Option AllScope
+$env:NEOVIDE_MULTIGRID="true"
+function quit { exit }
 Set-PoshPrompt -Theme ~/.mytheme.omp.json
 
 # Vi Mode
 $PSReadLineOptions = @{
     EditMode = "vi"
     HistoryNoDuplicates = $true
-    HistorySearchCursorMovesToEnd = $true
+    HistorySearchCursorMovesToEnd = $true`
 }
 Set-PSReadLineOption @PSReadLineOptions
 function OnViModeChange {
@@ -22,21 +22,20 @@ function OnViModeChange {
 }
 Set-PSReadLineOption -ViModeIndicator Script -ViModeChangeHandler $Function:OnViModeChange
 
-function DirProjects { cd 'D:\Documents\Projects\' }
-function DirDots { cd 'D:\Documents\le-custom\' }
-function DirNotes { cd 'D:\Documents\Notes\' }
-function DirUW { cd 'D:\Documents\UW\' }
-function DirAppData { cd '~\AppData\' }
-function quit { exit }
-
-function Notes { cd 'D:\Documents\Notes\' && nvim ".\- Index -.md"}
-function ConfigNvim { dirdots && cd 'dotfiles\.config\nvim' && nvim }
-
+# Zoxide Setup
 Invoke-Expression (& {
     $hook = if ($PSVersionTable.PSVersion.Major -lt 6) { 'prompt' } else { 'pwd' }
     (zoxide init --hook $hook powershell | Out-String)
 })
 
+# Fancy Prompt
 Invoke-Expression (&starship init powershell)
 
-$env:NEOVIDE_MULTIGRID="true"
+# Tab Completion
+Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+
+# Autocomplete for fd and rg
+Import-Module $HOME\Documents\PowerShell\_fd.ps1
+Import-Module $HOME\Documents\PowerShell\_rg.ps1
+
+Clear-Host # Make sure everything is cleared
