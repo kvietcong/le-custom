@@ -2,8 +2,7 @@
 
 --[[ TODO: General Configuration Things
 - Organize configuration order!
-- Configure Neovide Variables
-    - Find out why Windows emoji selector doesn't work with Neovide
+- Find out why Windows emoji selector doesn't work with Neovide
 - See if I can bring most of my Obsidian Workflow into Vim
 - Check out if some of the Mini.nvim plugins will suit my needs
     - Surround and pairs are acting up in some fairly common cases so
@@ -131,7 +130,6 @@ end)
 -- Helpful Flags
 local is_startup = vim.fn.has("vim_starting") == 1
 local is_neovide = vim.g.neovide ~= nil
-local is_fvim = vim.g.fvim_loaded ~= nil
 local is_mac = vim.fn.has("mac") == 1
 local is_wsl = vim.fn.has("wsl") == 1
 local is_win = vim.fn.has("win32") == 1
@@ -186,19 +184,14 @@ end
 
 -- GUI Settings
 if is_neovide then
-    vim.g.neovide_transparency=0.98
-    vim.g.neovide_refresh_rate=120
-    vim.g.neovide_cursor_trail_length=0.5
-    vim.g.neovide_cursor_animation_length=0.1
-    vim.g.neovide_cursor_antialiasing=true
-elseif is_fvim then
-    vim.cmd[[
-    FVimBackgroundComposition "blur"
-    FVimBackgroundOpacity 0.75
-    FVimBackgroundAltOpacity 0.75
-    FVimFontAntialias v:true
-    FVimUIMultiGrid v:false
-    ]]
+    vim.g.neovide_no_idle = false
+    vim.g.neovide_refresh_rate = 165
+    vim.g.neovide_transparency = 0.95
+    vim.g.neovide_cursor_antialiasing = true
+    vim.g.neovide_cursor_vfx_mode = "railgun"
+    vim.g.neovide_cursor_animation_length = 0.1
+    vim.g.neovide_cursor_vfx_particle_phase = 3
+    vim.g.neovide_cursor_vfx_particle_density = 30.0
 end
 
 -- Which Key (Mapping reminders)
@@ -344,6 +337,35 @@ vim.g.vim_markdown_frontmatter = 1
 vim.g.vim_markdown_strikethrough = 1
 vim.g.vim_markdown_auto_insert_bullets = 0
 vim.g.vim_markdown_new_list_item_indent = 0
+
+-- Custom Markdown Stuff
+local my_falsy = function(item)
+    return not item or item == "" or item == {}
+end
+local not_my_falsy = function(item) return not my_falsy(item) end
+local fd = function(pattern, options, callback)
+    options = options or {}
+    callback = callback or P
+
+    local command = table.concat(vim.tbl_filter(not_my_falsy, {
+        "fd", pattern, options.directory,
+    }), " ")
+    if is_win then -- Why you so wack Windows
+        command = command:gsub("~", "$HOME")
+    end
+    vim.fn.jobstart(command, {
+        on_stdout = function(channelID, data, name)
+            data = vim.tbl_filter(not_my_falsy, data)
+            callback(data, channelID, name)
+        end,
+        stdout_buffered = true,
+        -- ^ Reads until EOF.
+        -- If this is false it will indicate EOF with `{ "" }` in the callback.
+    })
+end
+vim.api.nvim_create_user_command("FD", function(command)
+    fd(command.args)
+end, { nargs = "?" })
 
 -- Wiki Vim
 vim.g.wiki_name = "- Index -"
@@ -1075,7 +1097,6 @@ require("mini.surround").setup({
         replace = "cs",
         update_n_lines = "",
     },
-    n_lines = 1,
 })
 require("mini.statusline").setup({
     set_vim_settings = false,
@@ -1110,7 +1131,7 @@ require("mini.statusline").setup({
             local os_symbol = os_symbols[os]
             if os_symbol then fileinfo = fileinfo:gsub(os, os_symbol) end
 
-            local location      = "%l:%v (%p%%)"
+            local location = "%l:%v (%p%%)"
 
             local status_line = MiniStatusline.combine_groups({
                 { hl = mode_hl, strings = { mode } },
