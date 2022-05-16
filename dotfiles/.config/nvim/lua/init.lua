@@ -182,6 +182,10 @@ local is_day = function()
     return hour > 6 and hour < 18
 end
 
+-- Which Key (Mapping reminders)
+local wk = require("which-key")
+wk.setup()
+
 -- GUI Settings
 if is_neovide then
     vim.g.neovide_no_idle = false
@@ -192,11 +196,47 @@ if is_neovide then
     vim.g.neovide_cursor_animation_length = 0.1
     vim.g.neovide_cursor_vfx_particle_phase = 3
     vim.g.neovide_cursor_vfx_particle_density = 30.0
-end
 
--- Which Key (Mapping reminders)
-local wk = require("which-key")
-wk.setup()
+    -- GUI Font resizing
+    -- Thank you so much https://github.com/neovide/neovide/issues/1301#issuecomment-1119370546
+    vim.g.gui_font_default_size = 14
+    vim.g.gui_font_size = vim.g.gui_font_default_size
+    vim.g.gui_font_face = "CodeNewRoman NF"
+
+    local refreshGuiFont = function()
+        vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)
+    end
+
+    local resizeGuiFont = function(delta)
+        vim.g.gui_font_size = vim.g.gui_font_size + delta
+        print(vim.g.gui_font_size)
+        refreshGuiFont()
+    end
+
+    local resetGuiFont = function ()
+        vim.g.gui_font_size = vim.g.gui_font_default_size
+        refreshGuiFont()
+    end
+
+    -- Call function on startup to set default value
+    resetGuiFont()
+
+    wk.register({
+        ["<Leader><Leader>"] = {
+            f = {
+                name = "(F)ont",
+                r = {
+                    name = "(r)esize",
+                    k = { function() resizeGuiFont(1) end, "Bigger Font" },
+                    j = { function() resizeGuiFont(-1) end, "Smaller Font" },
+                    ["+"] = { function() resizeGuiFont(1) end, "Bigger Font" },
+                    ["-"] = { function() resizeGuiFont(-1) end, "Smaller Font" },
+                    ["="] = { function() resetGuiFont() end, "Reset Font" },
+                },
+            },
+        },
+    }, {});
+end
 
 -- Global Status Line
 vim.go.laststatus = 3
