@@ -67,6 +67,8 @@ endif
 :cabbrev WQ wqa
 :cabbrev Q qa
 
+:cabbrev msgs messages
+:cabbrev mclear messages clear
 :command! BO %bd | e# | bd# " (Buffer Only) Close all buffers but the current one
 
 " ==============
