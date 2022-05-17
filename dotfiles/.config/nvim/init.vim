@@ -45,7 +45,7 @@ set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
-set foldenable foldmethod=syntax foldlevel=100 " Dang I wish I could do both syntax and indent folding
+set foldenable foldmethod=syntax foldlevel=6 " Dang I wish I could do both syntax and indent folding
 
 " Make Powershell work :)
 if has("win32")

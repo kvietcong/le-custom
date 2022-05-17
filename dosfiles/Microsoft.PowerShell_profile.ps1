@@ -33,6 +33,9 @@ Invoke-Expression (&starship init powershell)
 
 # Tab Completion
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+Set-PSReadlineKeyHandler -Chord Ctrl+n -Function MenuComplete
+Set-PSReadlineKeyHandler -Chord Ctrl+n -Function TabCompleteNext
+Set-PSReadlineKeyHandler -Chord Ctrl+p -Function TabCompletePrevious
 
 # Autocomplete for fd and rg
 Import-Module $HOME\Documents\PowerShell\_fd.ps1

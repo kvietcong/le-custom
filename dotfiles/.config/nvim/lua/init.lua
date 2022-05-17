@@ -83,6 +83,7 @@ packer.startup(function(use)
     use "olacin/telescope-gitmoji.nvim"
     use "kvietcong/telescope-emoji.nvim"
     use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
+    use { "euclio/vim-markdown-composer", run = "cargo build --release" }
 
     -- Treesitter
     use "SmiteshP/nvim-gps"
@@ -224,7 +225,7 @@ if is_neovide then
     wk.register({
         ["<Leader><Leader>"] = {
             f = {
-                name = "(F)ont",
+                name = "(f)ont",
                 r = {
                     name = "(r)esize",
                     k = { function() resizeGuiFont(1) end, "Bigger Font" },
@@ -377,6 +378,13 @@ vim.g.vim_markdown_frontmatter = 1
 vim.g.vim_markdown_strikethrough = 1
 vim.g.vim_markdown_auto_insert_bullets = 0
 vim.g.vim_markdown_new_list_item_indent = 0
+-- Why doesn't this language aliasing work?
+vim.g.vim_markdown_fenced_languages = {
+    "dataviewjs=javascript",
+}
+vim.g.markdown_fenced_languages = {
+    "dataviewjs=javascript",
+}
 
 -- Custom Markdown Stuff
 local my_falsy = function(item)
@@ -553,6 +561,9 @@ wk.register({
 
 require("telescope-emoji").setup({
     action = function(emoji)
+        require("yanky").history.push({
+            regcontents = emoji.value, regtype = "v"
+        })
         helpers.set_register_and_notify(emoji.value)
     end,
 })
@@ -1116,6 +1127,7 @@ wk.register({
             local session_name = vim.fn.fnamemodify(current_session, ":t:r")
             message = "You are currently in session `" .. session_name .. "` (" .. current_session .. ")"
         end
+        print(message)
         vim.notify(message, "info", { title = "Sessions" })
     end, "current (s)ession (n)otify" },
     ["<Leader>sq"] = { function()

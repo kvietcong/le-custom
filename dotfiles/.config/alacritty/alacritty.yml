@@ -16,7 +16,7 @@ font:
   size: 12.0
   offset:
     x: 0
-    y: 0
+    y: 1
   normal:
     family: CodeNewRoman NF
 
