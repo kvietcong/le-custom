@@ -11,6 +11,7 @@
 - Check out Lua Snips
 - Sort out nvim-cmp sources!
 - Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
+- See what I can do with Fennel configuration
 ]]
 
 --------------------------
@@ -25,9 +26,9 @@ local is_wsl = vim.fn.has("wsl") == 1
 local is_win = vim.fn.has("win32") == 1
 -- local is_unix = vim.fn.has("unix") == 1
 -- local is_linux = vim.fn.has("linux") == 1
-local data_path = vim.fn.stdpath("data")
+local data_path = vim.fn.stdpath("data"):gsub("\\", "/")
 
-local is_going_hard = is_neovide and is_win
+local is_going_hard = is_neovide
 
 -- Things I want to get interactively
 Globals = {
@@ -37,7 +38,7 @@ Globals = {
 -- Install packer if needed
 local packer_bootstrap
 local packer_path = data_path .. "/site/pack/packer/start/packer.nvim"
-if vim.fn.empty(vim.fn.glob(packer_path)) > 0 then
+if vim.fn.empty(vim.fn.glob(packer_path, nil, nil)) > 0 then
     packer_bootstrap = vim.fn.system({
         "git", "clone", "--depth", "1",
         "https://github.com/wbthomason/packer.nvim", packer_path
@@ -72,16 +73,26 @@ packer.startup(function(use)
     use "TimUntersberger/neogit"
     use "kyazdani42/nvim-tree.lua"
 
+    -- Neovim Development
+    use "folke/lua-dev.nvim"
+    use "rktjmp/hotpot.nvim"
+    use "bakpakin/fennel.vim"
+    use "nanotee/luv-vimdocs"
+    use "milisims/nvim-luaref"
+    use "hrsh7th/cmp-nvim-lua"
+
     -- Pretty Things
     use "rcarriga/nvim-notify"
     use "shaunsingh/nord.nvim"
     use "p00f/nvim-ts-rainbow"
     use "rmehri01/onenord.nvim"
     use "stevearc/dressing.nvim"
+    use "beauwilliams/focus.nvim"
     use "lewis6991/gitsigns.nvim"
     -- use "arcticicestudio/nord-vim"
     use "sainnhe/gruvbox-material"
     use "neovimhaskell/haskell-vim"
+    use "mrjones2014/legendary.nvim"
     use "norcalli/nvim-colorizer.lua" -- TODO: See if I can make this better?
     use "akinsho/nvim-bufferline.lua"
 
@@ -129,7 +140,6 @@ packer.startup(function(use)
     use "ray-x/cmp-treesitter"
     use "onsails/lspkind.nvim"
     use "hrsh7th/cmp-nvim-lsp"
-    use "hrsh7th/cmp-nvim-lua"
     use "tzachar/cmp-fuzzy-buffer"
     use "saadparwaiz1/cmp_luasnip"
     use "dmitmel/cmp-cmdline-history"
@@ -146,6 +156,9 @@ end)
 
 -- Load cached plugins for speed
 require("impatient")
+
+-- Load Fennel Integration
+require("hotpot")
 
 -- Ensure old timers are cleaned upon reloading
 if not is_startup then
@@ -165,24 +178,31 @@ vim.api.nvim_create_autocmd("BufWritePost", {
 
 local plenary = require("plenary")
 
-plenary.reload.reload_module("helpers")
-local helpers = require("helpers")
+-- plenary.reload.reload_module("lelua")
+-- local lelua = require("lelua") -- Helper module (Lua)
+plenary.reload.reload_module("lefen")
+local lefen = require("lefen") -- Helper module (Fennel)
 
 vim.api.nvim_create_user_command("GetDate", function(command)
-    local time = helpers.get_date(command.args)
+    local time = lefen.get_date(command.args)
     if type(time) == "string" then
-        helpers.set_register_and_notify(time, nil, "Date Prepared")
+        lefen.set_register_and_notify(time, nil, "Date Prepared")
     else P(time) end
     return time
 end, { nargs = "?" })
 
 vim.api.nvim_create_user_command("GetMyDate", function()
-    helpers.set_register_and_notify(helpers.get_date().my_date)
+    lefen.set_register_and_notify(lefen.get_date().my_date)
 end, {})
 
 -- Which Key (Mapping reminders)
+require("legendary").setup({})
 local wk = require("which-key")
 wk.setup()
+
+wk.register({
+    ["<Leader><Leader>r"] = { "<Plug>(Luadev-RunLine)", "What" }
+}, {});
 
 -------------------------
 -- Make Neovim Pretty! --
@@ -241,10 +261,6 @@ if is_neovide then
 end
 
 -- Colorscheme Options
-local is_day = function()
-    local hour = helpers.get_date().hour
-    return hour > 6 and hour < 18
-end
 vim.g.nord_italic = true
 vim.g.nord_borders = true
 vim.g.nord_contrast = true
@@ -269,7 +285,7 @@ vim.g.gruvbox_material_diagnostic_line_highlight = 1
 local colorschemes = { day = "gruvbox-material", night = "nord" }
 local set_colorscheme = function(_--[[timer_id]])
     local colorscheme
-    if is_day() then
+    if lefen.is_day() then
         colorscheme = colorschemes.day
         vim.cmd[[set background=light]]
     else
@@ -431,7 +447,7 @@ require("mini.statusline").setup({
 
             local git = MiniStatusline.section_git({})
             local diagnostics = MiniStatusline.section_diagnostics({})
-            local filename = vim.fn.expand("%:~:.")
+            local filename = vim.fn.expand("%:~:.", nil, nil)
 
             local fileinfo = MiniStatusline.section_fileinfo({})
 
@@ -535,6 +551,12 @@ if is_going_hard then
 end
 vim.api.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
 
+-- Auto Window Resizing
+require("focus").setup({
+    signcolumn = false,
+    hybridnumber = true,
+})
+
 ------------------------------
 -- Useful Utilities Setup ⚙️ --
 ------------------------------
@@ -547,8 +569,12 @@ require("zen-mode").setup({
     window = { width = 88, number = true },
     plugins = { options = { ruler = true }},
     gitsigns = { enable = true },
-    on_open = function() end,
-    on_close = function() end
+    on_open = function()
+        vim.cmd[[:FocusDisable]]
+    end,
+    on_close = function()
+        vim.cmd[[:FocusEnable]]
+    end
 })
 wk.register({
     ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
@@ -680,7 +706,7 @@ local close_bad_buffers = function()
     end
 end
 local session_path = data_path .. "/session/"
-if vim.fn.empty(vim.fn.glob(session_path)) > 0 then
+if vim.fn.empty(vim.fn.glob(session_path, nil, nil)) > 0 then
     vim.cmd("!mkdir " .. session_path)
 end
 require("mini.sessions").setup({
@@ -869,7 +895,7 @@ telescope.setup {
                 vim.ui.input({ prompt = "Enter commit msg: " .. entry.value .. " "}, function(msg)
                     if not msg then return end
                     local commit_message = entry.value .. " " .. msg
-                    helpers.set_register_and_notify(commit_message, nil, "Commit Message Ready!")
+                    lefen.set_register_and_notify(commit_message, nil, "Commit Message Ready!")
                 end)
             end,
         },
@@ -881,7 +907,7 @@ require("telescope-emoji").setup({
         require("yanky").history.push({
             regcontents = emoji.value, regtype = "v"
         })
-        helpers.set_register_and_notify(emoji.value)
+        lefen.set_register_and_notify(emoji.value)
     end,
 })
 
@@ -897,19 +923,19 @@ wk.register({
     ["<Leader>"] = {
         f = {
             name = "(f)ind something (Telescope Pickers)",
-            a = { ":Telescope<Enter>", "(a)ll built in pickers" },
-            b = { ":Telescope buffers<Enter>", "(b)uffers" },
-            c = { ":Telescope commands<Enter>", "(c)ommands" },
-            d = { ":Telescope diagnostics<Enter>", "(d)iagnostics" },
-            E = { ":Telescope emoji<Enter>", "(E)mojis! 😎" },
-            f = { ":Telescope find_files<Enter>", "(f)iles" },
+            a = { ":Telescope<Enter>", "(f)ind (a)ll built in pickers" },
+            b = { ":Telescope buffers<Enter>", "(f)ind (b)uffers" },
+            c = { ":Telescope commands<Enter>", "(f)ind (c)ommands" },
+            d = { ":Telescope diagnostics<Enter>", "(f)ind (d)iagnostics" },
+            E = { ":Telescope emoji<Enter>", "(f)ind (E)mojis! 😎" },
+            f = { ":Telescope find_files<Enter>", "(f)ind (f)iles" },
             g = { ":Telescope live_grep<Enter>", "(g)rep project" },
-            h = { ":Telescope help_tags<Enter>", "(h)elp" },
-            m = { ":Telescope man_pages<Enter>", "(m)an pages" },
-            r = { ":Telescope oldfiles<Enter>", "(r)ecent files" },
-            t = { ":TodoTelescope<Enter>", "(t)odo plugin telescope" },
-            T = { ":Telescope treesitter<Enter>", "(T)reesitter symbols" },
-            y = { ":Telescope yank_history<Enter>", "(y)ank history" },
+            h = { ":Telescope help_tags<Enter>", "(f)ind (h)elp" },
+            k = { require("legendary").find, "(f)ind (k)eymaps" },
+            m = { ":Telescope man_pages<Enter>", "(f)ind (m)an pages" },
+            r = { ":Telescope oldfiles<Enter>", "(f)ind (r)ecent files" },
+            t = { ":Telescope treesitter<Enter>", "(f)ind (t)reesitter symbols" },
+            y = { ":Telescope yank_history<Enter>", "(f)ind (y)ank history" },
             z = { ":Telescope Zoxide list<Enter>", "(z)oxide" },
         },
         ["/"] = { ":Telescope current_buffer_fuzzy_find<Enter>", "Fuzzy Find In File" },
@@ -925,7 +951,10 @@ wk.register({
 -------------------------
 
 require("nvim-treesitter.configs").setup {
-    highlight = { enable = true, },
+    highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = false,
+    },
     context_commentstring = { enable = true },
     ensure_installed = {
         "c", "lua", "rust", "bash", "clojure", "cmake",
@@ -934,7 +963,6 @@ require("nvim-treesitter.configs").setup {
         "javascript", "json", "latex", "make", "markdown",
         "ocaml", "python", "regex", "scheme", "svelte",
         "swift", "toml", "vim", "yaml", "wgsl", "tsx",
-        "fennel",
     },
     rainbow = {
         enable = true,
@@ -1112,17 +1140,41 @@ local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, "lua/?.lua")
 table.insert(runtime_path, "lua/?/init.lua")
 
-local lsp_settings = {
-    sumneko_lua = {
+local lspconfig = require("lspconfig")
+local luadev = require("lua-dev").setup({
+    library = {
+        plugins = { "nvim-treesitter", "plenary.nvim", "telescope.nvim" },
+    },
+    runtime_path = is_going_hard,
+    lspconfig = {
         settings = {
             Lua = {
-                runtime = { version = "LuaJIT", path = runtime_path },
-                diagnostics = { globals = { "vim" } },
-                -- Make the server aware of Neovim runtime files
-                workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+                diagnostics = { globals = {
+                    -- Neovim Stuff
+                    "vim", "P", "MiniSessions",
+                    "MiniStatusline", "MiniTrailspace",
+
+                    -- AwesomeWM Stuff
+                    "awesome", "screen", "client",
+                    "root", "tag", "widget",
+                }},
             },
         },
-    }
+    },
+})
+local lsp_settings = {
+    -- My Old Lua LSP settings (Might be useful for non vim projects?)
+    -- sumneko_lua = {
+    --     settings = {
+    --         Lua = {
+    --             runtime = { version = "LuaJIT", path = runtime_path },
+    --             diagnostics = { globals = { "vim" } },
+    --             -- Make the server aware of Neovim runtime files
+    --             workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+    --         },
+    --     },
+    -- }
+    sumneko_lua = luadev
 }
 
 if is_startup then -- Only load LSPs on startup
@@ -1133,7 +1185,7 @@ if is_startup then -- Only load LSPs on startup
         end
         setup.on_attach = on_attach
         setup.capabilities = capabilities
-        require("lspconfig")[server].setup(setup)
+        lspconfig[server].setup(setup)
     end
 end
 
@@ -1151,7 +1203,10 @@ local luasnip = require("luasnip")
 -- nvim-cmp setup
 local lspkind = require("lspkind")
 local cmp = require("cmp")
-cmp.setup {
+cmp.setup({
+    experimental = {
+        ghost_text = true,
+    },
     snippet = {
         expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -1225,7 +1280,7 @@ cmp.setup {
             }),
         })
     },
-}
+})
 
 -- TODO: Make completion stuff my theme later (someday... maybe)
 vim.cmd[[
