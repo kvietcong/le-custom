@@ -5,9 +5,11 @@
 " -----------------------------------
 
 set nocompatible " Screw vi compatibility XD
+
 " ======================
 " == General Settings ==
 " ======================
+
 syntax on " Enable syntax highlighting
 set title " Change Terminal Title
 set hidden " Allow you to change buffers without saving
@@ -74,6 +76,7 @@ endif
 " ==============
 " == Mappings ==
 " ==============
+
 " General Shortcuts
 " New write command for sudo writing
 command! SudoWrite w !sudo tee > /dev/null %
@@ -115,6 +118,7 @@ nnoremap <M-O> O<Esc>
 nnoremap \\ <C-d>
 nnoremap \|\| <C-u>
 
+" Easier Window
 nnoremap <Leader>w <C-w>
 nnoremap <C-S-Up> <C-w>+
 nnoremap <C-S-Down> <C-w>-
