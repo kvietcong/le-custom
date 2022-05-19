@@ -1,35 +1,46 @@
-; ==============================
-; == Le Fennel Module (lefen) ==
-; ==============================
+;;; ==============================
+;;; == Le Fennel Module (lefen) ==
+;;; ==============================
 
-; Just me playin' around with Fennel in Neovim
+;;; Just me playin' around with Fennel in Neovim
 
-(global P
-  (fn [...] (vim.pretty_print ...)))
+(fn fold** [folder initial foldable iterator-maker]
+  (accumulate [accumulated initial
+               key next (iterator-maker foldable)]
+              (folder accumulated next key)))
 
-; A note for weary travelers like me. os.date uses C's
-; strftime under the hood. Vim's builtin strftime does too.
-; Now most websites don't have all the format specifiers
-; so it's best to go to the man pages of C's strftime
-; directly. It took me quite a while to discover this
-; and I finally found %V was what I was looking for.
+(fn foldl [folder initial foldable]
+  "Fold a sequence from the left"
+  (fold** folder initial foldable ipairs))
+
+(fn fold [folder initial foldable]
+  "Fold a table's keys and values (NOT STRICT ON ORDER)"
+  (fold** folder initial foldable pairs))
+
+;; A note for weary travelers like me. os.date uses C's
+;; strftime under the hood. Vim's builtin strftime does too.
+;; Now most websites don't have all the format specifiers
+;; so it's best to go to the man pages of C's strftime
+;; directly. It took me quite a while to discover this
+;; and I finally found %V was what I was looking for.
 (fn get-date [format]
   "Retrieve Current Date Information"
-  (if
-    (and (not= format nil) (not= format ""))
-    (os.date format)
+  (let [dt os.date]
+    (if
+      (and (not= format nil) (not= format ""))
+      (dt format)
 
-    {:year (tonumber (os.date "%Y"))
-     :month (tonumber (os.date "%m"))
-     :day (tonumber (os.date "%d"))
-     :hour (tonumber (os.date "%H"))
-     :minute (tonumber (os.date "%M"))
-     :second (tonumber (os.date "%S"))
-     :my-date (os.date "%Y-%m-%dT%H:%M:%S")
-     :my_date (os.date "%Y-%m-%dT%H:%M:%S")
-     :format (os.date)}))
+      {:year (tonumber (dt "%Y"))
+       :month (tonumber (dt "%m"))
+       :day (tonumber (dt "%d"))
+       :hour (tonumber (dt "%H"))
+       :minute (tonumber (dt "%M"))
+       :second (tonumber (dt "%S"))
+       :my-date (dt "%Y-%m-%dT%H:%M:%S")
+       :my_date (dt "%Y-%m-%dT%H:%M:%S")
+       :format (dt)})))
 
-(fn is-day? []
+(fn day? []
   (let [date-info (get-date)
         hour date-info.hour]
     (and (> hour 6) (< hour 18))))
@@ -47,9 +58,33 @@
     (vim.notify
       final-message "info" { : title })))
 
+(fn get-locals [stack-max]
+  (local locals {})
+  (var j 1)
+  (var remaining? true)
+  (for [i 1 (or stack-max 2)]
+    (while remaining?
+      (let [(name value) (debug.getlocal 2 j)]
+        (if (not= name nil)
+          (tset locals name value)
+          (set remaining? false))
+        (set j (+ j 1)))))
+  locals)
+
+(fn get-falsy? [item]
+  (or (not item) (= item "") (= item {}) (= item 0)))
+
+(fn get-not-falsy? [x] (not (get-falsy? x)))
+
 ; Module Export
 {
-    : is-day? :is_day is-day?
+    : day? :is_day day?
     : get-date :get_date get-date
     : set-register-and-notify :set_register_and_notify set-register-and-notify
+    : get-locals :get_locals get-locals
+    : get-falsy? :get_is_falsy get-falsy?
+    : get-not-falsy? :get_is_not_falsy get-not-falsy?
+    : fold
+    : foldl
+    : fold** :fold__ fold**
 }

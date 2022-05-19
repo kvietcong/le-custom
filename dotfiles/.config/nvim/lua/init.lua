@@ -12,38 +12,38 @@
 - Sort out nvim-cmp sources!
 - Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
 - See what I can do with Fennel configuration
+- Learn how tabs work in Vim
 ]]
 
 --------------------------
 -- Setting Things Up 🔧 --
 --------------------------
 
+-- Make built-in functions easier to access
+_G.vfn = vim.fn
+_G.vapi = vim.api
+_G.P = function(...) vim.pretty_print(...) end
+
 -- Helpful Flags and Variables
-local is_startup = vim.fn.has("vim_starting") == 1
-local is_neovide = vim.g.neovide ~= nil
-local is_mac = vim.fn.has("mac") == 1
-local is_wsl = vim.fn.has("wsl") == 1
-local is_win = vim.fn.has("win32") == 1
--- local is_unix = vim.fn.has("unix") == 1
--- local is_linux = vim.fn.has("linux") == 1
-local data_path = vim.fn.stdpath("data"):gsub("\\", "/")
-
-local is_going_hard = is_neovide
-
--- Things I want to get interactively
-Globals = {
-    data_path = data_path,
-}
+_G.is_startup = vfn.has("vim_starting") == 1
+_G.is_neovide = vim.g.neovide ~= nil
+_G.is_mac = vfn.has("mac") == 1
+_G.is_wsl = vfn.has("wsl") == 1
+_G.is_win = vfn.has("win32") == 1
+-- local is_unix = fn.has("unix") == 1
+-- local is_linux = fn.has("linux") == 1
+_G.data_path = vfn.stdpath("data"):gsub("\\", "/")
+_G.is_going_hard = is_neovide
 
 -- Install packer if needed
 local packer_bootstrap
 local packer_path = data_path .. "/site/pack/packer/start/packer.nvim"
-if vim.fn.empty(vim.fn.glob(packer_path, nil, nil)) > 0 then
-    packer_bootstrap = vim.fn.system({
+if vfn.empty(vfn.glob(packer_path, nil, nil)) > 0 then
+    packer_bootstrap = vfn.system({
         "git", "clone", "--depth", "1",
         "https://github.com/wbthomason/packer.nvim", packer_path
     })
-    vim.api.nvim_command("packadd packer.nvim")
+    vapi.nvim_command("packadd packer.nvim")
 end
 
 -- Install all the plugins
@@ -102,7 +102,6 @@ packer.startup(function(use)
     use "folke/zen-mode.nvim"
     use "preservim/vim-markdown"
     use "crispgm/telescope-heading.nvim"
-    -- use { "euclio/vim-markdown-composer", run = "cargo build --release" }
 
     -- Pickers/Finders
     use "tversteeg/registers.nvim"
@@ -162,14 +161,14 @@ require("hotpot")
 
 -- Ensure old timers are cleaned upon reloading
 if not is_startup then
-    vim.fn.timer_stopall()
+    vfn.timer_stopall()
 end
 
 -- Autocommand group for configuration
-local le_group = vim.api.nvim_create_augroup("LeConfiguration", { clear = true })
+local le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
 
 -- This is for sourcing on configuration change
-vim.api.nvim_create_autocmd("BufWritePost", {
+vapi.nvim_create_autocmd("BufWritePost", {
     group = le_group,
     pattern = { "init.lua", "init.vim" },
     desc = "Auto re-source configuration files.",
@@ -178,12 +177,31 @@ vim.api.nvim_create_autocmd("BufWritePost", {
 
 local plenary = require("plenary")
 
--- plenary.reload.reload_module("lelua")
--- local lelua = require("lelua") -- Helper module (Lua)
-plenary.reload.reload_module("lefen")
-local lefen = require("lefen") -- Helper module (Fennel)
+-- Shortcuts to Table Functions
+_G.t = {
+    filter = vim.tbl_filter,
+    contains = vim.tbl_contains,
+    map = vim.tbl_map,
+    count = vim.tbl_count,
+    extend = vim.tbl_extend,
+    deep_extend = vim.tbl_deep_extend,
+    isempty = vim.tbl_isempty,
+    add_reverse_lookup = vim.tbl_add_reverse_lookup,
+    get = vim.tbl_get,
+    values = vim.tbl_values,
+    keys = vim.tbl_keys,
+    flatten = vim.tbl_flatten,
+    islist = vim.tbl_islist,
+    range = vfn.range,
+}
 
-vim.api.nvim_create_user_command("GetDate", function(command)
+-- Load Helper Modules
+plenary.reload.reload_module("lefen")
+_G.lefen = require("lefen") -- My Helper module (Fennel)
+plenary.reload.reload_module("lelua")
+_G.lelua = require("lelua") -- My Helper module (Lua)
+
+vapi.nvim_create_user_command("GetDate", function(command)
     local time = lefen.get_date(command.args)
     if type(time) == "string" then
         lefen.set_register_and_notify(time, nil, "Date Prepared")
@@ -191,7 +209,7 @@ vim.api.nvim_create_user_command("GetDate", function(command)
     return time
 end, { nargs = "?" })
 
-vim.api.nvim_create_user_command("GetMyDate", function()
+vapi.nvim_create_user_command("GetMyDate", function()
     lefen.set_register_and_notify(lefen.get_date().my_date)
 end, {})
 
@@ -200,9 +218,74 @@ require("legendary").setup({})
 local wk = require("which-key")
 wk.setup()
 
-wk.register({
-    ["<Leader><Leader>r"] = { "<Plug>(Luadev-RunLine)", "What" }
-}, {});
+-- Setup Evaluation w/ Fennel
+local hotpot = {
+    eval = require("hotpot.api.eval"),
+    cache = require("hotpot.api.cache"),
+}
+vapi.nvim_create_autocmd({"BufEnter"}, {
+    group = le_group,
+    desc = "Add Fennel Keymaps",
+    pattern = "*.fnl",
+    callback = function(eventInfo)
+        wk.register({
+            name = "(e)valuate",
+            b = {
+                function()
+                    hotpot.eval["eval-buffer"](eventInfo.buf)
+                end, "(e)valuate (b)uffer"
+            },
+            l = {
+                function()
+                    hotpot.eval["eval-string"](vapi.nvim_get_current_line())
+                end, "(e)valuate (l)ine"
+            },
+            B = {
+                function()
+                    P(hotpot.eval["eval-buffer"](eventInfo.buf))
+                end, "(e)valuate and print (B)uffer"
+            },
+            L = {
+                function()
+                    P(hotpot.eval["eval-string"](vapi.nvim_get_current_line()))
+                end, "(e)valuate and print (L)ine"
+            },
+        }, { prefix = "<Leader>e", buffer = eventInfo.buf })
+        wk.register({
+            name = "(e)valuate",
+            s = { hotpot.eval["eval-selection"], "(e)valuate (s)election" },
+            v = { hotpot.eval["eval-selection"], "(e)valuate (v)isual selection" },
+            r = { hotpot.eval["eval-selection"], "(e)valuate (r)ange" },
+        }, { prefix = "<Leader>e", buffer = eventInfo.buf, mode = "v" })
+    end
+})
+
+-- Setup Evaluation w/ Lua
+vapi.nvim_create_autocmd({"BufEnter"}, {
+    group = le_group,
+    desc = "Add Lua Keymaps",
+    pattern = "*.lua",
+    callback = function(eventInfo)
+        wk.register({
+            name = "(e)valuate",
+            -- Super Ad-Hoc Evaluation. Try to find a better way.
+            l = {
+                function()
+                    local to_eval = loadstring("P(" .. vapi.nvim_get_current_line() .. ")", nil)
+                    if to_eval then
+                        setfenv(to_eval, t.extend("force", cfg_env, _G))
+                        to_eval()
+                    else
+                        vim.notify(
+                            "Failed to Evaluate Line",
+                            "error",
+                            {title = "Evaluation Error"})
+                    end
+                end, "(e)valuate (l)ine"
+            },
+        }, { prefix = "<Leader>e", buffer = eventInfo.buf })
+    end
+})
 
 -------------------------
 -- Make Neovim Pretty! --
@@ -297,11 +380,11 @@ local set_colorscheme = function(_--[[timer_id]])
     vim.cmd("colorscheme " .. colorscheme)
 end
 set_colorscheme()
-ColorschemeTimer = vim.fn.timer_start(1000 * 60 * 15,
+ColorschemeTimer = vfn.timer_start(1000 * 60 * 15,
     set_colorscheme, { ["repeat"] = -1 })
 
 -- Make Virtual text visible with transparent backgrounds
-vim.api.nvim_command("highlight NonText guifg=#6C768A")
+vapi.nvim_command("highlight NonText guifg=#6C768A")
 
 -- UI "Dressing"
 require("dressing").setup()
@@ -348,9 +431,7 @@ vim.g.vim_markdown_new_list_item_indent = 0
 -- Why doesn't this language aliasing work?
 vim.g.vim_markdown_fenced_languages = {
     "dataviewjs=javascript",
-}
-vim.g.markdown_fenced_languages = {
-    "dataviewjs=javascript",
+    "dataview=sql",
 }
 
 -- Custom Markdown Stuff
@@ -362,15 +443,15 @@ local fd = function(pattern, options, callback)
     options = options or {}
     callback = callback or P
 
-    local command = table.concat(vim.tbl_filter(not_my_falsy, {
+    local command = table.concat(t.filter(lefen.get_is_not_falsy, {
         "fd", pattern, options.directory,
     }), " ")
     if is_win then -- Why you so wack Windows
         command = command:gsub("~", "$HOME")
     end
-    vim.fn.jobstart(command, {
+    vfn.jobstart(command, {
         on_stdout = function(channelID, data, name)
-            data = vim.tbl_filter(not_my_falsy, data)
+            data = t.filter(lefen.get_is_not_falsy, data)
             callback(data, channelID, name)
         end,
         stdout_buffered = true,
@@ -378,7 +459,7 @@ local fd = function(pattern, options, callback)
         -- If this is false it will indicate EOF with `{ "" }` in the callback.
     })
 end
-vim.api.nvim_create_user_command("FD", function(command)
+vapi.nvim_create_user_command("FD", function(command)
     fd(command.args)
 end, { nargs = "?" })
 
@@ -397,7 +478,7 @@ vim.g.wiki_journal = {
 }
 vim.g.wiki_index_name = "- Index -.md"
 vim.g.wiki_link_toggle_on_follow = false
-vim.api.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Set note-taking keybindings for current buffer.",
     pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
@@ -447,7 +528,7 @@ require("mini.statusline").setup({
 
             local git = MiniStatusline.section_git({})
             local diagnostics = MiniStatusline.section_diagnostics({})
-            local filename = vim.fn.expand("%:~:.", nil, nil)
+            local filename = vfn.expand("%:~:.", nil, nil)
 
             local fileinfo = MiniStatusline.section_fileinfo({})
 
@@ -542,18 +623,19 @@ if is_going_hard then
         draw = { delay = 500 },
         symbol = "⟫",
     })
-    vim.api.nvim_create_autocmd({"TermOpen"}, {
+    vapi.nvim_create_autocmd({"TermOpen"}, {
         group = le_group,
         callback = function()
             vim.b.miniindentscope_disable = true
         end,
     })
 end
-vim.api.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
+vapi.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
 
 -- Auto Window Resizing
 require("focus").setup({
     signcolumn = false,
+    cursorline = false,
     hybridnumber = true,
 })
 
@@ -633,7 +715,7 @@ vim.g.floaterm_height = 0.9
 vim.g.autoclose = 2
 -- Mapping in terminal mode is a bit weird in which-key right now
 local clean = function (mapping)
-    return vim.api.nvim_replace_termcodes(mapping, true, true, true)
+    return vapi.nvim_replace_termcodes(mapping, true, true, true)
 end
 wk.register({["<C-t>"] = { ":FloatermToggle<Enter>", "Open Terminal" }});
 wk.register({
@@ -655,8 +737,8 @@ vim.keymap.set("n", "gp", "<Plug>(YankyGPutAfter)", {})
 vim.keymap.set("n", "gP", "<Plug>(YankyGPutBefore)", {})
 vim.keymap.set("x", "gp", "<Plug>(YankyGPutAfter)", {})
 vim.keymap.set("x", "gP", "<Plug>(YankyGPutBefore)", {})
-vim.api.nvim_set_keymap("n", "<c-n>", "<Plug>(YankyCycleForward)", {})
-vim.api.nvim_set_keymap("n", "<c-p>", "<Plug>(YankyCycleBackward)", {})
+vapi.nvim_set_keymap("n", "<c-n>", "<Plug>(YankyCycleForward)", {})
+vapi.nvim_set_keymap("n", "<c-p>", "<Plug>(YankyCycleBackward)", {})
 
 -- Automatically make directory upon save
 require("mkdir")
@@ -667,19 +749,19 @@ require("mini.cursorword").setup({ delay = 500 })
 -- Trailing Space Diagnostics
 require("mini.trailspace").setup({})
 -- Disable Trailing Space Highlights in Certain Buffers
-vim.api.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Disable trailing space highlighting in certain buffers.",
     callback = function()
-        local bufferName = vim.api.nvim_eval[[bufname()]]
-        local tabPageNumber = vim.api.nvim_eval[[tabpagenr()]]
+        local bufferName = vapi.nvim_eval[[bufname()]]
+        local tabPageNumber = vapi.nvim_eval[[tabpagenr()]]
         if bufferName == "NvimTree_" .. tabPageNumber then
             MiniTrailspace.unhighlight()
         end
     end,
 })
 -- Trim Space on Save
-vim.api.nvim_create_autocmd({"BufWritePre"}, {
+vapi.nvim_create_autocmd({"BufWritePre"}, {
     group = le_group,
     desc = "Trim trailing spaces on save.",
     callback = function()
@@ -695,18 +777,18 @@ require("mini.comment").setup({})
 local close_bad_buffers = function()
     require("zen-mode").close()
     vim.notify.dismiss({ silent = true, pending = true })
-    local buffer_numbers = vim.api.nvim_list_bufs()
+    local buffer_numbers = vapi.nvim_list_bufs()
     for _, buffer_number in pairs(buffer_numbers) do
-        -- local buffer_name = vim.api.nvim_buf_get_name(buffer_number)
-        local buffer_type = vim.api.nvim_buf_get_option(buffer_number, "buftype")
-        local is_modifiable = vim.api.nvim_buf_get_option(buffer_number, "modifiable")
+        -- local buffer_name = vapi.nvim_buf_get_name(buffer_number)
+        local buffer_type = vapi.nvim_buf_get_option(buffer_number, "buftype")
+        local is_modifiable = vapi.nvim_buf_get_option(buffer_number, "modifiable")
         if buffer_type == "nofile" or not is_modifiable then
-            vim.api.nvim_buf_delete(buffer_number, { force = true })
+            vapi.nvim_buf_delete(buffer_number, { force = true })
         end
     end
 end
 local session_path = data_path .. "/session/"
-if vim.fn.empty(vim.fn.glob(session_path, nil, nil)) > 0 then
+if vfn.empty(vfn.glob(session_path, nil, nil)) > 0 then
     vim.cmd("!mkdir " .. session_path)
 end
 require("mini.sessions").setup({
@@ -717,14 +799,14 @@ require("mini.sessions").setup({
         post = {
             read = function()
                 vim.notify(
-                    "Loaded Session: " .. vim.fn.fnamemodify(vim.v.this_session, ":t:r"),
+                    "Loaded Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r"),
                     "info",
                     { title = "Sessions" }
                 )
             end,
             write = function()
                 vim.notify(
-                    "Saved Session: " .. vim.fn.fnamemodify(vim.v.this_session, ":t:r"),
+                    "Saved Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r"),
                     "info",
                     { title = "Sessions" }
                 )
@@ -741,7 +823,7 @@ require("mini.sessions").setup({
     },
     verbose = { read = false, write = false, delete = false, },
 })
-vim.api.nvim_create_autocmd("VimLeavePre", {
+vapi.nvim_create_autocmd("VimLeavePre", {
     group = le_group,
     desc = "Save current session for restoration.",
     callback = function() MiniSessions.write("Last Session.vim", {}) end
@@ -765,14 +847,14 @@ local session_save_wrapper = function(input)
         )
     end
 end
-vim.api.nvim_create_user_command("SessionSave", function(command)
+vapi.nvim_create_user_command("SessionSave", function(command)
     session_save_wrapper(command.args)
 end, { nargs = "?" })
 wk.register({
     ["<Leader>ss"] = { function()
         local current_session = ""
         if vim.v.this_session and vim.v.this_session ~= "" then
-            current_session = vim.fn.fnamemodify(vim.v.this_session, ":t:r")
+            current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
         end
 
         local new_session_option = "[<<<Make New Session>>>]"
@@ -781,7 +863,7 @@ wk.register({
             table.insert(detected_names, 1, current_session)
         end
         for detected, _ in pairs(MiniSessions.detected) do
-            local name = vim.fn.fnamemodify(detected, ":t:r")
+            local name = vfn.fnamemodify(detected, ":t:r")
             if name ~= current_session then
                 table.insert(detected_names, name)
             end
@@ -796,7 +878,7 @@ wk.register({
                     vim.ui.input(
                         { prompt = "Session Name to Save:" },
                         function(input)
-                            session_save_wrapper(vim.fn.trim(input))
+                            session_save_wrapper(vfn.trim(input))
                         end
                     )
                 elseif selection then
@@ -808,7 +890,7 @@ wk.register({
     ["<Leader>sl"] = { function()
         local current_session = nil
         if vim.v.this_session and vim.v.this_session ~= "" then
-            current_session = vim.fn.fnamemodify(vim.v.this_session, ":t:r")
+            current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
         end
         if current_session then
             vim.ui.select(
@@ -833,14 +915,14 @@ wk.register({
         local message = "You are currently not in a session"
         local current_session = vim.v.this_session
         if current_session ~= nil then
-            local session_name = vim.fn.fnamemodify(current_session, ":t:r")
+            local session_name = vfn.fnamemodify(current_session, ":t:r")
             message = "You are currently in session `" .. session_name .. "` (" .. current_session .. ")"
         end
         print(message)
         vim.notify(message, "info", { title = "Sessions" })
     end, "current (s)ession (n)otify" },
     ["<Leader>sq"] = { function()
-        vim.api.nvim_set_vvar("this_session", "")
+        vapi.nvim_set_vvar("this_session", "")
         vim.notify("You have left the session", "info", { title = "Sessions" })
     end, "(s)ession (q)uit", },
 }, { silent = false })
@@ -862,8 +944,17 @@ require("mini.surround").setup({
 
 -- Lua Pad (Quick Lua Testing)
 require("luapad").config({
-    count_limit = 50000
+    count_limit = 5e4,
+    print_highlight = "DiagnosticVirtualTextInfo",
+    on_init = function()
+    end,
 })
+wk.register({
+    ["<Leader>e"] = {
+        name = "(e)valuate",
+        p = { ":Luapad<Enter>", "(e)valuate with lua(p)ad" },
+    },
+}, {})
 
 ------------------------
 -- Telescope Setup 🔭 --
@@ -950,10 +1041,11 @@ wk.register({
 -- Treesitter Setup 🌳 --
 -------------------------
 
-require("nvim-treesitter.configs").setup {
+require("nvim-treesitter.configs").setup({
     highlight = {
         enable = true,
-        additional_vim_regex_highlighting = false,
+        disable = { "markdown" },
+        additional_vim_regex_highlighting = { "markdown" },
     },
     context_commentstring = { enable = true },
     ensure_installed = {
@@ -1047,7 +1139,7 @@ require("nvim-treesitter.configs").setup {
             },
         },
     },
-}
+})
 
 require("spellsitter").setup()
 
@@ -1072,7 +1164,7 @@ require("nvim_context_vt").setup({
     min_rows = 5,
     custom_parser = function(node, _, _)
         local start_row, _, end_row = node:range()
-        local lines = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), start_row, end_row, false)
+        local lines = vapi.nvim_buf_get_lines(vapi.nvim_get_current_buf(), start_row, end_row, false)
         if node:type() == "function" then return nil end
 
         return "~> " .. lines[1]:match("^%s*(.-)%s*$") .. "…"
@@ -1102,7 +1194,7 @@ require("nvim-lsp-installer").setup({
 })
 
 local on_attach = function(_, bufnr)
-    vim.api.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
+    vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
 
     wk.register({
         g = {
@@ -1126,7 +1218,7 @@ local on_attach = function(_, bufnr)
         },
     }, { buffer = bufnr });
 end
-vim.api.nvim_create_autocmd("User", {
+vapi.nvim_create_autocmd("User", {
     pattern = "TelescopePreviewerLoaded",
     callback = function() vim.opt_local.wrap = true end,
     -- TODO: Open issue on why wrap only works after you go to the file
@@ -1170,7 +1262,7 @@ local lsp_settings = {
     --             runtime = { version = "LuaJIT", path = runtime_path },
     --             diagnostics = { globals = { "vim" } },
     --             -- Make the server aware of Neovim runtime files
-    --             workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+    --             workspace = { library = vapi.nvim_get_runtime_file("", true) },
     --         },
     --     },
     -- }
@@ -1347,3 +1439,6 @@ wk.register({
         q = { ":qa<Enter>", "(q)uit all" },
     },
 }, { prefix     = "<Leader>" })
+
+-- For REPL or Debug Purposes
+_G.cfg_env = lefen.get_locals()
