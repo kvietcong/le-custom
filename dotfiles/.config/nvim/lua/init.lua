@@ -955,6 +955,13 @@ wk.register({
         p = { ":Luapad<Enter>", "(e)valuate with lua(p)ad" },
     },
 }, {})
+vapi.nvim_create_user_command("Luapad", function()
+    vapi.nvim_command[[botright vsplit ~/tmp/luapad.lua]]
+    require("luapad.evaluator"):new({
+        buf = 0,
+        context = _G.cfg_env,
+    }):start()
+end, {})
 
 ------------------------
 -- Telescope Setup 🔭 --
