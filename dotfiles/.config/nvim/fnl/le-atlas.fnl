@@ -22,7 +22,8 @@
          (vapi.nvim_win_set_cursor 0 cursor-position)))
      }))
 
-(fn get_wikilink_under_cursor []
+
+(fn get-wikilink-under-cursor []
   (var result nil)
   (local temp vim.g.minisurround_disable)
   ;; TODO: File issue with how disabling still makes it auto detect around (jump around)

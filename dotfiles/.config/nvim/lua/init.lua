@@ -13,6 +13,7 @@
 - Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
 - See what I can do with Fennel configuration
 - Learn how tabs work in Vim
+- Play around with Conjure (WHICH IS SUPER COOL)
 ]]
 
 --------------------------
@@ -77,6 +78,7 @@ packer.startup(function(use)
     use "kyazdani42/nvim-tree.lua"
 
     -- Neovim Development
+    use "Olical/conjure"
     use "folke/lua-dev.nvim"
     use "rktjmp/hotpot.nvim"
     use "bakpakin/fennel.vim"
@@ -130,6 +132,7 @@ packer.startup(function(use)
     use "williamboman/nvim-lsp-installer"
 
     -- Completion
+    use "hrsh7th/cmp-omni"
     use "hrsh7th/cmp-calc"
     use "L3MON4D3/LuaSnip"
     use "hrsh7th/nvim-cmp"
@@ -142,6 +145,7 @@ packer.startup(function(use)
     use "ray-x/cmp-treesitter"
     use "onsails/lspkind.nvim"
     use "hrsh7th/cmp-nvim-lsp"
+    use "PaterJason/cmp-conjure"
     use "tzachar/cmp-fuzzy-buffer"
     use "saadparwaiz1/cmp_luasnip"
     use "dmitmel/cmp-cmdline-history"
@@ -160,7 +164,14 @@ end)
 require("impatient")
 
 -- Load Fennel Integration
-require("hotpot")
+require("hotpot").setup({
+    provide_require_fennel = true,
+    compiler = {
+        modules = {
+            correlate = true
+        },
+    },
+})
 
 -- Ensure old timers are cleaned upon reloading
 if not is_startup then
@@ -171,7 +182,7 @@ end
 _G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
 
 -- This is for sourcing on configuration change
-vapi.nvim_create_autocmd("BufWritePost", {
+vapi.nvim_create_autocmd({"BufWritePost"}, {
     group = le_group,
     pattern = { "init.lua", "init.vim" },
     desc = "Auto re-source configuration files.",
@@ -1345,6 +1356,8 @@ cmp.setup({
     sources = cmp.config.sources(
         {
             { name = "emoji", option = { insert = true } },
+            { name = "omni" },
+            { name = "conjure" },
             { name = "nvim_lsp" },
             { name = "nvim_lsp_signature_help" },
             { name = "nvim_lua" },
@@ -1363,7 +1376,9 @@ cmp.setup({
         format = lspkind.cmp_format({
             mode = "symbol_text",
             menu = ({
+                omni = "[Omni]",
                 buffer = "[Buffer]",
+                conjure = "[Conjure]",
                 nvim_lsp = "[LSP]",
                 luasnip = "[LuaSnip]",
                 nvim_lua = "[Lua]",

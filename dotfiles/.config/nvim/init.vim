@@ -37,15 +37,14 @@ set spell spelllang=en_us " Spellcheck
 set splitbelow splitright " Splits occur below or to the right of the current window
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
-let mapleader = "\<Space>" " Set the leader key
 set backspace=indent,eol,start " More robust backspacing
 " set list listchars=eol:↴
 set guifont=CodeNewRoman\ NF:h14 " Set a font for GUI things
-set completeopt=menuone,noselect " For nvim-compe
 set smartindent cindent autoindent " Better indenting
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
+set completeopt=menuone,noselect,preview
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 set foldenable foldmethod=syntax foldlevel=8 " Dang I wish I could do both syntax and indent folding
 
@@ -66,6 +65,9 @@ if has("nvim")
 else
     colorscheme nord
 endif
+
+let mapleader = "\<Space>"
+let maplocalleader = "\<Space>"
 
 " Make capital quitting quit all
 :cabbrev WQ wqa
