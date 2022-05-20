@@ -9,7 +9,7 @@
      :desc "Clean up and update metadata when taking Notes"
      :pattern ["*.md" "*.mdx" "*.txt" "*.wiki"]
      :callback
-     (fn []
+     (fn [event-info]
        (let [is-modified (vapi.nvim_buf_get_option 0 "modified")
              {:my-date date} (lefen.get_date)
              cursor-position (vapi.nvim_win_get_cursor 0)]
