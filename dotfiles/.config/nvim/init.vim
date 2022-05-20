@@ -47,7 +47,7 @@ set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
-set foldenable foldmethod=syntax foldlevel=6 " Dang I wish I could do both syntax and indent folding
+set foldenable foldmethod=syntax foldlevel=8 " Dang I wish I could do both syntax and indent folding
 
 " Make Powershell work :)
 if has("win32")
@@ -60,6 +60,8 @@ endif
 
 " Entry into Lua config
 if has("nvim")
+    " Ensure init is freshly loaded
+    lua package.loaded.init = nil
     lua require("init")
 else
     colorscheme nord
@@ -69,8 +71,8 @@ endif
 :cabbrev WQ wqa
 :cabbrev Q qa
 
-:cabbrev msgs messages
-:cabbrev mclear messages clear
+:command! M messages
+:command! MC messages clear
 :command! BO %bd | e# | bd# " (Buffer Only) Close all buffers but the current one
 
 " ==============
