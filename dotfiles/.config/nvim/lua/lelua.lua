@@ -63,11 +63,11 @@ M.quotify = function(...)
     return '"' .. item .. '"'
 end
 
-M.my_falsy = function(item)
+M.get_is_falsy = function(item)
     return not item or item == "" or item == {}
 end
 
-M.not_my_falsy = function(item) return not M.my_falsy(item) end
+M.get_not_is_falsy = function(item) return not M.get_is_falsy(item) end
 
 M.fd_async = function(args, callback, options)
     options = options or {}
@@ -165,13 +165,12 @@ end
 M.le_atlas.get_possible_links = function()
     local possible_links
     M.le_atlas.get_possible_links_async(function(possible_filepaths)
-        P("HELLO", possible_filepaths)
         possible_links = possible_filepaths
     end):sync()
     return possible_links
 end
 
-M.le_atlas.insert_link = function()
+M.le_atlas.get_link = function(callback)
     local possible_links = M.le_atlas.get_possible_links()
     local get_filename = function(filepath)
         return vfn.fnamemodify(filepath, ":t:r")
@@ -185,17 +184,32 @@ M.le_atlas.insert_link = function()
         function(selection)
             local filename = get_filename(selection)
             vim.ui.input({
-                prompt = "Input Note Alias",
-                default = filename
+                prompt = "Alias (Nothing for No Alias)",
             }, function(alias)
                 local link = filename
-                if alias ~= filename then
+                if M.get_not_is_falsy(alias) then
                     link = link .. "|" .. alias
                 end
-                M.set_register_and_notify("[[" .. link .. "]]")
+                callback("[[" .. link .. "]]")
             end)
         end
     )
+end
+
+M.le_atlas.get_link_and_copy = function()
+    M.le_atlas.get_link(M.set_register_and_notify)
+end
+
+M.le_atlas.get_link_and_insert = function()
+    M.le_atlas.get_link(function(link)
+        local cursor = vapi.nvim_win_get_cursor(0)
+        local column = cursor[2]
+        local line = vapi.nvim_get_current_line()
+        local new_line = line:sub(1, column + 1) .. link .. line:sub(column + 2)
+        vapi.nvim_set_current_line(new_line)
+        vapi.nvim_win_set_cursor(0, { cursor[1], column + #link })
+        vapi.nvim_feedkeys("a", "m", nil)
+    end)
 end
 
 M.le_atlas.open_wikilink_under_cursor = function(will_split, is_sync)

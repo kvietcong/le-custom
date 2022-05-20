@@ -482,13 +482,16 @@ le_atlas.setup({})
 vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Set note-taking keybindings for current buffer.",
-    pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
+    pattern = { "*.md", "*.mdx", "*.wiki" },
     callback = function(eventInfo)
         wk.register({
             ["<Enter>"] = { le_atlas.open_wikilink_under_cursor, "Go To Wiki Link" },
             ["<Leader><Enter>"] = { function() le_atlas.open_wikilink_under_cursor(true) end, "Go To Wiki Link (Split)" },
-            ["<Leader>nl"] = { le_atlas.insert_link, "Get a wikilink" },
+            ["<Leader>nl"] = { le_atlas.get_link_and_copy, "Get a wikilink" },
         }, { buffer = eventInfo.buf });
+        wk.register({
+            ["<C-l>"] = { le_atlas.get_link_and_insert, "Get a wikilink" },
+        }, { buffer = eventInfo.buf, mode = "i" });
     end,
 })
 
@@ -648,6 +651,9 @@ require("zen-mode").setup({
     gitsigns = { enable = true },
     on_open = function()
         vim.cmd[[:FocusDisable]]
+        wk.register({
+            ["<Escape>"] = { ":ZenMode<Enter>", "Exit Zen Mode" }
+        }, { buffer = vapi.nvim_get_current_buf() })
     end,
     on_close = function()
         vim.cmd[[:FocusEnable]]
@@ -789,6 +795,7 @@ end
 require("mini.sessions").setup({
     hooks = {
         pre = {
+            read = close_bad_buffers,
             write = close_bad_buffers,
         },
         post = {
@@ -875,9 +882,9 @@ wk.register({
                 { prompt = 'Save Session "' .. current_session .. '" Before Leaving?' },
                 function(_, index_selection)
                     if index_selection == 1 then
-                        MiniSessions.write(nil, {})
+                        MiniSessions.write(nil)
                     end
-                    MiniSessions.select("read", {})
+                    MiniSessions.select("read")
                 end
             )
         end
