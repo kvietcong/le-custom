@@ -4,18 +4,54 @@
 
 ;;; Just me playin' around with Fennel in Neovim
 
-(fn fold** [folder initial foldable iterator-maker]
+(local Job (require :plenary.job))
+
+;; Helper table to keep track of dynamically generated things
+(local M {})
+
+(fn reverse-get [table target]
+  (var found nil)
+  (each [key value (pairs table)] :until (not= found nil)
+    (when (= value target) (set found key)))
+  found)
+
+(fn notify-level [message level custom-title]
+  (vim.notify
+    message
+    level
+    {:title
+     (or custom-title
+         (: (reverse-get vim.log.levels level)
+            :gsub "^%l" string.upper))
+     }))
+
+;; Dynamically generate notify shortcuts
+;; TODO: File issue on nvim-notify about Trace and Debug
+;;       not working
+(tset M :notify {})
+(each [level level-number (pairs vim.log.levels)]
+  (let [level-l (string.lower level)]
+    (fn notifier [message custom-title]
+      (notify-level message level-number custom-title))
+    (tset M.notify level-number notifier)
+    (tset M.notify level-number notifier)
+    (tset M (.. "notify-" level) notifier)
+    (tset M (.. "notify_" level) notifier)
+    (tset M (.. "notify-" level-l) notifier)
+    (tset M (.. "notify_" level-l) notifier)))
+
+(fn fold* [folder initial foldable iterator-maker]
   (accumulate [accumulated initial
                key next (iterator-maker foldable)]
               (folder accumulated next key)))
 
 (fn foldl [folder initial foldable]
   "Fold a sequence from the left"
-  (fold** folder initial foldable ipairs))
+  (fold* folder initial foldable ipairs))
 
 (fn fold [folder initial foldable]
   "Fold a table's keys and values (NOT STRICT ON ORDER)"
-  (fold** folder initial foldable pairs))
+  (fold* folder initial foldable pairs))
 
 ;; A note for weary travelers like me. os.date uses C's
 ;; strftime under the hood. Vim's builtin strftime does too.
@@ -71,20 +107,50 @@
         (set j (+ j 1)))))
   locals)
 
-(fn get-falsy? [item]
+(fn falsy? [item]
   (or (not item) (= item "") (= item {}) (= item 0)))
 
-(fn get-not-falsy? [x] (not (get-falsy? x)))
+(fn not-falsy? [x] (not (falsy? x)))
+
+(fn fd-async [args callback options]
+  (let [args (or args {})
+        options (or options {})
+        callback (or callback identity)]
+
+    (when options.cwd
+      (if is_win (set options.cwd (options.cwd:gsub "~" "$HOME")))
+      (set options.cwd (vfn.expand options.cwd)))
+
+    (let [job-options
+          (t.extend
+            "keep"
+            {:command "fd"
+             : args
+             :on_exit (fn [job exit-code]
+                        (callback (job:result) job exit-code))}
+            options)
+          job (Job:new job-options)]
+      (job:start)
+      job)))
 
 ; Module Export
-{
-    : day? :is_day day?
-    : get-date :get_date get-date
-    : set-register-and-notify :set_register_and_notify set-register-and-notify
-    : get-locals :get_locals get-locals
-    : get-falsy? :get_is_falsy get-falsy?
-    : get-not-falsy? :get_is_not_falsy get-not-falsy?
-    : fold
-    : foldl
-    : fold** :fold__ fold**
-}
+(t.extend "keep" {
+ : fold
+ : foldl
+ : fold* :fold_ fold*
+
+ : fd-async :fd_async fd-async
+
+ : reverse-get :reverse_get reverse-get
+ : notify-level :notify_level notify-level
+
+ : day? :get_is_day day?
+ : get-date :get_date get-date
+
+ : falsy? :get_is_falsy falsy?
+ : not-falsy? :get_is_not_falsy not-falsy?
+
+ : set-register-and-notify :set_register_and_notify set-register-and-notify
+
+ : get-locals :get_locals get-locals
+ } M)
