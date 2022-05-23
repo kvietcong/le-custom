@@ -67,7 +67,6 @@ else
 endif
 
 let mapleader = "\<Space>"
-let maplocalleader = "\<Space>"
 
 " Make capital quitting quit all
 :cabbrev WQ wqa
@@ -147,15 +146,15 @@ nnoremap <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
 
 " Spell check (wtf are the defaults lol)
 " Add word to dictionary (Spelling Add)
-nnoremap <Leader>sa zg
+nnoremap <Leader><Leader>sa zg
 " Remove word from dictionary (Spelling Remove)
-nnoremap <Leader>sr zw
+nnoremap <Leader><Leader>sr zw
 " Go to next spelling error (Spelling Next)
-nnoremap <Leader>sn ]s
+nnoremap <Leader><Leader>sl ]s
 " Go to previous spelling error (Spelling Previous)
-nnoremap <Leader>sp [s
+nnoremap <Leader><Leader>sh [s
 " Under last dictionary task (Spelling Undo)
-nnoremap <Leader>su zug
+nnoremap <Leader><Leader>su zug
 
 " Jump to the last known cursor position.
 autocmd BufReadPost *
@@ -173,4 +172,3 @@ function! RefreshColor()
     execute "colorscheme ".current
 endfunction
 nnoremap <F5> :call RefreshColor()<Enter>
-

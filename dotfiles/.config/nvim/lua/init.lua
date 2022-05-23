@@ -1239,7 +1239,7 @@ local luadev = require("lua-dev").setup({
     library = {
         plugins = { "nvim-treesitter", "plenary.nvim", "telescope.nvim" },
     },
-    runtime_path = is_going_hard,
+    runtime_path = true,
     lspconfig = {
         settings = {
             Lua = {
@@ -1445,10 +1445,15 @@ end
 -- Misc Mappings
 wk.register({
     s = {
-        name    = "(s)essions/(s)pelling",
-        a       = "Add to Dictionary",
-        r       = "Remove from Dictionary",
-        u       = "Undo Last Dictionary Action"
+        name    = "(s)essions",
+    },
+    ["<Leader>s"] = {
+        name = "(s)pelling",
+        a = "Add to Dictionary",
+        r = "Remove from Dictionary",
+        u = "Undo Last Dictionary Action",
+        l = "Go to Next Spelling Error",
+        h = "Go to Previous Spelling Error",
     },
     w = { name = "(w)indow (Ctrl-w)" },
     c = {
