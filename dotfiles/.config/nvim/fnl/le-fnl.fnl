@@ -1,6 +1,6 @@
-;;; ==============================
-;;; == Le Fennel Module (lefen) ==
-;;; ==============================
+;;; ===============================
+;;; == Le Fennel Module (le-fnl) ==
+;;; ===============================
 
 ;;; Just me playin' around with Fennel in Neovim
 
@@ -8,6 +8,8 @@
 
 ;; Helper table to keep track of dynamically generated things
 (local M {})
+
+(fn id [...] ...)
 
 (fn reverse-get [table target]
   (var found nil)
@@ -90,7 +92,7 @@
          (or
            final-message
            (.. "\"" item "\" Ready to Paste")))
-    (vim.fn.setreg "\"" item)
+    (vfn.setreg "\"" item)
     (vim.notify
       final-message "info" { : title })))
 
@@ -112,26 +114,24 @@
 
 (fn not-falsy? [x] (not (falsy? x)))
 
-(fn fd-async [args callback options]
-  (let [args (or args {})
-        options (or options {})
-        callback (or callback identity)]
-
-    (when options.cwd
-      (if is_win (set options.cwd (options.cwd:gsub "~" "$HOME")))
-      (set options.cwd (vfn.expand options.cwd)))
-
-    (let [job-options
-          (t.extend
-            "keep"
-            {:command "fd"
-             : args
-             :on_exit (fn [job exit-code]
-                        (callback (job:result) job exit-code))}
-            options)
-          job (Job:new job-options)]
-      (job:start)
-      job)))
+(fn fd-async [options]
+  (when options.cwd
+    (if is_win (set options.cwd (options.cwd:gsub "~" "$HOME")))
+    (set options.cwd (vfn.expand options.cwd)))
+  (let [callback options.callback
+        callback-table
+        (if callback
+           {:on_exit (λ [job] (callback (job:result)))}
+           {})
+        job-options
+        (t.extend
+          "keep"
+          {:command "fd"}
+          options
+          callback-table)
+        job (Job:new job-options)]
+    (job:start)
+    job))
 
 ; Module Export
 (t.extend "keep" {

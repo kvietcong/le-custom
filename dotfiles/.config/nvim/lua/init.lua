@@ -14,6 +14,7 @@
 - See what I can do with Fennel configuration
 - Learn how tabs work in Vim
 - Play around with Conjure (WHICH IS SUPER COOL)
+- Find out why I get a weird once in a while fold bug
 ]]
 
 --------------------------
@@ -37,7 +38,6 @@ _G.is_debugging = true
 _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
 _G.is_going_hard = is_neovide
-_G.identity = function(...) return ... end
 
 -- Install packer if needed
 local packer_bootstrap
@@ -172,6 +172,19 @@ require("hotpot").setup({
         },
     },
 })
+vapi.nvim_create_autocmd({"BufEnter"}, {
+    group = le_group,
+    desc = "Setup Fennel Specific things",
+    pattern = { "*.fnl" },
+    callback = function(event)
+        vim.cmd([[abbreviate <buffer> (;\ (λ]])
+        vim.cmd([[abbreviate <buffer> ;\ λ]])
+        vim.cmd([[abbreviate <buffer> lambda\ λ]])
+        vim.cmd([[abbreviate <buffer> l\ λ]])
+        vim.cmd([[abbreviate <buffer> (lambda\ (λ]])
+        vim.cmd([[abbreviate <buffer> (l\ (λ]])
+    end
+})
 
 -- Ensure old timers are cleaned upon reloading
 if not is_startup then
@@ -180,6 +193,7 @@ end
 
 -- Autocommand group for configuration
 _G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
+_G["le-group"] = _G.le_group
 
 -- This is for sourcing on configuration change
 vapi.nvim_create_autocmd({"BufWritePost"}, {
@@ -212,21 +226,21 @@ _G.t = {
 _G.t = vim.tbl_extend("force", table, _G.t)
 
 -- Load Helper Modules
-plenary.reload.reload_module("lefen")
-_G.lefen = require("lefen") -- My Helper module (Fennel)
-plenary.reload.reload_module("lelua")
-_G.lelua = require("lelua") -- My Helper module (Lua)
+plenary.reload.reload_module("le-fnl")
+_G.lf = require("le-fnl") -- My Helper module (Fennel)
+plenary.reload.reload_module("le_lua")
+_G.ll = require("le_lua") -- My Helper module (Lua)
 
 vapi.nvim_create_user_command("GetDate", function(command)
-    local time = lefen.get_date(command.args)
+    local time = lf.get_date(command.args)
     if type(time) == "string" then
-        lefen.set_register_and_notify(time)
+        lf.set_register_and_notify(time)
     else P(time) end
     return time
 end, { nargs = "?" })
 
 vapi.nvim_create_user_command("GetMyDate", function()
-    lefen.set_register_and_notify(lefen.get_date().my_date)
+    lf.set_register_and_notify(lf.get_date().my_date)
 end, {})
 
 -- Which Key (Mapping reminders)
@@ -234,54 +248,13 @@ require("legendary").setup({})
 local wk = require("which-key")
 wk.setup()
 
--- Setup Evaluation w/ Fennel
-local hotpot = {
-    eval = require("hotpot.api.eval"),
-    cache = require("hotpot.api.cache"),
-}
-vapi.nvim_create_autocmd({"BufEnter"}, {
-    group = le_group,
-    desc = "Add Fennel Keymaps",
-    pattern = "*.fnl",
-    callback = function(eventInfo)
-        wk.register({
-            name = "(e)valuate",
-            b = {
-                function()
-                    hotpot.eval["eval-buffer"](eventInfo.buf)
-                end, "(e)valuate (b)uffer"
-            },
-            l = {
-                function()
-                    hotpot.eval["eval-string"](vapi.nvim_get_current_line())
-                end, "(e)valuate (l)ine"
-            },
-            B = {
-                function()
-                    P(hotpot.eval["eval-buffer"](eventInfo.buf))
-                end, "(e)valuate and print (B)uffer"
-            },
-            L = {
-                function()
-                    P(hotpot.eval["eval-string"](vapi.nvim_get_current_line()))
-                end, "(e)valuate and print (L)ine"
-            },
-        }, { prefix = "<Leader>e", buffer = eventInfo.buf })
-        wk.register({
-            name = "(e)valuate",
-            s = { hotpot.eval["eval-selection"], "(e)valuate (s)election" },
-            v = { hotpot.eval["eval-selection"], "(e)valuate (v)isual selection" },
-            r = { hotpot.eval["eval-selection"], "(e)valuate (r)ange" },
-        }, { prefix = "<Leader>e", buffer = eventInfo.buf, mode = "v" })
-    end
-})
-
 -- Setup Evaluation w/ Lua
+-- TODO: Make this much better
 vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Add Lua Keymaps",
     pattern = "*.lua",
-    callback = function(eventInfo)
+    callback = function(event)
         wk.register({
             name = "(e)valuate",
             -- Super Ad-Hoc Evaluation. Try to find a better way.
@@ -292,11 +265,11 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
                         setfenv(to_eval, t.extend("force", cfg_env, _G))
                         to_eval()
                     else
-                        lefen.notify_error("Failed to Evaluate Line")
+                        lf.notify_error("Failed to Evaluate Line")
                     end
                 end, "(e)valuate (l)ine"
             },
-        }, { prefix = "<Leader>e", buffer = eventInfo.buf })
+        }, { prefix = "<Leader>e", buffer = event.buf })
     end
 })
 
@@ -381,7 +354,7 @@ vim.g.gruvbox_material_diagnostic_line_highlight = 1
 local colorschemes = { day = "gruvbox-material", night = "nord" }
 local set_colorscheme = function(_--[[timer_id]])
     local colorscheme
-    if lefen.get_is_day() then
+    if lf.get_is_day() then
         colorscheme = colorschemes.day
         vim.cmd[[set background=light]]
     else
@@ -466,7 +439,7 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Set note-taking keybindings for current buffer.",
     pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
-    callback = function(eventInfo)
+    callback = function(event)
         wk.register({
             ["<Leader>n"] = {
                 name = "(n)otes",
@@ -482,32 +455,20 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
             },
             -- ["<Enter>"] = { "<Plug>(wiki-link-follow)", "Go To Wiki Link" },
             ["<Leader><Leader><Enter>"] = { "<Plug>(wiki-link-toggle)", "Create or Toggle Link" },
-        }, { buffer = eventInfo.buf });
+        }, { buffer = event.buf });
     end
 })
 
 -- Custom Note Workflow Stuff
 plenary.reload.reload_module("le-atlas")
 local le_atlas = require("le-atlas")
-le_atlas.setup({})
-vapi.nvim_create_autocmd({"BufEnter"}, {
-    group = le_group,
-    desc = "Set note-taking keybindings for current buffer.",
-    pattern = { "*.md", "*.mdx", "*.wiki" },
-    callback = function(eventInfo)
-        wk.register({
-            ["<Enter>"] = { le_atlas.open_wikilink_under_cursor, "Go To Wiki Link" },
-            ["<Leader><Enter>"] = { function() le_atlas.open_wikilink_under_cursor(true) end, "Go To Wiki Link (Split)" },
-            ["<Leader>nl"] = { le_atlas.get_link_and_copy, "Get a wikilink" },
-        }, { buffer = eventInfo.buf });
-        wk.register({
-            ["<C-l>"] = { le_atlas.get_link_and_insert, "Get a wikilink" },
-        }, { buffer = eventInfo.buf, mode = "i" });
-    end,
-})
+le_atlas.setup({ wk = wk })
 
 vapi.nvim_create_user_command("FD", function(command)
-    lefen.fd_async({command.args}, function(result) P(result) end)
+    lf.fd_async({
+        args = { command.args },
+        callback = P,
+    })
 end, { nargs = "?" })
 
 -- Minimal Status Line
@@ -651,6 +612,60 @@ require("focus").setup({
 ------------------------------
 -- Useful Utilities Setup ⚙️ --
 ------------------------------
+
+-- Conjure Setup
+vim.g["conjure#eval#result_register"] = "*"
+vim.g["conjure#mapping#prefix"] = "<Leader>"
+vim.g["conjure#eval#inline#highlight"] = "DiagnosticInfo"
+vim.g["conjure#eval#inline#prefix"] = "~~> "
+vim.g["conjure#highlight#enabled"] = true
+vim.g["conjure#log#hud#width"] = 0.40
+vim.g["conjure#log#hud#height"] = 0.50
+vim.g["conjure#log#hud#passive_close_delay"] = 300
+vapi.nvim_create_autocmd({"BufEnter"}, {
+    group = le_group,
+    desc = "Add Conjure Keymap Labels",
+    callback = function(event)
+        local filetype = vapi.nvim_buf_get_option(0, "filetype")
+        if not t.contains(vim.g["conjure#filetypes"], filetype) then
+            return
+        end
+        wk.register({
+            [vim.g["conjure#mapping#prefix"]] = {
+                e = {
+                    b = "(e)valuate (b)uffer",
+                    f = "(e)valuate (f)ile [what's saved]",
+                    e = "(e)valuate form under cursor",
+                    c = {
+                        "(e)valuate w/ result as appended (c)omment",
+                    },
+                    r = "(e)valuate (r)oot form under cursor",
+                    w = "(e)vaulate (w)ord under cursor",
+                    ["!"] = "(e)vaulate form and replace w/ result",
+                },
+                l = {
+                    name = "evaluation (l)og commands",
+                    v = "(v)ertical split log buffer",
+                    s = "(s)plit log buffer",
+                    r = "soft (r)eset log buffer",
+                    l = "go to (l)atest log buffer result",
+                    R = "hard (r)eset log buffer",
+                },
+            },
+            E = "(E)valuate motion",
+        }, {
+            buffer = event.buffer
+        })
+        wk.register({
+            [vim.g["conjure#mapping#prefix"]] = {
+                E = "(E)valuate seleciton",
+            },
+        }, {
+            mode = "v",
+            buffer = event.buffer
+        })
+    end
+})
 
 -- Line Peeking
 require("numb").setup({ number_only = true })
@@ -811,16 +826,16 @@ require("mini.sessions").setup({
         },
         post = {
             read = function()
-                lefen.notify_info(
+                lf.notify_info(
                     "Loaded Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r"))
             end,
             write = function()
-                lefen.notify_info(
+                lf.notify_info(
                     "Saved Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r"))
             end,
             delete = function()
                 -- TODO: Maybe help improve
-                lefen.notify_info("Deleted Selected Session")
+                lf.notify_info("Deleted Selected Session")
             end,
         }
     },
@@ -837,14 +852,15 @@ local session_save_wrapper = function(input)
             MiniSessions.write(nil, {})
             return
         end
-        lefen.notify_error("Please Give Session Name")
+        lf.notify_error("Please Give Session Name")
     elseif not pcall(MiniSessions.write, input .. ".vim", {}) then
-        lefen.notify_error("Session Write Has Failed (For Unknown Reasons)")
+        lf.notify_error("Session Write Has Failed (For Unknown Reasons)")
     end
 end
 vapi.nvim_create_user_command("SessionSave", function(command)
     session_save_wrapper(command.args)
 end, { nargs = "?" })
+-- TODO: Clean this up
 wk.register({
     ["<Leader>ss"] = { function()
         local current_session = ""
@@ -914,11 +930,11 @@ wk.register({
             message = "You are currently in session `" .. session_name .. "` (" .. current_session .. ")"
         end
         print(message)
-        lefen.notify_info(message)
+        lf.notify_info(message)
     end, "current (s)ession (n)otify" },
     ["<Leader>sq"] = { function()
         vapi.nvim_set_vvar("this_session", "")
-        lefen.notify_info("You have left the session")
+        lf.notify_info("You have left the session")
     end, "(s)ession (q)uit", },
 }, { silent = false })
 
@@ -988,7 +1004,7 @@ telescope.setup {
                 vim.ui.input({ prompt = "Enter commit msg: " .. entry.value .. " "}, function(msg)
                     if not msg then return end
                     local commit_message = entry.value .. " " .. msg
-                    lefen.set_register_and_notify(commit_message)
+                    lf.set_register_and_notify(commit_message)
                 end)
             end,
         },
@@ -1000,7 +1016,7 @@ require("telescope-emoji").setup({
         require("yanky").history.push({
             regcontents = emoji.value, regtype = "v"
         })
-        lefen.set_register_and_notify(emoji.value)
+        lf.set_register_and_notify(emoji.value)
     end,
 })
 
@@ -1198,10 +1214,11 @@ require("nvim-lsp-installer").setup({
 local on_attach = function(_, bufnr)
     vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
 
+    -- TODO: Replace vim.lsp with telescope pickers when possible
     wk.register({
         g = {
             name = "(g)o to",
-            d = { vim.lsp.buf.definition, "(g)o to (d)efinition" },
+            d = { ":Telescope lsp_definitions", "(g)o to (d)efinition" },
             D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
             i = { vim.lsp.buf.implementation, "(g)o to (i)mplementation" },
             -- r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
@@ -1465,10 +1482,10 @@ wk.register({
         q = { ":qa<Enter>", "(q)uit all" },
         r = { function()
             vim.cmd[[source $MYVIMRC]]
-            lefen.notify_info("Configuration Reloaded")
+            lf.notify_info("Configuration Reloaded")
         end, "(r)e-source config" },
     },
 }, { prefix     = "<Leader>" })
 
 -- For REPL or Debug Purposes
-_G.cfg_env = lefen.get_locals()
+_G.cfg_env = lf.get_locals()

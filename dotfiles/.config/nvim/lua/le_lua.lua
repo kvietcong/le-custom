@@ -1,6 +1,6 @@
----------------------------
--- Le Lua Module (lelua) --
----------------------------
+----------------------------
+-- Le Lua Module (le_lua) --
+----------------------------
 
 -- The Fennel Took Over XD
 -- I will add some duplicated efforts here just to have both implementations for reference.
@@ -24,6 +24,8 @@ for level, _ in pairs(vim.log.levels) do
         notify_level(message, level)
     end
 end
+
+M.id = function(...) return ... end
 
 M.set_register_and_notify = function(item, message, title)
     if type(message) == "function" then message = message(item) end
@@ -69,9 +71,9 @@ end
 
 M.get_not_is_falsy = function(item) return not M.get_is_falsy(item) end
 
-M.fd_async = function(args, callback, options)
+M.fd_async = function(callback, args, options)
     options = options or {}
-    callback = callback or identity
+    callback = callback or M.id
 
     if options.cwd then
         if is_win then
@@ -96,6 +98,13 @@ M.fd_async = function(args, callback, options)
     return job
 end
 
+M.syncify = function(async_function, ...)
+    local result
+    async_function(function(...) P(...) result = ... end, ...):sync()
+    P(result)
+    return result
+end
+
 -----------------------
 -- Le Atlas Stuff 🗺️ --
 -----------------------
@@ -108,7 +117,7 @@ M.le_atlas.add_save_hook = function(le_group)
         callback = function(_ --[[eventInfo]])
             local is_modified = vapi.nvim_buf_get_option(0, "modified")
             if is_modified then
-                vapi.nvim_command([[%s/edited: \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/edited: ]] .. lefen.get_date().my_date .. "/ge")
+                vapi.nvim_command([[%s/edited: \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/edited: ]] .. M.get_date().my_date .. "/ge")
             end
             vapi.nvim_command([[%s/\(^.\+\n\)\(^#\+ .*\n\)/\1\r\2/gec]]) -- It took a lot of trial and error for this XD
         end
@@ -145,29 +154,31 @@ end
 
 -- I've decided that things with an async suffix will take
 -- callbacks return a started job
-M.le_atlas.wiki_filename_to_filepath_async = function(filename, callback)
-    return M.fd_async({"-g", filename .. ".md" }, callback, { cwd = vim.g.wiki_root })
+M.le_atlas.wiki_filename_to_filepath_async = function(callback, filename)
+    return M.fd_async(callback, {"-g", filename .. ".md" }, { cwd = vim.g.wiki_root })
 end
 
 -- THIS IS BLOCKING
 M.le_atlas.wiki_filename_to_filepath = function(filename)
-    local possible_filepaths
-    M.le_atlas.wiki_filename_to_filepath_async(filename, function(data)
-        possible_filepaths = data
-    end):sync()
-    return possible_filepaths
+    -- local possible_filepaths
+    -- M.le_atlas.wiki_filename_to_filepath_async(function(data)
+    --     possible_filepaths = data
+    -- end, filename):sync()
+    -- return possible_filepaths
+    return M.syncify(M.le_atlas.wiki_filename_to_filepath_async, filename)
 end
 
 M.le_atlas.get_possible_links_async = function(callback)
-    return M.fd_async({ "-g", "*.md" }, callback, { cwd = vim.g.wiki_root })
+    return M.fd_async(callback, { "-g", "*.md" }, { cwd = vim.g.wiki_root })
 end
 
 M.le_atlas.get_possible_links = function()
-    local possible_links
-    M.le_atlas.get_possible_links_async(function(possible_filepaths)
-        possible_links = possible_filepaths
-    end):sync()
-    return possible_links
+    -- local possible_links
+    -- M.le_atlas.get_possible_links_async(function(possible_filepaths)
+    --     possible_links = possible_filepaths
+    -- end):sync()
+    -- return possible_links
+    return M.syncify(M.le_atlas.get_possible_links_async)
 end
 
 M.le_atlas.get_link = function(callback)
@@ -182,6 +193,7 @@ M.le_atlas.get_link = function(callback)
             format_item = get_filename,
         },
         function(selection)
+            if not selection then return end
             local filename = get_filename(selection)
             vim.ui.input({
                 prompt = "Alias (Nothing for No Alias)",
@@ -202,6 +214,7 @@ end
 
 M.le_atlas.get_link_and_insert = function()
     M.le_atlas.get_link(function(link)
+        if not link then return end
         local cursor = vapi.nvim_win_get_cursor(0)
         local column = cursor[2]
         local line = vapi.nvim_get_current_line()
@@ -221,21 +234,20 @@ M.le_atlas.open_wikilink_under_cursor = function(will_split, is_sync)
     local filename = wikilink_info.filename
 
     if not is_sync then
-        M.le_atlas.wiki_filename_to_filepath_async(filename, function(filepaths)
+        M.le_atlas.wiki_filename_to_filepath_async(function(filepaths)
             local file = filepaths[1]
             if not file then
                 vim.notify("Could not find file", "error", {title = "Error"})
                 return
             end
-            P(file)
             vim.schedule_wrap(function()
                 if will_split then
-                    vim.cmd(":vsplit " .. file)
+                    vim.cmd("vsplit " .. file)
                 else
-                    vim.cmd(":e " .. file)
+                    vim.cmd("e " .. file)
                 end
             end)()
-        end)
+        end, filename)
     else
         local filepaths = M.le_atlas.wiki_filename_to_filepath(filename)
         local file = filepaths[1]
