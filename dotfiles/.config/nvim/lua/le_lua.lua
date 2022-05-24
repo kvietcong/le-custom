@@ -4,6 +4,11 @@
 
 -- The Fennel Took Over XD
 -- I will add some duplicated efforts here just to have both implementations for reference.
+--
+-- WARNING:
+-- This code is probably the messiest code within my config atm.
+-- I usually do scratch work implementations here and port it over
+-- to one of the `.fnl` files for refinement.
 
 -- Dependencies
 local Job = require("plenary.job")
@@ -98,13 +103,6 @@ M.fd_async = function(callback, args, options)
     return job
 end
 
-M.syncify = function(async_function, ...)
-    local result
-    async_function(function(...) P(...) result = ... end, ...):sync()
-    P(result)
-    return result
-end
-
 -----------------------
 -- Le Atlas Stuff 🗺️ --
 -----------------------
@@ -155,30 +153,20 @@ end
 -- I've decided that things with an async suffix will take
 -- callbacks return a started job
 M.le_atlas.wiki_filename_to_filepath_async = function(callback, filename)
-    return M.fd_async(callback, {"-g", filename .. ".md" }, { cwd = vim.g.wiki_root })
+    return M.fd_async(callback, {"-g", "--", filename .. ".md" }, { cwd = vim.g.wiki_root })
 end
 
 -- THIS IS BLOCKING
 M.le_atlas.wiki_filename_to_filepath = function(filename)
-    -- local possible_filepaths
-    -- M.le_atlas.wiki_filename_to_filepath_async(function(data)
-    --     possible_filepaths = data
-    -- end, filename):sync()
-    -- return possible_filepaths
-    return M.syncify(M.le_atlas.wiki_filename_to_filepath_async, filename)
+    return M.le_atlas.wiki_filename_to_filepath_async(nil, filename):sync()
 end
 
 M.le_atlas.get_possible_links_async = function(callback)
-    return M.fd_async(callback, { "-g", "*.md" }, { cwd = vim.g.wiki_root })
+    return M.fd_async(callback, { "-g", "--", "*.md" }, { cwd = vim.g.wiki_root })
 end
 
 M.le_atlas.get_possible_links = function()
-    -- local possible_links
-    -- M.le_atlas.get_possible_links_async(function(possible_filepaths)
-    --     possible_links = possible_filepaths
-    -- end):sync()
-    -- return possible_links
-    return M.syncify(M.le_atlas.get_possible_links_async)
+    return M.le_atlas.get_possible_links_async():sync()
 end
 
 M.le_atlas.get_link = function(callback)

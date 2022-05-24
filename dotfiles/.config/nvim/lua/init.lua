@@ -225,6 +225,15 @@ _G.t = {
 }
 _G.t = vim.tbl_extend("force", table, _G.t)
 
+-- Metatable shenanigans
+local String = getmetatable("")
+function String.__index:char_at(i)
+    if i > #self then
+        return nil
+    end
+    return self:sub(i, i)
+end
+
 -- Load Helper Modules
 plenary.reload.reload_module("le-fnl")
 _G.lf = require("le-fnl") -- My Helper module (Fennel)
@@ -464,6 +473,7 @@ plenary.reload.reload_module("le-atlas")
 local le_atlas = require("le-atlas")
 le_atlas.setup({ wk = wk })
 
+-- Random FD command XD
 vapi.nvim_create_user_command("FD", function(command)
     lf.fd_async({
         args = { command.args },
@@ -535,7 +545,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']],
 })
 
--- Bufferline (Easy Tabs)
+-- Bufferline (Easy Tabs) and Buffer Management
 require("bufferline").setup { options = {
     show_close_icon = false,
     diagnostics = "nvim_lsp",
@@ -549,10 +559,12 @@ require("bufferline").setup { options = {
         },
     },
 }}
+require("mini.bufremove").setup({})
 wk.register({
     ["<Leader>b"] = {
         name = "(b)uffers",
-        q = { ":bd<Enter>", "(b)uffer (q)lose" },
+        q = { function() MiniBufremove.unshow() end, "(b)uffer (q)uit [unshows buffer]" },
+        d = { function() MiniBufremove.delete() end, "(b)uffer (d)elete" },
         c = { ":bd<Enter>", "(b)uffer (c)lose" },
         l = { ":BufferLineCycleNext<Enter>", "(b)uffer next" },
         h = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
@@ -621,7 +633,7 @@ vim.g["conjure#eval#inline#prefix"] = "~~> "
 vim.g["conjure#highlight#enabled"] = true
 vim.g["conjure#log#hud#width"] = 0.40
 vim.g["conjure#log#hud#height"] = 0.50
-vim.g["conjure#log#hud#passive_close_delay"] = 300
+vim.g["conjure#log#hud#passive_close_delay"] = 0
 vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Add Conjure Keymap Labels",
@@ -641,6 +653,7 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
                     },
                     r = "(e)valuate (r)oot form under cursor",
                     w = "(e)vaulate (w)ord under cursor",
+                    m = "(e)vaulate at (m)ark",
                     ["!"] = "(e)vaulate form and replace w/ result",
                 },
                 l = {
@@ -1218,7 +1231,7 @@ local on_attach = function(_, bufnr)
     wk.register({
         g = {
             name = "(g)o to",
-            d = { ":Telescope lsp_definitions", "(g)o to (d)efinition" },
+            d = { ":Telescope lsp_definitions<Enter>", "(g)o to (d)efinition" },
             D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
             i = { vim.lsp.buf.implementation, "(g)o to (i)mplementation" },
             -- r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
@@ -1263,7 +1276,7 @@ local luadev = require("lua-dev").setup({
                 diagnostics = { globals = {
                     -- Neovim Stuff
                     "vim", "P", "MiniSessions",
-                    "MiniStatusline", "MiniTrailspace",
+                    "MiniStatusline", "MiniTrailspace", "MiniBufremove",
 
                     -- AwesomeWM Stuff
                     "awesome", "screen", "client",
