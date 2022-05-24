@@ -2,7 +2,8 @@
 ;;; == Le Fennel Module (le-fnl) ==
 ;;; ===============================
 
-;;; Just me playin' around with Fennel in Neovim
+;; A fennel library with useful functions?
+;; Essentially me playin' around with Fennel in Neovim.
 
 (local Job (require :plenary.job))
 (local vfn vim.fn)
@@ -13,9 +14,27 @@
 
 (λ id [...] ...)
 
-(local empty? vim.tbl_isempty)
+(λ type? [type-to-check x] (= (type x) type-to-check))
+(λ nil? [x] (type? :nil x))
+(λ table? [x] (type? :table x))
+(λ string? [x] (type? :string x))
+(λ thread? [x] (type? :thread x))
+(λ number? [x] (type? :number x))
+(λ boolean? [x] (type? :boolean x))
+(λ userdata? [x] (type? :userdata x))
+(λ function? [x] (type? :function x))
 
-(λ table? [?table] (= (type ?table) "table"))
+(λ type-check [to-check]
+  (for [i 2 (length to-check) 2]
+    (let [expected-types (. to-check (- i 1))
+          value (. to-check i)
+          checks (icollect [_ expected-type (ipairs (vfn.split expected-types "|"))]
+                           (type? expected-type value))]
+      (assert (vim.tbl_contains checks true) (.. "Type Mismatch! Expected: " expected-types)))))
+
+(λ empty? [x]
+  (type-check [:table x])
+  (vim.tbl_isempty x))
 
 (fn falsy? [x]
   (or (not x) (= x "") (and (table? x) (empty? x)) (= x 0)))
@@ -23,12 +42,14 @@
 (fn not-falsy? [x] (not (falsy? x)))
 
 (λ reverse-get [table target]
+  (type-check [:table table])
   (var found nil)
   (each [key value (pairs table)] :until (not= found nil)
     (if (= value target) (set found key)))
   found)
 
 (λ notify-level [message level ?custom-title]
+  (type-check [:string message :number level :string|nil ?custom-title])
   (vim.notify
     message
     level
@@ -38,18 +59,25 @@
             :gsub "^%l" string.upper))
      }))
 
-(λ inc [x] (+ x 1))
+(λ inc [x] (type-check [:number x]) (+ x 1))
 (local ++ inc)
-(λ dec [x] (- x 1))
+(λ dec [x] (type-check [:number x]) (- x 1))
 (local -- dec)
 
-(λ max [x y] (if (>= x y) x y))
-(λ min [x y] (if (<= x y) x y))
-(λ clamp [min# max# x] (max min# (min max# x)))
-(λ clamp+0 [max# x] (clamp 0 max# x))
-(λ clamp-0 [min# x] (clamp min# 0 x))
-(λ inc-pos [pos inc-by] [(. pos 1) (+ (. pos 2) inc-by)])
-(λ dec-pos [pos dec-by] [(. pos 1) (max 0 (- (. pos 2) dec-by))])
+(λ max [x y] (type-check [:number x :number y]) (if (>= x y) x y))
+(λ min [x y] (type-check [:number x :number y]) (if (<= x y) x y))
+(λ clamp [min# max# x]
+  (type-check [:number min# :number max# :number x])
+  (max min# (min max# x)))
+(λ inc-pos [pos inc-by]
+  (type-check [:table pos :number inc-by])
+  [(. pos 1) (+ (. pos 2) inc-by)])
+(λ dec-pos [pos dec-by]
+  (type-check [:table pos :number dec-by])
+  [(. pos 1) (max 0 (- (. pos 2) dec-by))])
+
+(λ even? [x] (type-check [:number x]) (= (% x 2) 0))
+(λ odd? [x] (not (even? x)))
 
 ;; Dynamically generate notify shortcuts
 ;; TODO: File issue on nvim-notify about Trace and Debug
@@ -67,6 +95,7 @@
     (tset M (.. "notify_" level-l) notifier)))
 
 (λ fold* [folder initial foldable iterator-maker]
+  (type-check [:function folder])
   (accumulate [accumulated initial
                key next (iterator-maker foldable)]
               (folder accumulated next key)))
@@ -86,7 +115,7 @@
 ;; directly. It took me quite a while to discover this
 ;; and I finally found %V was what I was looking for.
 (λ get-date [?format]
-  "Retrieve Current Date Information"
+  (type-check [:string|nil ?format])
   (let [datetime os.date]
     (if (falsy? ?format)
       {:year (tonumber (datetime "%Y"))
@@ -106,6 +135,7 @@
     (and (> hour 6) (< hour 18))))
 
 (λ set-register-and-notify [item ?message ?title]
+  (type-check [:string item :string|function message :string title])
   (let [title (or ?title "Register Set")]
     (var final-message ?message)
     (if (= (type final-message) "function")
@@ -119,6 +149,7 @@
       final-message "info" { : title })))
 
 (λ get-locals [?stack-max]
+  (type-check [:number|nil ?stack-max])
   (local locals {})
   (var j 1)
   (var remaining? true)
@@ -132,6 +163,7 @@
   locals)
 
 (λ fd-async [options]
+  (type-check [:table options])
   (when options.cwd ; WHY YOU SO WACK WINDOWS
     (if is_win (set options.cwd (options.cwd:gsub "~" "$HOME")))
     (set options.cwd (vfn.expand options.cwd)))
@@ -165,22 +197,27 @@
 
    : inc : ++
    : dec : --
-   : max : min
-
+   : max
+   : min
+   : clamp
    : inc-pos :inc_pos inc-pos
    : dec-pos :dec_pos dec-pos
-
-   : clamp
-   : clamp+0 :clamp_pos0 clamp+0
-   : clamp-0 :clamp_neg0 clamp-0
 
    : fd-async :fd_async fd-async
 
    : day? :get_is_day day?
    : get-date :get_date get-date
 
-   : empty? :get_is_empty empty?
+   : nil? :get_is_nil nil?
    : table? :get_is_table table?
+   : thread? :get_is_thread thread?
+   : string? :get_is_string string?
+   : number? :get_is_number number?
+   : boolean? :get_is_boolean boolean?
+   : userdata? :get_is_userdata userdata?
+   : function? :get_is_function function?
+
+   : empty? :get_is_empty empty?
    : falsy? :get_is_falsy falsy?
    : not-falsy? :get_is_not_falsy not-falsy?
 
