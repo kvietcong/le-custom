@@ -13,6 +13,7 @@
   (require :le-fnl))
 (local vfn vim.fn)
 (local vapi vim.api)
+(import-macros {:fstring f=} :macros)
 (local wk (require :which-key))
 
 (λ get-wikilink-info-under-cursor []
@@ -78,7 +79,7 @@
   (fd-async
     {:callback ?callback
      :cwd vim.g.wiki_root
-     :args [:-g :-- (.. filename ".md")]}))
+     :args [:-g :-- (f= "${filename}.md")]}))
 
 (λ filename->filepath [filename]
   (let [job (filename->filepath-async filename)] (job:sync)))
@@ -94,8 +95,8 @@
             (if file
               ((vim.schedule_wrap
                  #(if ?will-split
-                    (vim.cmd (.. "vsplit " file))
-                    (vim.cmd (.. "e  " file)))))
+                    (vim.cmd (f= "vsplit ${file}"))
+                    (vim.cmd (f= "e ${file}")))))
               (notify-error "Couldn't Find File"))))))))
 
 (λ choose-wikilink [callback]
@@ -113,7 +114,7 @@
               (λ [?alias]
                 (callback
                   (.. "[["
-                      (if (not-falsy? ?alias) (.. filename "|" ?alias) filename)
+                      (if (not-falsy? ?alias) (f= "${filename}|${?alias}") filename)
                       "]]"))))))))))
 
 (λ choose-wikilink-and-copy []
@@ -146,7 +147,7 @@
         (if is-modified
           (vapi.nvim_command
             (.. "%s/edited: \\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d/"
-                "edited: " date "/ge")))
+                (f= "edited: ${date}/ge"))))
         (vapi.nvim_command
           "%s/\\(^.\\+\\n\\)\\(^#\\+ .*\\n\\)/\\1\\r\\2/gec")
         (vapi.nvim_win_set_cursor 0 cursor-position))

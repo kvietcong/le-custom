@@ -176,7 +176,7 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Setup Fennel Specific things",
     pattern = { "*.fnl" },
-    callback = function(event)
+    callback = function(_ --[[event]])
         vim.cmd([[abbreviate <buffer> (;\ (λ]])
         vim.cmd([[abbreviate <buffer> ;\ λ]])
         vim.cmd([[abbreviate <buffer> lambda\ λ]])

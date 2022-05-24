@@ -135,7 +135,7 @@
     (and (> hour 6) (< hour 18))))
 
 (λ set-register-and-notify [item ?message ?title]
-  (type-check [:string item :string|function message :string title])
+  (type-check [:string item :string|function|nil ?message :string|nil ?title])
   (let [title (or ?title "Register Set")]
     (var final-message ?message)
     (if (= (type final-message) "function")
