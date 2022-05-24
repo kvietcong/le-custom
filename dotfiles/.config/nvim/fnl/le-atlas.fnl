@@ -1,146 +1,180 @@
-(local ll (require :le_lua))
-(local lf (require :le-fnl))
+;;; ========================
+;;; == Le Atlas Module 🗺️ ==
+;;; ========================
+
+;; My note-taking setup
+
+(local {: notify-error
+        : get-date
+        : fd-async
+        : not-falsy?
+        : set-register-and-notify
+        : -- : ++}
+  (require :le-fnl))
+(local vfn vim.fn)
+(local vapi vim.api)
 (local wk (require :which-key))
 
-(fn -- [x] (- x 1))
-(local dec --)
-
-(fn ++ [x] (+ x 1))
-(local inc ++)
-
-(fn get-wikilink-info-under-cursor* []
-  (let [cursor (vapi.nvim_win_get_cursor 0)
-        line (vapi.nvim_get_current_line)
-        column (+ (. cursor 2) 1)
-        all-before (line:sub 1 (-- column))
-        all-after (line:sub (++ column))
-        ; TODO: See if there's a better way to get char at
-        current (line:sub column column)
-        before (all-before:sub -1 -1)
-        after (all-after:sub 1 1)
-        is-lb (= "[" current)
-        is-lbb (= "[" before)
-        is-rb (= "]" current)
-        is-rbb (= "]" after)
-        before-pattern (if is-rbb "" is-rb "%[$" "%[%[[^%[%]]+$")
-        before-match (all-before:match before-pattern)
-        after-pattern (if is-lbb "" is-lb "^%]" "^[^%[%]]+%]%]")
-        after-match (all-after:match after-pattern)
-        wikilink (if (and before-match after-match)
-                   (.. before-match current after-match)
-                   nil)
-        wikilink-info
-        (if wikilink
-          (vim.split (wikilink:gsub "[%[%]]" "") "|" true)
-          nil)
-        len (length (or wikilink-info []))]
-    ;; Cleanup
-    (if (t.contains [1 2] len)
-      (do
-        (when (= len 1)
-          (t.insert wikilink-info (. wikilink-info 1)))
-        (set wikilink-info.alias (. wikilink-info 2))
-        (set wikilink-info.filename (. wikilink-info 1))
-        wikilink-info)
-      (lf.notify-error "Invalid Link Under Cursor"))
-    (values wikilink-info all-after after-pattern after-match)))
-
-(fn get-wikilink-info-under-cursor []
+(λ get-wikilink-info-under-cursor []
   "Get Wikilink `filename` and `alias`"
-  (var result nil)
-  (local temp vim.g.minisurround_disable)
-  ;; TODO: File issue with how disabling still makes it auto detect around (jump around)
-  (set vim.g.minisurround_disable true)
-  (let [cursor-before-yank (vapi.nvim_win_get_cursor 0)
-        register-old-value (vfn.getreg "z")
-        _SIDE-EFFECT-1_ (vim.cmd "normal vi[\"zy")
-        cursor-after-yank (vapi.nvim_win_get_cursor 0)
-        before-col (. cursor-before-yank 2)
-        after-col (. cursor-after-yank 2)
-        before-row (. cursor-before-yank 1)
-        after-row (. cursor-after-yank 1)
-        wikilink (: (vfn.getreg "z") :gsub "[%[%]]" "")
-        wikilink-info (vfn.split wikilink "|" true)
-        len (length wikilink-info)]
-    (vapi.nvim_win_set_cursor 0 cursor-before-yank)
-    (set vim.g.minisurround_disable temp)
-    (when (= after-row before-row)
-      (if (t.contains [1 2] len)
-        (do
-          (when (= len 1)
-            (t.insert wikilink-info (. wikilink-info 1)))
-          (set wikilink-info.alias (. wikilink-info 2))
-          (set wikilink-info.filename (. wikilink-info 1))
-          (vfn.setreg "z" register-old-value)
-          wikilink-info)
-        (lf.notify-error "Invalid Link Under Cursor")))))
-
-(fn open-wikilink-under-cursor [will-split]
-  (let [wikilink-info (get-wikilink-info-under-cursor)]
+  (let [[row column] (vapi.nvim_win_get_cursor 0)
+        column (+ column 1) ; Change to 1 Indexed Column
+        line (vapi.nvim_get_current_line)
+        before (line:sub 1 (-- column))
+        after (line:sub (++ column))
+        char-current (or (line:char_at column) "")
+        char-before (or (before:char_at -1) "")
+        char-after (or (after:char_at 1) "")
+        is-right (= "]" char-current)
+        is-left (= "[" char-current)
+        is-most-right (= "]]" (.. char-before char-current))
+        is-most-left (= "[[" (.. char-current char-after))
+        before-pattern
+        (if
+          is-most-left ""
+          is-left "%[$"
+          (if is-most-right
+            "%[%[[^%[]*$"
+            "%[%[[^%[%]]*$"))
+        after-pattern
+        (if
+          is-most-right ""
+          is-right "^%]"
+          (if is-most-left
+            "^[^%]]*%]%]"
+            "^[^%[%]]*%]%]"))
+        before-match (before:match before-pattern)
+        after-match (after:match after-pattern)
+        wikilink-info
+        (match-try
+          (and after-match before-match
+               (.. before-match char-current after-match))
+          wikilink-raw (wikilink-raw:match "%[%[(.+)%]%]")
+          wikilink (vim.split wikilink "|" true))
+        ]
     (if wikilink-info
-      (let [filename wikilink-info.filename]
-        (ll.le_atlas.wiki_filename_to_filepath_async
-          (fn [filepaths]
-            (let [file (. filepaths 1)]
-              (if file
-                ((vim.schedule_wrap
-                   (fn []
-                     (if will-split
-                       (vim.cmd (.. "vsplit " file))
-                       (vim.cmd (.. "e " file))))))
-                (lf.notify-error "Couldn't Find File"))))
-          filename))
-      (lf.notify-error "No Link Under Your Cursor"))))
+      (do (if (= (length wikilink-info) 1)
+            (tset wikilink-info 2 (. wikilink-info 1)))
+        (tset wikilink-info :filename (. wikilink-info 1))
+        (tset wikilink-info :alias (. wikilink-info 2))
+        wikilink-info)
+      (let [error-message "No Valid Link Under Your Cursor"]
+        (lf.notify-error error-message)
+        (values nil error-message)))))
 
-(fn choose-wikilink-and-copy []
-  (ll.le_atlas.get_link_and_copy))
+;; TODO: File issue with how disabling still makes it auto detect around (jump around)
+;; (local temp vim.g.minisurround_disable)
+;; (set vim.g.minisurround_disable true)
 
-(fn choose-wikilink-and-insert []
-  (ll.le_atlas.get_link_and_insert))
+(λ get-possible-links-async [?callback]
+  (fd-async
+    {:callback ?callback
+     :cwd vim.g.wiki_root
+     :args [:-g :-- :*.md]}))
 
-(fn add-save-hook []
+(λ get-possible-links [] (let [job (get-possible-links-async)] (job:sync)))
+
+(λ filename->filepath-async [filename ?callback]
+  (fd-async
+    {:callback ?callback
+     :cwd vim.g.wiki_root
+     :args [:-g :-- (.. filename ".md")]}))
+
+(λ filename->filepath [filename]
+  (let [job (filename->filepath-async filename)] (job:sync)))
+
+(λ open-wikilink-under-cursor [?will-split]
+  (let [filename (match-try (get-wikilink-info-under-cursor)
+                            wikilink-info wikilink-info.filename)]
+    (if filename
+      (filename->filepath-async
+        filename
+        (λ [filepaths]
+          (let [file (. filepaths 1)]
+            (if file
+              ((vim.schedule_wrap
+                 #(if ?will-split
+                    (vim.cmd (.. "vsplit " file))
+                    (vim.cmd (.. "e  " file)))))
+              (notify-error "Couldn't Find File"))))))))
+
+(λ choose-wikilink [callback]
+  (let [possible-links (get-possible-links)
+        get-link-name (λ [path] (vfn.fnamemodify path ::t:r))]
+    (vim.ui.select
+      possible-links
+      {:prompt "Select a Note"
+       :format_item get-link-name}
+      (λ [?selection]
+        (if ?selection
+          (let [filename (get-link-name ?selection)]
+            (vim.ui.input
+              {:prompt "Alias (Nothing for No Alias)"}
+              (λ [?alias]
+                (callback
+                  (.. "[["
+                      (if (not-falsy? ?alias) (.. filename "|" ?alias) filename)
+                      "]]"))))))))))
+
+(λ choose-wikilink-and-copy []
+  (choose-wikilink set-register-and-notify))
+
+(λ choose-wikilink-and-insert []
+  (choose-wikilink
+    (λ [?wikilink]
+      (let [[row column] (vapi.nvim_win_get_cursor 0)
+            line (vapi.nvim_get_current_line)
+            new-line (.. (line:sub 1 (++ column))
+                         ?wikilink
+                         (line:sub (+ column 2)))
+            ]
+        (P new-line)
+        (vapi.nvim_set_current_line new-line)
+        (vapi.nvim_win_set_cursor 0 [row (+ column (length ?wikilink))])
+        (vapi.nvim_feedkeys :a :m true)))))
+
+(λ add-save-hook []
   (vapi.nvim_create_autocmd
     "BufWritePre"
     {:group le_group
      :desc "Clean up and update metadata when taking Notes"
      :pattern ["*.md" "*.mdx" "*.wiki"]
      :callback
-     (fn [event-info]
-       (let [is-modified (vapi.nvim_buf_get_option 0 "modified")
-             {:my-date date} (lf.get_date)
-             cursor-position (vapi.nvim_win_get_cursor 0)]
-         (when is-modified
-           (vapi.nvim_command
-             (.. "%s/edited: \\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d/"
-                 "edited: " date "/ge")))
-         (vapi.nvim_command
-           "%s/\\(^.\\+\\n\\)\\(^#\\+ .*\\n\\)/\\1\\r\\2/gec")
-         (vapi.nvim_win_set_cursor 0 cursor-position)))
+     #(let [is-modified (vapi.nvim_buf_get_option 0 "modified")
+            {:my-date date} (get-date)
+            cursor-position (vapi.nvim_win_get_cursor 0)]
+        (if is-modified
+          (vapi.nvim_command
+            (.. "%s/edited: \\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d/"
+                "edited: " date "/ge")))
+        (vapi.nvim_command
+          "%s/\\(^.\\+\\n\\)\\(^#\\+ .*\\n\\)/\\1\\r\\2/gec")
+        (vapi.nvim_win_set_cursor 0 cursor-position))
      }))
 
-(fn add-keymaps []
+(λ add-keymaps []
   (vapi.nvim_create_autocmd
     "BufEnter"
     {:group le-group
      :desc "Add Note Taking Keymaps"
      :pattern ["*.md" "*.mdx" "*.wiki"]
      :callback
-     (fn [event-info]
+     (λ [event-info]
        (wk.register
          {
           :<Enter> [open-wikilink-under-cursor "Go To Wikilink"]
-          :<Leader><Enter> [(fn [] (open-wikilink-under-cursor true)) "Go To Wikilink (Split)"]
+          :<Leader><Enter> [#(open-wikilink-under-cursor true) "Go To Wikilink (Split)"]
           :<Leader>nl [choose-wikilink-and-copy "Get a wikilink"]
           }
-         { :buffer event-info.buf })
+         {:buffer event-info.buf})
        (wk.register
          {
           :<C-l> [choose-wikilink-and-insert "Insert a wikilink"]
           }
-         { :buffer event-info.buf :mode "i" }))
+         {:buffer event-info.buf :mode "i"}))
      }))
 
-(fn setup []
+(λ setup []
   (add-save-hook)
   (add-keymaps))
 
