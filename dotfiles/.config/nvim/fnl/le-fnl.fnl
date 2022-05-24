@@ -5,27 +5,51 @@
 ;;; Just me playin' around with Fennel in Neovim
 
 (local Job (require :plenary.job))
+(local vfn vim.fn)
+(local vapi vim.api)
 
 ;; Helper table to keep track of dynamically generated things
 (local M {})
 
-(fn id [...] ...)
+(λ id [...] ...)
 
-(fn reverse-get [table target]
+(local empty? vim.tbl_isempty)
+
+(λ table? [?table] (= (type ?table) "table"))
+
+(fn falsy? [x]
+  (or (not x) (= x "") (and (table? x) (empty? x)) (= x 0)))
+
+(fn not-falsy? [x] (not (falsy? x)))
+
+(λ reverse-get [table target]
   (var found nil)
   (each [key value (pairs table)] :until (not= found nil)
-    (when (= value target) (set found key)))
+    (if (= value target) (set found key)))
   found)
 
-(fn notify-level [message level custom-title]
+(λ notify-level [message level ?custom-title]
   (vim.notify
     message
     level
     {:title
-     (or custom-title
+     (or ?custom-title
          (: (reverse-get vim.log.levels level)
             :gsub "^%l" string.upper))
      }))
+
+(λ inc [x] (+ x 1))
+(local ++ inc)
+(λ dec [x] (- x 1))
+(local -- dec)
+
+(λ max [x y] (if (>= x y) x y))
+(λ min [x y] (if (<= x y) x y))
+(λ clamp [min# max# x] (max min# (min max# x)))
+(λ clamp+0 [max# x] (clamp 0 max# x))
+(λ clamp-0 [min# x] (clamp min# 0 x))
+(λ inc-pos [pos inc-by] [(. pos 1) (+ (. pos 2) inc-by)])
+(λ dec-pos [pos dec-by] [(. pos 1) (max 0 (- (. pos 2) dec-by))])
 
 ;; Dynamically generate notify shortcuts
 ;; TODO: File issue on nvim-notify about Trace and Debug
@@ -33,8 +57,8 @@
 (tset M :notify {})
 (each [level level-number (pairs vim.log.levels)]
   (let [level-l (string.lower level)]
-    (fn notifier [message custom-title]
-      (notify-level message level-number custom-title))
+    (λ notifier [message ?custom-title]
+      (notify-level message level-number ?custom-title))
     (tset M.notify level-number notifier)
     (tset M.notify level-number notifier)
     (tset M (.. "notify-" level) notifier)
@@ -42,16 +66,16 @@
     (tset M (.. "notify-" level-l) notifier)
     (tset M (.. "notify_" level-l) notifier)))
 
-(fn fold* [folder initial foldable iterator-maker]
+(λ fold* [folder initial foldable iterator-maker]
   (accumulate [accumulated initial
                key next (iterator-maker foldable)]
               (folder accumulated next key)))
 
-(fn foldl [folder initial foldable]
+(λ foldl [folder initial foldable]
   "Fold a sequence from the left"
   (fold* folder initial foldable ipairs))
 
-(fn fold [folder initial foldable]
+(λ fold [folder initial foldable]
   "Fold a table's keys and values (NOT STRICT ON ORDER)"
   (fold* folder initial foldable pairs))
 
@@ -61,32 +85,30 @@
 ;; so it's best to go to the man pages of C's strftime
 ;; directly. It took me quite a while to discover this
 ;; and I finally found %V was what I was looking for.
-(fn get-date [format]
+(λ get-date [?format]
   "Retrieve Current Date Information"
-  (let [dt os.date]
-    (if
-      (and (not= format nil) (not= format ""))
-      (dt format)
+  (let [datetime os.date]
+    (if (falsy? ?format)
+      {:year (tonumber (datetime "%Y"))
+       :month (tonumber (datetime "%m"))
+       :day (tonumber (datetime "%d"))
+       :hour (tonumber (datetime "%H"))
+       :minute (tonumber (datetime "%M"))
+       :second (tonumber (datetime "%S"))
+       :my-date (datetime "%Y-%m-%dT%H:%M:%S")
+       :my_date (datetime "%Y-%m-%dT%H:%M:%S")
+       :format datetime}
+      (datetime ?format))))
 
-      {:year (tonumber (dt "%Y"))
-       :month (tonumber (dt "%m"))
-       :day (tonumber (dt "%d"))
-       :hour (tonumber (dt "%H"))
-       :minute (tonumber (dt "%M"))
-       :second (tonumber (dt "%S"))
-       :my-date (dt "%Y-%m-%dT%H:%M:%S")
-       :my_date (dt "%Y-%m-%dT%H:%M:%S")
-       :format (dt)})))
-
-(fn day? []
+(λ day? []
   (let [date-info (get-date)
         hour date-info.hour]
     (and (> hour 6) (< hour 18))))
 
-(fn set-register-and-notify [item message title]
-  (let [title (or title "Register Set")]
-    (var final-message message)
-    (when (= (type final-message) "function")
+(λ set-register-and-notify [item ?message ?title]
+  (let [title (or ?title "Register Set")]
+    (var final-message ?message)
+    (if (= (type final-message) "function")
       (set final-message (final-message item)))
     (set final-message
          (or
@@ -96,11 +118,11 @@
     (vim.notify
       final-message "info" { : title })))
 
-(fn get-locals [stack-max]
+(λ get-locals [?stack-max]
   (local locals {})
   (var j 1)
   (var remaining? true)
-  (for [i 1 (or stack-max 2)]
+  (for [i 1 (or ?stack-max 2)]
     (while remaining?
       (let [(name value) (debug.getlocal 2 j)]
         (if (not= name nil)
@@ -109,13 +131,8 @@
         (set j (+ j 1)))))
   locals)
 
-(fn falsy? [item]
-  (or (not item) (= item "") (= item {}) (= item 0)))
-
-(fn not-falsy? [x] (not (falsy? x)))
-
-(fn fd-async [options]
-  (when options.cwd
+(λ fd-async [options]
+  (when options.cwd ; WHY YOU SO WACK WINDOWS
     (if is_win (set options.cwd (options.cwd:gsub "~" "$HOME")))
     (set options.cwd (vfn.expand options.cwd)))
   (let [callback options.callback
@@ -134,23 +151,39 @@
     job))
 
 ; Module Export
-(t.extend "keep" {
- : fold
- : foldl
- : fold* :fold_ fold*
+(t.extend
+  "keep"
+  {
+   : fold
+   : foldl
+   : fold* :fold_ fold*
 
- : fd-async :fd_async fd-async
+   : reverse-get :reverse_get reverse-get
+   : notify-level :notify_level notify-level
 
- : reverse-get :reverse_get reverse-get
- : notify-level :notify_level notify-level
+   : set-register-and-notify :set_register_and_notify set-register-and-notify
 
- : day? :get_is_day day?
- : get-date :get_date get-date
+   : inc : ++
+   : dec : --
+   : max : min
 
- : falsy? :get_is_falsy falsy?
- : not-falsy? :get_is_not_falsy not-falsy?
+   : inc-pos :inc_pos inc-pos
+   : dec-pos :dec_pos dec-pos
 
- : set-register-and-notify :set_register_and_notify set-register-and-notify
+   : clamp
+   : clamp+0 :clamp_pos0 clamp+0
+   : clamp-0 :clamp_neg0 clamp-0
 
- : get-locals :get_locals get-locals
- } M)
+   : fd-async :fd_async fd-async
+
+   : day? :get_is_day day?
+   : get-date :get_date get-date
+
+   : empty? :get_is_empty empty?
+   : table? :get_is_table table?
+   : falsy? :get_is_falsy falsy?
+   : not-falsy? :get_is_not_falsy not-falsy?
+
+   : get-locals :get_locals get-locals
+   }
+  M)
