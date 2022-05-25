@@ -29,6 +29,10 @@ _G.P = function(...) vim.pretty_print(...) end
 -- Helpful Flags and Variables
 _G.is_startup = vfn.has("vim_starting") == 1
 _G.is_neovide = vim.g.neovide ~= nil
+_G.is_nvui = vim.g.nvui ~= nil
+_G.is_fvim = vim.g.fvim_loaded
+_G.is_goneovim = vim.g.goneovim
+_G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim
 _G.is_mac = vfn.has("mac") == 1
 _G.is_wsl = vfn.has("wsl") == 1
 _G.is_win = vfn.has("win32") == 1
@@ -94,7 +98,6 @@ packer.startup(function(use)
     use "stevearc/dressing.nvim"
     use "beauwilliams/focus.nvim"
     use "lewis6991/gitsigns.nvim"
-    -- use "arcticicestudio/nord-vim"
     use "sainnhe/gruvbox-material"
     use "neovimhaskell/haskell-vim"
     use "mrjones2014/legendary.nvim"
@@ -163,8 +166,14 @@ end)
 -- Load cached plugins for speed
 require("impatient")
 
+-- Which Key (Mapping reminders)
+require("legendary").setup({})
+local wk = require("which-key")
+wk.setup()
+
 -- Load Fennel Integration
-require("hotpot").setup({
+local hotpot = require("hotpot")
+hotpot.setup({
     provide_require_fennel = true,
     compiler = {
         modules = {
@@ -176,15 +185,31 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
     group = le_group,
     desc = "Setup Fennel Specific things",
     pattern = { "*.fnl" },
-    callback = function(_ --[[event]])
+    callback = function(event)
         vim.cmd([[abbreviate <buffer> (;\ (λ]])
         vim.cmd([[abbreviate <buffer> ;\ λ]])
         vim.cmd([[abbreviate <buffer> lambda\ λ]])
         vim.cmd([[abbreviate <buffer> l\ λ]])
         vim.cmd([[abbreviate <buffer> (lambda\ (λ]])
         vim.cmd([[abbreviate <buffer> (l\ (λ]])
+        wk.register({
+            ["<Leader>cf"] = {
+                function()
+                    local result = require("plenary.job"):new({
+                        command = "fnlfmt.bat",
+                        args = { vfn.expand("#" .. event.buf .. ":p", nil, nil) },
+                    }):sync()
+                    result[#result] = nil
+                    vapi.nvim_buf_set_lines(event.buf, 0, -1, true, result)
+                end, "(c)ode (f)ormat"
+            }
+        }, { buffer = event.buf })
     end
 })
+vapi.nvim_create_user_command("FnlCacheClear", function()
+    local hotpot_cache = require("hotpot.api.cache")
+    hotpot_cache["clear-cache"]()
+end, {})
 
 -- Ensure old timers are cleaned upon reloading
 if not is_startup then
@@ -252,11 +277,6 @@ vapi.nvim_create_user_command("GetMyDate", function()
     lf.set_register_and_notify(lf.get_date().my_date)
 end, {})
 
--- Which Key (Mapping reminders)
-require("legendary").setup({})
-local wk = require("which-key")
-wk.setup()
-
 -- Setup Evaluation w/ Lua
 -- TODO: Make this much better
 vapi.nvim_create_autocmd({"BufEnter"}, {
@@ -290,13 +310,29 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
 if is_neovide then
     vim.g.neovide_no_idle = false
     vim.g.neovide_refresh_rate = 165
-    vim.g.neovide_transparency = 0.95
+    vim.g.neovide_transparency = 0.98
     vim.g.neovide_cursor_antialiasing = true
     vim.g.neovide_cursor_vfx_mode = "railgun"
     vim.g.neovide_cursor_animation_length = 0.1
     vim.g.neovide_cursor_vfx_particle_phase = 3
     vim.g.neovide_cursor_vfx_particle_density = 30.0
+elseif is_nvui then
+    vim.cmd[[
+    NvuiOpacity 0.95
+    NvuiTitlebarFontSize 13
 
+    NvuiCmdCenterXPos 0.5
+    NvuiCmdCenterYPos 0.5
+    NvuiCmdline v:true
+    NvuiCmdFontSize 14
+    NvuiCmdBigFontScaleFactor 1.25
+
+    NvuiSnapshotLimit 10
+    NvuiScrollAnimationDuration 0.5
+    ]]
+end
+
+if is_gui then
     -- GUI Font resizing
     -- Thank you so much https://github.com/neovide/neovide/issues/1301#issuecomment-1119370546
     vim.g.gui_font_default_size = 14
@@ -342,8 +378,7 @@ end
 vim.g.nord_italic = true
 vim.g.nord_borders = true
 vim.g.nord_contrast = true
-vim.g.nord_disable_background = not is_neovide
-vim.g.nord_cursorline_transparent = true
+vim.g.nord_disable_background = not is_gui
 
 require("onenord").setup ({
     theme = "dark",
@@ -617,8 +652,12 @@ vapi.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less O
 -- Auto Window Resizing
 require("focus").setup({
     signcolumn = false,
-    cursorline = false,
+    cursorline = true,
     hybridnumber = true,
+})
+wk.register({
+    ["<Leader>ws"] = { ":FocusSplitNicely<Enter>", "(w)indow (s)plit" },
+    ["<Leader>w="] = { ":FocusEqualise<Enter>", "(=) Equalize Windows" },
 })
 
 ------------------------------
@@ -685,16 +724,17 @@ require("numb").setup({ number_only = true })
 
 -- Zen Mode (Minimal Mode)
 require("zen-mode").setup({
-    window = { width = 88, number = true },
-    plugins = { options = { ruler = true }},
-    gitsigns = { enable = true },
+    window = { width = 90, backdrop = 0.6 },
     on_open = function()
         vim.cmd[[:FocusDisable]]
-        wk.register({
-            ["<Escape>"] = { ":ZenMode<Enter>", "Exit Zen Mode" }
-        }, { buffer = vapi.nvim_get_current_buf() })
+        pcall(function()
+            vapi.nvim_set_keymap("n", "<Escape>", ":ZenMode<Enter>", {})
+        end)
     end,
     on_close = function()
+        pcall(function()
+            vapi.nvim_del_keymap("n", "<Escape>")
+        end)
         vim.cmd[[:FocusEnable]]
     end
 })
@@ -742,6 +782,7 @@ require("neogit").setup({
     kind = "vsplit",
     disable_commit_confirmation = true,
     mappings = {
+        -- TODO: Find out how to use escape everywhere
         status = {
             ["<Escape>"] = "Close",
         },
@@ -958,8 +999,8 @@ require("mini.surround").setup({
     mappings = {
         add = "ys",
         delete = "ds",
-        find = "gS",
-        find_left = "gs",
+        find = ">S",
+        find_left = "<s",
         highlight = "",
         replace = "cs",
         update_n_lines = "",
@@ -1054,7 +1095,8 @@ wk.register({
             g = { ":Telescope live_grep<Enter>", "(g)rep project" },
             h = { ":Telescope help_tags<Enter>", "(f)ind (h)elp" },
             k = { require("legendary").find, "(f)ind (k)eymaps" },
-            m = { ":Telescope man_pages<Enter>", "(f)ind (m)an pages" },
+            m = { ":Telescope marks<Enter>", "(f)ind (m)arks" },
+            M = { ":Telescope man_pages<Enter>", "(f)ind (M)an pages" },
             r = { ":Telescope oldfiles<Enter>", "(f)ind (r)ecent files" },
             t = { ":Telescope treesitter<Enter>", "(f)ind (t)reesitter symbols" },
             y = { ":Telescope yank_history<Enter>", "(f)ind (y)ank history" },

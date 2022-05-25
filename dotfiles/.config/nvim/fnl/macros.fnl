@@ -1,32 +1,42 @@
-;;; Macros for usage
+;;; ======================
+;;; == Macros for me 🤖 ==
+;;; ======================
+
 ;; Not really made by me (I'm too dumb to make macros on my own)
 ;; They are derived from other macro libraries like
 ;; - https://github.com/udayvir-singh/hibiscus.nvim
 
+;; Also I can't get it to work consistently XD
+
 (local fennel (require :fennel))
 
-(fn ast [expression]
-  (let [(ok out) ((fennel.parser expression "fstring"))]
-    out))
+; ;; Get Fennel Module From Fennel Or My Fennel Provider
+; (λ get-fennel []
+;   (let [hotpot-api-fennel (require :hotpot.api.fennel)]
+;     (hotpot-api-fennel.latest)))
+; (λ fennel [] (or (require :fennel) (get-fennel)))
 
-(fn fstring-og [str]
-  (local args [])
-  (each [to-interpolate (str:gmatch "$([({][^$]+[})])")]
-    (if (to-interpolate:find "^{")
-        (table.insert args (sym (to-interpolate:match "^{(.+)}$")))
-        (table.insert args (ast to-interpolate))))
-  `(string.format ,(str:gsub "$[({][^$]+[})]" "%%s") ,(unpack args)))
+(fn P [...]
+  (print (fennel.view [...])))
+
+(fn PR [...]
+  (P ...)
+  ...)
+
+(fn string->fennel [string]
+  (let [(is-ok result) ((fennel.parser string))]
+    (if is-ok
+        result
+        (error "Failed to Parse Expression"))))
 
 (fn fstring [str]
-  (let [args
-        (icollect [to-interpolate (str:gmatch "$([({][^$]+[})])")]
-                  (if (to-interpolate:find "^{") ; if interpolating variable
-                    (sym (to-interpolate:match "^{(.+)}$"))
-                    (ast to-interpolate)))]
-  `(string.format ,(str:gsub "$[({][^$]+[})]" "%%s") ,(unpack args))))
+  (let [args (icollect [form (str:gmatch "$([({][^$]+[})])")]
+               ;; If we're interpolating a variable
+               (if (form:find "^{")
+                   ;; Just make inner form a symbol.
+                   (sym (form:match "^{(.+)}$"))
+                   ;; Else, parse the expression
+                   (string->fennel form)))]
+    `(string.format ,(str:gsub "$[({][^$]+[})]" "%%s") ,(unpack args))))
 
-{
- : fstring
- : fstring-og
- : ast
- }
+{: fstring}
