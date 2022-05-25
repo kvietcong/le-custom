@@ -15,12 +15,13 @@ local Job = require("plenary.job")
 
 -- Module to return
 local M = {
-    le_atlas = {}
+    le_atlas = {},
 }
 
 local notify_level = function(message, level, custom_title)
     vim.notify(message, level, {
-        title = custom_title or level:gsub("^%l", string.upper) })
+        title = custom_title or level:gsub("^%l", string.upper),
+    })
 end
 
 for level, _ in pairs(vim.log.levels) do
@@ -30,10 +31,14 @@ for level, _ in pairs(vim.log.levels) do
     end
 end
 
-M.id = function(...) return ... end
+M.id = function(...)
+    return ...
+end
 
 M.set_register_and_notify = function(item, message, title)
-    if type(message) == "function" then message = message(item) end
+    if type(message) == "function" then
+        message = message(item)
+    end
     message = message or ('"' .. item .. '" Ready to Paste!')
     vfn.setreg("", item)
     M.notify_info(message, title or "Register Set")
@@ -64,7 +69,7 @@ end
 
 M.quotify = function(...)
     local item = ""
-    for _, term in ipairs({...}) do
+    for _, term in ipairs({ ... }) do
         item = item .. term
     end
     return '"' .. item .. '"'
@@ -74,7 +79,9 @@ M.get_is_falsy = function(item)
     return not item or item == "" or item == {}
 end
 
-M.get_not_is_falsy = function(item) return not M.get_is_falsy(item) end
+M.get_not_is_falsy = function(item)
+    return not M.get_is_falsy(item)
+end
 
 M.fd_async = function(callback, args, options)
     options = options or {}
@@ -94,7 +101,7 @@ M.fd_async = function(callback, args, options)
         on_exit = function(job, exit_code)
             local result = job:result()
             callback(result, job, exit_code)
-        end
+        end,
     }, options)
 
     local job = Job:new(job_options)
@@ -108,17 +115,23 @@ end
 -----------------------
 
 M.le_atlas.add_save_hook = function(le_group)
-    vapi.nvim_create_autocmd({"BufWritePre"}, {
+    vapi.nvim_create_autocmd({ "BufWritePre" }, {
         group = le_group,
         desc = "Clean up and update metadata when taking notes.",
         pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
-        callback = function(_ --[[eventInfo]])
+        callback = function(
+            _ --[[eventInfo]]
+        )
             local is_modified = vapi.nvim_buf_get_option(0, "modified")
             if is_modified then
-                vapi.nvim_command([[%s/edited: \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/edited: ]] .. M.get_date().my_date .. "/ge")
+                vapi.nvim_command(
+                    [[%s/edited: \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/edited: ]]
+                        .. M.get_date().my_date
+                        .. "/ge"
+                )
             end
             vapi.nvim_command([[%s/\(^.\+\n\)\(^#\+ .*\n\)/\1\r\2/gec]]) -- It took a lot of trial and error for this XD
-        end
+        end,
     })
 end
 
@@ -127,7 +140,7 @@ M.le_atlas.get_wikilink_info_under_cursor = function()
     local cursor_before_yank = vapi.nvim_win_get_cursor(0)
     local register_old_value = vfn.getreg("z", nil, nil)
 
-    vim.cmd[[normal vi["zy]]
+    vim.cmd([[normal vi["zy]])
     local cursor_after_yank = vapi.nvim_win_get_cursor(0)
     if cursor_after_yank[1] ~= cursor_before_yank[1] then
         return nil
@@ -153,7 +166,11 @@ end
 -- I've decided that things with an async suffix will take
 -- callbacks return a started job
 M.le_atlas.wiki_filename_to_filepath_async = function(callback, filename)
-    return M.fd_async(callback, {"-g", "--", filename .. ".md" }, { cwd = vim.g.wiki_root })
+    return M.fd_async(
+        callback,
+        { "-g", "--", filename .. ".md" },
+        { cwd = vim.g.wiki_root }
+    )
 end
 
 -- THIS IS BLOCKING
@@ -174,26 +191,24 @@ M.le_atlas.get_link = function(callback)
     local get_filename = function(filepath)
         return vfn.fnamemodify(filepath, ":t:r")
     end
-    vim.ui.select(
-        possible_links,
-        {
-            prompt = "Select a Note",
-            format_item = get_filename,
-        },
-        function(selection)
-            if not selection then return end
-            local filename = get_filename(selection)
-            vim.ui.input({
-                prompt = "Alias (Nothing for No Alias)",
-            }, function(alias)
-                local link = filename
-                if M.get_not_is_falsy(alias) then
-                    link = link .. "|" .. alias
-                end
-                callback("[[" .. link .. "]]")
-            end)
+    vim.ui.select(possible_links, {
+        prompt = "Select a Note",
+        format_item = get_filename,
+    }, function(selection)
+        if not selection then
+            return
         end
-    )
+        local filename = get_filename(selection)
+        vim.ui.input({
+            prompt = "Alias (Nothing for No Alias)",
+        }, function(alias)
+            local link = filename
+            if M.get_not_is_falsy(alias) then
+                link = link .. "|" .. alias
+            end
+            callback("[[" .. link .. "]]")
+        end)
+    end)
 end
 
 M.le_atlas.get_link_and_copy = function()
@@ -202,7 +217,9 @@ end
 
 M.le_atlas.get_link_and_insert = function()
     M.le_atlas.get_link(function(link)
-        if not link then return end
+        if not link then
+            return
+        end
         local cursor = vapi.nvim_win_get_cursor(0)
         local column = cursor[2]
         local line = vapi.nvim_get_current_line()
@@ -216,7 +233,7 @@ end
 M.le_atlas.open_wikilink_under_cursor = function(will_split, is_sync)
     local wikilink_info = M.le_atlas.get_wikilink_info_under_cursor()
     if not wikilink_info then
-        vim.notify("No Link Under Your Cursor", "error", {title = "Error"})
+        vim.notify("No Link Under Your Cursor", "error", { title = "Error" })
         return
     end
     local filename = wikilink_info.filename
@@ -225,7 +242,7 @@ M.le_atlas.open_wikilink_under_cursor = function(will_split, is_sync)
         M.le_atlas.wiki_filename_to_filepath_async(function(filepaths)
             local file = filepaths[1]
             if not file then
-                vim.notify("Could not find file", "error", {title = "Error"})
+                vim.notify("Could not find file", "error", { title = "Error" })
                 return
             end
             vim.schedule_wrap(function()
@@ -240,7 +257,7 @@ M.le_atlas.open_wikilink_under_cursor = function(will_split, is_sync)
         local filepaths = M.le_atlas.wiki_filename_to_filepath(filename)
         local file = filepaths[1]
         if not file then
-            vim.notify("Could not find file", "error", {title = "Error"})
+            vim.notify("Could not find file", "error", { title = "Error" })
             return
         end
         if will_split then

@@ -24,7 +24,13 @@
 -- Make built-in functions easier to access
 _G.vfn = vim.fn
 _G.vapi = vim.api
-_G.P = function(...) vim.pretty_print(...) end
+_G.P = function(...)
+    vim.pretty_print(...)
+end
+_G.PR = function(...)
+    P(...)
+    return ...
+end
 
 -- Helpful Flags and Variables
 _G.is_startup = vfn.has("vim_starting") == 1
@@ -48,8 +54,12 @@ local packer_bootstrap
 local packer_path = data_path .. "/site/pack/packer/start/packer.nvim"
 if vfn.empty(vfn.glob(packer_path, nil, nil)) > 0 then
     packer_bootstrap = vfn.system({
-        "git", "clone", "--depth", "1",
-        "https://github.com/wbthomason/packer.nvim", packer_path
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "https://github.com/wbthomason/packer.nvim",
+        packer_path,
     })
     vapi.nvim_command("packadd packer.nvim")
 end
@@ -57,103 +67,109 @@ end
 -- Install all the plugins
 local packer = require("packer")
 packer.startup(function(use)
-    use "wbthomason/packer.nvim"
-    use "dstein64/vim-startuptime" -- Run :StartupTime
-    use "lewis6991/impatient.nvim" -- Cache Lua Plugins
+    use("wbthomason/packer.nvim")
+    use("dstein64/vim-startuptime") -- Run :StartupTime
+    use("lewis6991/impatient.nvim") -- Cache Lua Plugins
 
     -- Common Dependencies
-    use "nvim-lua/popup.nvim"
-    use "nvim-lua/plenary.nvim"
-    use "kyazdani42/nvim-web-devicons"
+    use("nvim-lua/popup.nvim")
+    use("nvim-lua/plenary.nvim")
+    use("kyazdani42/nvim-web-devicons")
 
     -- Quality of Life
-    use "tpope/vim-repeat"
-    use "gbprod/yanky.nvim"
-    use "ggandor/leap.nvim"
-    use "nacro90/numb.nvim"
-    use "wellle/targets.vim"
-    use "nanotee/zoxide.vim"
-    use "jghauser/mkdir.nvim"
-    use "folke/which-key.nvim"
-    use "voldikss/vim-floaterm"
-    use "echasnovski/mini.nvim"
-    use "rafcamlet/nvim-luapad"
-    use "TimUntersberger/neogit"
-    use "kyazdani42/nvim-tree.lua"
+    use("tpope/vim-eunuch")
+    use("tpope/vim-repeat")
+    use("gbprod/yanky.nvim")
+    use("ggandor/leap.nvim")
+    use("nacro90/numb.nvim")
+    use("wellle/targets.vim")
+    use("nanotee/zoxide.vim")
+    use("jghauser/mkdir.nvim")
+    use("folke/which-key.nvim")
+    use("voldikss/vim-floaterm")
+    use("echasnovski/mini.nvim")
+    use("rafcamlet/nvim-luapad")
+    use("TimUntersberger/neogit")
+    use("sindrets/winshift.nvim")
 
     -- Neovim Development
-    use "Olical/conjure"
-    use "folke/lua-dev.nvim"
-    use "rktjmp/hotpot.nvim"
-    use "bakpakin/fennel.vim"
-    use "nanotee/luv-vimdocs"
-    use "milisims/nvim-luaref"
-    use "hrsh7th/cmp-nvim-lua"
+    use("Olical/conjure")
+    use("folke/lua-dev.nvim")
+    use("rktjmp/hotpot.nvim")
+    use("bakpakin/fennel.vim")
+    use("nanotee/luv-vimdocs")
+    use("milisims/nvim-luaref")
+    use("hrsh7th/cmp-nvim-lua")
 
     -- Pretty Things
-    use "rcarriga/nvim-notify"
-    use "shaunsingh/nord.nvim"
-    use "p00f/nvim-ts-rainbow"
-    use "rmehri01/onenord.nvim"
-    use "stevearc/dressing.nvim"
-    use "beauwilliams/focus.nvim"
-    use "lewis6991/gitsigns.nvim"
-    use "sainnhe/gruvbox-material"
-    use "neovimhaskell/haskell-vim"
-    use "mrjones2014/legendary.nvim"
-    use "norcalli/nvim-colorizer.lua" -- TODO: See if I can make this better?
-    use "akinsho/nvim-bufferline.lua"
+    use("rcarriga/nvim-notify")
+    use("shaunsingh/nord.nvim")
+    use("p00f/nvim-ts-rainbow")
+    use("rmehri01/onenord.nvim")
+    use("stevearc/dressing.nvim")
+    use("beauwilliams/focus.nvim")
+    use("lewis6991/gitsigns.nvim")
+    use("sainnhe/gruvbox-material")
+    use("neovimhaskell/haskell-vim")
+    use("mrjones2014/legendary.nvim")
+    use("norcalli/nvim-colorizer.lua") -- TODO: See if I can make this better?
+    use("akinsho/nvim-bufferline.lua")
 
     -- Writing
-    use "lervag/wiki.vim"
-    use "godlygeek/tabular"
-    use "folke/zen-mode.nvim"
-    use "preservim/vim-markdown"
-    use "crispgm/telescope-heading.nvim"
+    use("lervag/wiki.vim")
+    use("godlygeek/tabular")
+    use("jbyuki/carrot.nvim")
+    use("folke/zen-mode.nvim")
+    use("preservim/vim-markdown")
+    use("crispgm/telescope-heading.nvim")
 
     -- Pickers/Finders
-    use "tversteeg/registers.nvim"
-    use "jvgrootveld/telescope-zoxide"
-    use "nvim-telescope/telescope.nvim"
-    use "olacin/telescope-gitmoji.nvim"
-    use "kvietcong/telescope-emoji.nvim"
-    use { "nvim-telescope/telescope-fzf-native.nvim", run = "make" }
+    use("tversteeg/registers.nvim")
+    use("jvgrootveld/telescope-zoxide")
+    use("nvim-telescope/telescope.nvim")
+    use("olacin/telescope-gitmoji.nvim")
+    use("kvietcong/telescope-emoji.nvim")
+    use("nvim-telescope/telescope-packer.nvim")
+    use("nvim-telescope/telescope-symbols.nvim")
+    use("nvim-telescope/telescope-ui-select.nvim")
+    use("nvim-telescope/telescope-file-browser.nvim")
+    use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
 
     -- Treesitter
-    use "SmiteshP/nvim-gps"
-    use "lewis6991/spellsitter.nvim"
-    use "haringsrob/nvim_context_vt"
-    use "romgrk/nvim-treesitter-context"
-    use "nvim-treesitter/nvim-treesitter"
-    use "nvim-treesitter/nvim-treesitter-refactor"
-    use "nvim-treesitter/nvim-treesitter-textobjects"
-    use "JoosepAlviste/nvim-ts-context-commentstring"
+    use("SmiteshP/nvim-gps")
+    use("lewis6991/spellsitter.nvim")
+    use("haringsrob/nvim_context_vt")
+    use("romgrk/nvim-treesitter-context")
+    use("nvim-treesitter/nvim-treesitter")
+    use("nvim-treesitter/nvim-treesitter-refactor")
+    use("nvim-treesitter/nvim-treesitter-textobjects")
+    use("JoosepAlviste/nvim-ts-context-commentstring")
 
     -- LSP
-    use "neovim/nvim-lspconfig"
-    use "ray-x/lsp_signature.nvim"
-    use "williamboman/nvim-lsp-installer"
+    use("neovim/nvim-lspconfig")
+    use("ray-x/lsp_signature.nvim")
+    use("williamboman/nvim-lsp-installer")
 
     -- Completion
-    use "hrsh7th/cmp-omni"
-    use "hrsh7th/cmp-calc"
-    use "L3MON4D3/LuaSnip"
-    use "hrsh7th/nvim-cmp"
-    use "hrsh7th/cmp-path"
-    use "f3fora/cmp-spell"
-    use "hrsh7th/cmp-emoji"
-    use "tzachar/fuzzy.nvim"
-    use "hrsh7th/cmp-buffer"
-    use "hrsh7th/cmp-cmdline"
-    use "ray-x/cmp-treesitter"
-    use "onsails/lspkind.nvim"
-    use "hrsh7th/cmp-nvim-lsp"
-    use "PaterJason/cmp-conjure"
-    use "tzachar/cmp-fuzzy-buffer"
-    use "saadparwaiz1/cmp_luasnip"
-    use "dmitmel/cmp-cmdline-history"
-    use "hrsh7th/cmp-nvim-lsp-signature-help"
-    use "hrsh7th/cmp-nvim-lsp-document-symbol"
+    use("hrsh7th/cmp-omni")
+    use("hrsh7th/cmp-calc")
+    use("L3MON4D3/LuaSnip")
+    use("hrsh7th/nvim-cmp")
+    use("hrsh7th/cmp-path")
+    use("f3fora/cmp-spell")
+    use("hrsh7th/cmp-emoji")
+    use("tzachar/fuzzy.nvim")
+    use("hrsh7th/cmp-buffer")
+    use("hrsh7th/cmp-cmdline")
+    use("ray-x/cmp-treesitter")
+    use("onsails/lspkind.nvim")
+    use("hrsh7th/cmp-nvim-lsp")
+    use("PaterJason/cmp-conjure")
+    use("tzachar/cmp-fuzzy-buffer")
+    use("saadparwaiz1/cmp_luasnip")
+    use("dmitmel/cmp-cmdline-history")
+    use("hrsh7th/cmp-nvim-lsp-signature-help")
+    use("hrsh7th/cmp-nvim-lsp-document-symbol")
 
     packer.clean()
     packer.install()
@@ -177,11 +193,11 @@ hotpot.setup({
     provide_require_fennel = true,
     compiler = {
         modules = {
-            correlate = true
+            correlate = true,
         },
     },
 })
-vapi.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Setup Fennel Specific things",
     pattern = { "*.fnl" },
@@ -195,16 +211,19 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
         wk.register({
             ["<Leader>cf"] = {
                 function()
-                    local result = require("plenary.job"):new({
-                        command = "fnlfmt.bat",
-                        args = { vfn.expand("#" .. event.buf .. ":p", nil, nil) },
-                    }):sync()
+                    local result = require("plenary.job")
+                        :new({
+                            command = "fnlfmt.bat",
+                            args = { vfn.expand("#" .. event.buf .. ":p", nil, nil) },
+                        })
+                        :sync()
                     result[#result] = nil
                     vapi.nvim_buf_set_lines(event.buf, 0, -1, true, result)
-                end, "(c)ode (f)ormat"
-            }
+                end,
+                "(c)ode (f)ormat",
+            },
         }, { buffer = event.buf })
-    end
+    end,
 })
 vapi.nvim_create_user_command("FnlCacheClear", function()
     local hotpot_cache = require("hotpot.api.cache")
@@ -216,12 +235,17 @@ if not is_startup then
     vfn.timer_stopall()
 end
 
+-- Trigger autoread manually every second
+AutoReadTimer = vfn.timer_start(1000, function()
+    vim.cmd([[silent! checktime]])
+end, { ["repeat"] = -1 })
+
 -- Autocommand group for configuration
 _G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
 _G["le-group"] = _G.le_group
 
 -- This is for sourcing on configuration change
-vapi.nvim_create_autocmd({"BufWritePost"}, {
+vapi.nvim_create_autocmd({ "BufWritePost" }, {
     group = le_group,
     pattern = { "init.lua", "init.vim" },
     desc = "Auto re-source configuration files.",
@@ -269,7 +293,9 @@ vapi.nvim_create_user_command("GetDate", function(command)
     local time = lf.get_date(command.args)
     if type(time) == "string" then
         lf.set_register_and_notify(time)
-    else P(time) end
+    else
+        P(time)
+    end
     return time
 end, { nargs = "?" })
 
@@ -279,7 +305,7 @@ end, {})
 
 -- Setup Evaluation w/ Lua
 -- TODO: Make this much better
-vapi.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Add Lua Keymaps",
     pattern = "*.lua",
@@ -289,17 +315,21 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
             -- Super Ad-Hoc Evaluation. Try to find a better way.
             l = {
                 function()
-                    local to_eval = loadstring("P(" .. vapi.nvim_get_current_line() .. ")", nil)
+                    local to_eval = loadstring(
+                        "P(" .. vapi.nvim_get_current_line() .. ")",
+                        nil
+                    )
                     if to_eval then
                         setfenv(to_eval, t.extend("force", cfg_env, _G))
                         to_eval()
                     else
                         lf.notify_error("Failed to Evaluate Line")
                     end
-                end, "(e)valuate (l)ine"
+                end,
+                "(e)valuate (l)ine",
             },
         }, { prefix = "<Leader>e", buffer = event.buf })
-    end
+    end,
 })
 
 -------------------------
@@ -317,7 +347,7 @@ if is_neovide then
     vim.g.neovide_cursor_vfx_particle_phase = 3
     vim.g.neovide_cursor_vfx_particle_density = 30.0
 elseif is_nvui then
-    vim.cmd[[
+    vim.cmd([[
     NvuiOpacity 0.95
     NvuiTitlebarFontSize 13
 
@@ -329,7 +359,7 @@ elseif is_nvui then
 
     NvuiSnapshotLimit 10
     NvuiScrollAnimationDuration 0.5
-    ]]
+    ]])
 end
 
 if is_gui then
@@ -340,7 +370,11 @@ if is_gui then
     vim.g.gui_font_face = "CodeNewRoman NF"
 
     local refreshGuiFont = function()
-        vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)
+        vim.opt.guifont = string.format(
+            "%s:h%s",
+            vim.g.gui_font_face,
+            vim.g.gui_font_size
+        )
     end
 
     local resizeGuiFont = function(delta)
@@ -349,7 +383,7 @@ if is_gui then
         refreshGuiFont()
     end
 
-    local resetGuiFont = function ()
+    local resetGuiFont = function()
         vim.g.gui_font_size = vim.g.gui_font_default_size
         refreshGuiFont()
     end
@@ -363,15 +397,40 @@ if is_gui then
                 name = "(f)ont",
                 r = {
                     name = "(r)esize",
-                    k = { function() resizeGuiFont(1) end, "Bigger Font" },
-                    j = { function() resizeGuiFont(-1) end, "Smaller Font" },
-                    ["+"] = { function() resizeGuiFont(1) end, "Bigger Font" },
-                    ["-"] = { function() resizeGuiFont(-1) end, "Smaller Font" },
-                    ["="] = { function() resetGuiFont() end, "Reset Font" },
+                    k = {
+                        function()
+                            resizeGuiFont(1)
+                        end,
+                        "Bigger Font",
+                    },
+                    j = {
+                        function()
+                            resizeGuiFont(-1)
+                        end,
+                        "Smaller Font",
+                    },
+                    ["+"] = {
+                        function()
+                            resizeGuiFont(1)
+                        end,
+                        "Bigger Font",
+                    },
+                    ["-"] = {
+                        function()
+                            resizeGuiFont(-1)
+                        end,
+                        "Smaller Font",
+                    },
+                    ["="] = {
+                        function()
+                            resetGuiFont()
+                        end,
+                        "Reset Font",
+                    },
                 },
             },
         },
-    }, {});
+    }, {})
 end
 
 -- Colorscheme Options
@@ -380,7 +439,7 @@ vim.g.nord_borders = true
 vim.g.nord_contrast = true
 vim.g.nord_disable_background = not is_gui
 
-require("onenord").setup ({
+require("onenord").setup({
     theme = "dark",
     fade_nc = false,
     disable = {
@@ -396,13 +455,15 @@ vim.g.gruvbox_material_diagnostic_line_highlight = 1
 
 -- Select day/night colorscheme every 15 minutes
 local colorschemes = { day = "gruvbox-material", night = "nord" }
-local set_colorscheme = function(_--[[timer_id]])
+local set_colorscheme = function(
+    _ --[[timer_id]]
+)
     local colorscheme
     if lf.get_is_day() then
         colorscheme = colorschemes.day
-        vim.cmd[[set background=light]]
+        vim.cmd([[set background=light]])
     else
-        vim.cmd[[set background=dark]]
+        vim.cmd([[set background=dark]])
         colorscheme = colorschemes.night
     end
 
@@ -410,8 +471,7 @@ local set_colorscheme = function(_--[[timer_id]])
     vim.cmd("colorscheme " .. colorscheme)
 end
 set_colorscheme()
-ColorschemeTimer = vfn.timer_start(1000 * 60 * 15,
-    set_colorscheme, { ["repeat"] = -1 })
+ColorschemeTimer = vfn.timer_start(1000 * 60 * 15, set_colorscheme, { ["repeat"] = -1 })
 
 -- Make Virtual text visible with transparent backgrounds
 vapi.nvim_command("highlight NonText guifg=#6C768A")
@@ -422,31 +482,31 @@ require("dressing").setup()
 -- Fancy Notifications
 require("notify").setup({
     stages = "slide",
-    timeout = 3000
+    timeout = 3000,
 })
 vim.notify = require("notify")
 
 -- Color Previews in Code
-require("colorizer").setup({"*"}, {
-    RGB      = false,
-    RRGGBB   = true,
-    names    = false,
+require("colorizer").setup({ "*" }, {
+    RGB = false,
+    RRGGBB = true,
+    names = false,
     RRGGBBAA = false,
-    rgb_fn   = false,
-    hsl_fn   = false,
-    css      = false,
-    css_fn   = false,
-    mode     = "background",
+    rgb_fn = false,
+    hsl_fn = false,
+    css = false,
+    css_fn = false,
+    mode = "background",
 })
 
 -- Haskell Improvements
-vim.g.haskell_enable_quantification = 1   -- to enable highlighting of `forall`
-vim.g.haskell_enable_recursivedo = 1      -- to enable highlighting of `mdo` and `rec`
-vim.g.haskell_enable_arrowsyntax = 1      -- to enable highlighting of `proc`
+vim.g.haskell_enable_quantification = 1 -- to enable highlighting of `forall`
+vim.g.haskell_enable_recursivedo = 1 -- to enable highlighting of `mdo` and `rec`
+vim.g.haskell_enable_arrowsyntax = 1 -- to enable highlighting of `proc`
 vim.g.haskell_enable_pattern_synonyms = 1 -- to enable highlighting of `pattern`
-vim.g.haskell_enable_typeroles = 1        -- to enable highlighting of type roles
-vim.g.haskell_enable_static_pointers = 1  -- to enable highlighting of `static`
-vim.g.haskell_backpack = 1                -- to enable highlighting of backpack keywords
+vim.g.haskell_enable_typeroles = 1 -- to enable highlighting of type roles
+vim.g.haskell_enable_static_pointers = 1 -- to enable highlighting of `static`
+vim.g.haskell_backpack = 1 -- to enable highlighting of backpack keywords
 
 ----------------------
 -- Writing Setup ✍️  --
@@ -475,11 +535,11 @@ vim.g.wiki_journal = {
     date_format = {
         daily = "%Y-%m-%d",
         weekly = "%Y-W%V",
-    }
+    },
 }
 vim.g.wiki_index_name = "- Index -.md"
 vim.g.wiki_link_toggle_on_follow = false
-vapi.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Set note-taking keybindings for current buffer.",
     pattern = { "*.md", "*.mdx", "*.txt", "*.wiki" },
@@ -497,10 +557,13 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
                     h = { "<Plug>(wiki-journal-prev)", "(n)ote (w)eekly previous" },
                 },
             },
-            -- ["<Enter>"] = { "<Plug>(wiki-link-follow)", "Go To Wiki Link" },
-            ["<Leader><Leader><Enter>"] = { "<Plug>(wiki-link-toggle)", "Create or Toggle Link" },
-        }, { buffer = event.buf });
-    end
+            ["<Leader>el"] = { ":CarrotEval<Enter>", "(e)valuate (l)ua code block" },
+            ["<Leader><Leader><Enter>"] = {
+                "<Plug>(wiki-link-toggle)",
+                "Create or Toggle Link",
+            },
+        }, { buffer = event.buf })
+    end,
 })
 
 -- Custom Note Workflow Stuff
@@ -529,8 +592,10 @@ require("mini.statusline").setup({
                 mac = "", -- e711
             }
             local current_os = os_symbols.unix
-            if is_win then current_os = os_symbols.dos
-            elseif is_mac then current_os = os_symbols.mac
+            if is_win then
+                current_os = os_symbols.dos
+            elseif is_mac then
+                current_os = os_symbols.mac
             elseif is_wsl then
                 current_os = os_symbols.dos .. "+" .. os_symbols.unix
             end
@@ -549,7 +614,9 @@ require("mini.statusline").setup({
 
             local os = vim.bo.fileformat
             local os_symbol = os_symbols[os]
-            if os_symbol then fileinfo = fileinfo:gsub(os, os_symbol) end
+            if os_symbol then
+                fileinfo = fileinfo:gsub(os, os_symbol)
+            end
 
             local location = "%l:%v (%p%%)"
 
@@ -565,13 +632,13 @@ require("mini.statusline").setup({
                 { hl = mode_hl, strings = { location } },
             })
             return status_line
-        end
+        end,
     },
 })
 
 -- Start Screen
 require("mini.starter").setup({
-    header =[[
+    header = [[
 __      __          _                                              _  __  __   __
 \ \    / / ___     | |     __      ___    _ __     ___      o O O | |/ /  \ \ / /
  \ \/\/ / / -_)    | |    / _|    / _ \  | '  \   / -_)    o      | ' <    \ V /
@@ -581,25 +648,37 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"
 })
 
 -- Bufferline (Easy Tabs) and Buffer Management
-require("bufferline").setup { options = {
-    show_close_icon = false,
-    diagnostics = "nvim_lsp",
-    separator_style = "thick",
-    -- tab_size = 25,
-    offsets = {
-        {
-            filetype = "NvimTree",
-            text = "File Explorer",
-            text_align = "left",
+require("bufferline").setup({
+    options = {
+        show_close_icon = false,
+        diagnostics = "nvim_lsp",
+        separator_style = "thick",
+        -- tab_size = 25,
+        offsets = {
+            {
+                filetype = "NvimTree",
+                text = "File Explorer",
+                text_align = "left",
+            },
         },
     },
-}}
+})
 require("mini.bufremove").setup({})
 wk.register({
     ["<Leader>b"] = {
         name = "(b)uffers",
-        q = { function() MiniBufremove.unshow() end, "(b)uffer (q)uit [unshows buffer]" },
-        d = { function() MiniBufremove.delete() end, "(b)uffer (d)elete" },
+        q = {
+            function()
+                MiniBufremove.unshow()
+            end,
+            "(b)uffer (q)uit [unshows buffer]",
+        },
+        d = {
+            function()
+                MiniBufremove.delete()
+            end,
+            "(b)uffer (d)elete",
+        },
         c = { ":bd<Enter>", "(b)uffer (c)lose" },
         l = { ":BufferLineCycleNext<Enter>", "(b)uffer next" },
         h = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
@@ -611,28 +690,7 @@ wk.register({
     ["<M-h>"] = { ":BufferLineCyclePrev<Enter>", "buffer prev" },
     ["<M-j>"] = { ":BufferLineMoveNext<Enter>", "buffer move next" },
     ["<M-k>"] = { ":BufferLineMovePrev<Enter>", "buffer move prev" },
-});
-
--- Neovim tree (File explorer)
-require("nvim-tree").setup({
-    view = {
-        width = 36,
-        relativenumber = true,
-
-    },
-    renderer = {
-        indent_markers = {
-            enable = true,
-        },
-    },
-    diagnostics = {
-        enable = true,
-        show_on_dirs = true,
-    },
 })
-wk.register({
-    ["<Leader>fe"] = { ":NvimTreeToggle<Enter>", "(f)ile (e)xplorer ((f)ind (e)xplorer)"}
-});
 
 -- Indent Indication
 if is_going_hard then
@@ -640,14 +698,14 @@ if is_going_hard then
         draw = { delay = 500 },
         symbol = "⟫",
     })
-    vapi.nvim_create_autocmd({"TermOpen"}, {
+    vapi.nvim_create_autocmd({ "TermOpen" }, {
         group = le_group,
         callback = function()
             vim.b.miniindentscope_disable = true
         end,
     })
 end
-vapi.nvim_command[[highlight Delimiter guifg=#4C566A]] -- Make Delimiters Less Obtrusive
+vapi.nvim_command([[highlight Delimiter guifg=#4C566A]]) -- Make Delimiters Less Obtrusive
 
 -- Auto Window Resizing
 require("focus").setup({
@@ -673,7 +731,7 @@ vim.g["conjure#highlight#enabled"] = true
 vim.g["conjure#log#hud#width"] = 0.40
 vim.g["conjure#log#hud#height"] = 0.50
 vim.g["conjure#log#hud#passive_close_delay"] = 0
-vapi.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Add Conjure Keymap Labels",
     callback = function(event)
@@ -706,7 +764,7 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
             },
             E = "(E)valuate motion",
         }, {
-            buffer = event.buffer
+            buffer = event.buffer,
         })
         wk.register({
             [vim.g["conjure#mapping#prefix"]] = {
@@ -714,9 +772,9 @@ vapi.nvim_create_autocmd({"BufEnter"}, {
             },
         }, {
             mode = "v",
-            buffer = event.buffer
+            buffer = event.buffer,
         })
-    end
+    end,
 })
 
 -- Line Peeking
@@ -726,7 +784,7 @@ require("numb").setup({ number_only = true })
 require("zen-mode").setup({
     window = { width = 90, backdrop = 0.6 },
     on_open = function()
-        vim.cmd[[:FocusDisable]]
+        vim.cmd([[:FocusDisable]])
         pcall(function()
             vapi.nvim_set_keymap("n", "<Escape>", ":ZenMode<Enter>", {})
         end)
@@ -735,12 +793,20 @@ require("zen-mode").setup({
         pcall(function()
             vapi.nvim_del_keymap("n", "<Escape>")
         end)
-        vim.cmd[[:FocusEnable]]
-    end
+        vim.cmd([[:FocusEnable]])
+    end,
 })
 wk.register({
     ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
-});
+})
+
+-- Easy Window Movement
+require("winshift").setup({
+    focused_hl_group = "CursorLine",
+})
+wk.register({
+    ["<Leader>wm"] = { ":WinShift<Enter>", "(w)indow (m)ove mode" },
+}, {})
 
 -- Gitsigns (Sidebar Git Indicators)
 require("gitsigns").setup({
@@ -755,7 +821,10 @@ wk.register({
         g = {
             name = "(g)it",
             b = { ":Gitsigns blame_line<Enter>", "(g)it (b)lame line" },
-            B = { ":Gitsigns toggle_current_line_blame<Enter>", "toggle (g)it (B)lame line" },
+            B = {
+                ":Gitsigns toggle_current_line_blame<Enter>",
+                "toggle (g)it (B)lame line",
+            },
             d = { ":Gitsigns diffthis<Enter>", "(g)it (d)iff" },
             D = { ":Gitsigns toggle_deleted<Enter>", "(g)it toggle (D)eleted" },
             p = { ":Gitsigns preview_hunk<Enter>", "(g)it (p)review hunk" },
@@ -788,29 +857,32 @@ require("neogit").setup({
         },
     },
 })
-wk.register({["<Leader>gg"] = { ":Neogit<Enter>", "(g)it Neo(g)it" }})
+wk.register({ ["<Leader>gg"] = { ":Neogit<Enter>", "(g)it Neo(g)it" } })
 
 -- Floating Terminal Stuff
 vim.g.floaterm_width = 0.9
 vim.g.floaterm_height = 0.9
-vim.g.autoclose = 2
+vim.g.autoclose = 1
 -- Mapping in terminal mode is a bit weird in which-key right now
-local term = function (mapping)
+local term = function(mapping)
     return vapi.nvim_replace_termcodes(mapping, true, true, true)
 end
-wk.register({["<C-t>"] = { ":FloatermToggle<Enter>", "Open Terminal" }});
+wk.register({ ["<C-t>"] = { ":FloatermToggle<Enter>", "Open Terminal" } })
 wk.register({
-    ["<C-t>"] = { term"<C-\\><C-n>:FloatermToggle<Enter>", "Close Terminal" },
-    ["<C-n>"] = { term"<C-\\><C-n>:FloatermNext<Enter>", "Go To Next Terminal" },
-    ["<C-p>"] = { term"<C-\\><C-n>:FloatermPrev<Enter>", "Go To Previous Terminal" },
-    ["<C-l>"] = { term"<C-\\><C-n>:FloatermNext<Enter>", "Go To Next Terminal" },
-    ["<C-h>"] = { term"<C-\\><C-n>:FloatermPrev<Enter>", "Go To Previous Terminal" },
-    ["<C-q>"] = { term"<C-\\><C-n>:FloatermKill<Enter>", "Quit/Kill The Current Terminal" },
+    ["<C-t>"] = { term("<C-\\><C-n>:FloatermToggle<Enter>"), "Close Terminal" },
+    ["<C-n>"] = { term("<C-\\><C-n>:FloatermNext<Enter>"), "Go To Next Terminal" },
+    ["<C-p>"] = { term("<C-\\><C-n>:FloatermPrev<Enter>"), "Go To Previous Terminal" },
+    ["<C-l>"] = { term("<C-\\><C-n>:FloatermNext<Enter>"), "Go To Next Terminal" },
+    ["<C-h>"] = { term("<C-\\><C-n>:FloatermPrev<Enter>"), "Go To Previous Terminal" },
+    ["<C-q>"] = {
+        term("<C-\\><C-n>:FloatermKill<Enter>"),
+        "Quit/Kill The Current Terminal",
+    },
     ["<C-t><C-n>"] = { term("<C-\\><C-n>:FloatermNew<Enter>"), "Create New Terminal" },
-}, { mode = "t" });
+}, { mode = "t" })
 wk.register({
     ["<C-t>"] = { ":FloatTermSend<Enter>", "Send Lines to Terminal" },
-}, { mode = "v" });
+}, { mode = "v" })
 
 require("yanky").setup({})
 vim.keymap.set("n", "y", "<Plug>(YankyYank)", {})
@@ -835,19 +907,19 @@ require("mini.cursorword").setup({ delay = 500 })
 -- Trailing Space Diagnostics
 require("mini.trailspace").setup({})
 -- Disable Trailing Space Highlights in Certain Buffers
-vapi.nvim_create_autocmd({"BufEnter"}, {
+vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Disable trailing space highlighting in certain buffers.",
     callback = function()
-        local bufferName = vapi.nvim_eval[[bufname()]]
-        local tabPageNumber = vapi.nvim_eval[[tabpagenr()]]
+        local bufferName = vapi.nvim_eval([[bufname()]])
+        local tabPageNumber = vapi.nvim_eval([[tabpagenr()]])
         if bufferName == "NvimTree_" .. tabPageNumber then
             MiniTrailspace.unhighlight()
         end
     end,
 })
 -- Trim Space on Save
-vapi.nvim_create_autocmd({"BufWritePre"}, {
+vapi.nvim_create_autocmd({ "BufWritePre" }, {
     group = le_group,
     desc = "Trim trailing spaces on save.",
     callback = function()
@@ -886,24 +958,28 @@ require("mini.sessions").setup({
         post = {
             read = function()
                 lf.notify_info(
-                    "Loaded Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r"))
+                    "Loaded Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r")
+                )
             end,
             write = function()
                 lf.notify_info(
-                    "Saved Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r"))
+                    "Saved Session: " .. vfn.fnamemodify(vim.v.this_session, ":t:r")
+                )
             end,
             delete = function()
                 -- TODO: Maybe help improve
                 lf.notify_info("Deleted Selected Session")
             end,
-        }
+        },
     },
-    verbose = { read = false, write = false, delete = false, },
+    verbose = { read = false, write = false, delete = false },
 })
 vapi.nvim_create_autocmd("VimLeavePre", {
     group = le_group,
     desc = "Save current session for restoration.",
-    callback = function() MiniSessions.write("Last Session.vim", {}) end
+    callback = function()
+        MiniSessions.write("Last Session.vim", {})
+    end,
 })
 local session_save_wrapper = function(input)
     if not input or input == "" or input == "null" then
@@ -921,85 +997,102 @@ vapi.nvim_create_user_command("SessionSave", function(command)
 end, { nargs = "?" })
 -- TODO: Clean this up
 wk.register({
-    ["<Leader>ss"] = { function()
-        local current_session = ""
-        if vim.v.this_session and vim.v.this_session ~= "" then
-            current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
-        end
-
-        local new_session_option = "[<<<Make New Session>>>]"
-        local detected_names = {}
-        if current_session and current_session ~= "" then
-            t.insert(detected_names, 1, current_session)
-        end
-        for detected, _ in pairs(MiniSessions.detected) do
-            local name = vfn.fnamemodify(detected, ":t:r")
-            if name ~= current_session then
-                t.insert(detected_names, name)
+    ["<Leader>ss"] = {
+        function()
+            local current_session = ""
+            if vim.v.this_session and vim.v.this_session ~= "" then
+                current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
             end
-        end
-        t.insert(detected_names, new_session_option)
 
-        vim.ui.select(
-            detected_names,
-            { prompt = "Select Session to Save To (Current: " .. current_session .. ")" },
-            function(selection)
+            local new_session_option = "[<<<Make New Session>>>]"
+            local detected_names = {}
+            if current_session and current_session ~= "" then
+                t.insert(detected_names, 1, current_session)
+            end
+            for detected, _ in pairs(MiniSessions.detected) do
+                local name = vfn.fnamemodify(detected, ":t:r")
+                if name ~= current_session then
+                    t.insert(detected_names, name)
+                end
+            end
+            t.insert(detected_names, new_session_option)
+
+            vim.ui.select(detected_names, {
+                prompt = "Select Session to Save To (Current: " .. current_session .. ")",
+            }, function(selection)
                 if selection == new_session_option then
-                    vim.ui.input(
-                        { prompt = "Session Name to Save:" },
-                        function(input)
-                            session_save_wrapper(vfn.trim(input))
-                        end
-                    )
+                    vim.ui.input({ prompt = "Session Name to Save:" }, function(input)
+                        session_save_wrapper(vfn.trim(input))
+                    end)
                 elseif selection then
                     session_save_wrapper(selection)
                 end
             end)
-    end, "(s)ession (s)ave <Session Name>" },
+        end,
+        "(s)ession (s)ave <Session Name>",
+    },
     ["<Leader>sS"] = { ":SessionSave<Enter>", "(s)ession (S)ave" },
-    ["<Leader>sl"] = { function()
-        local current_session = nil
-        if vim.v.this_session and vim.v.this_session ~= "" then
-            current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
-        end
-        if current_session then
-            vim.ui.select(
-                { "Yes Save", "No Just Leave" },
-                { prompt = 'Save Session "' .. current_session .. '" Before Leaving?' },
-                function(_, index_selection)
+    -- TODO: Reverse Save and selection order maybe?
+    ["<Leader>sl"] = {
+        function()
+            local current_session = nil
+            if vim.v.this_session and vim.v.this_session ~= "" then
+                current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
+            end
+            if current_session then
+                vim.ui.select({ "Yes Save", "No Just Leave" }, {
+                    prompt = 'Save Session "' .. current_session .. '" Before Leaving?',
+                }, function(_, index_selection)
                     if index_selection == 1 then
                         MiniSessions.write(nil)
                     end
                     MiniSessions.select("read")
-                end
-            )
-        end
-    end, "(s)ession (l)oad <Session Name>" },
-    ["<Leader>sL"] = { function()
-        MiniSessions.read(nil, {})
-    end, "current (s)ession re(L)oad" },
-    ["<Leader>sd"] = { function()
-        MiniSessions.select("delete", { force = true })
-    end, "(s)ession (d)elete" },
-    ["<Leader>sn"] = { function()
-        local message = "You are currently not in a session"
-        local current_session = vim.v.this_session
-        if current_session ~= nil then
-            local session_name = vfn.fnamemodify(current_session, ":t:r")
-            message = "You are currently in session `" .. session_name .. "` (" .. current_session .. ")"
-        end
-        print(message)
-        lf.notify_info(message)
-    end, "current (s)ession (n)otify" },
-    ["<Leader>sq"] = { function()
-        vapi.nvim_set_vvar("this_session", "")
-        lf.notify_info("You have left the session")
-    end, "(s)ession (q)uit", },
+                end)
+            end
+        end,
+        "(s)ession (l)oad <Session Name>",
+    },
+    ["<Leader>sL"] = {
+        function()
+            MiniSessions.read(nil, {})
+        end,
+        "current (s)ession re(L)oad",
+    },
+    ["<Leader>sd"] = {
+        function()
+            MiniSessions.select("delete", { force = true })
+        end,
+        "(s)ession (d)elete",
+    },
+    ["<Leader>sn"] = {
+        function()
+            local message = "You are currently not in a session"
+            local current_session = vim.v.this_session
+            if current_session ~= nil then
+                local session_name = vfn.fnamemodify(current_session, ":t:r")
+                message = "You are currently in session `"
+                    .. session_name
+                    .. "` ("
+                    .. current_session
+                    .. ")"
+            end
+            print(message)
+            lf.notify_info(message)
+        end,
+        "current (s)ession (n)otify",
+    },
+    ["<Leader>sq"] = {
+        function()
+            vapi.nvim_set_vvar("this_session", "")
+            lf.notify_info("You have left the session")
+        end,
+        "(s)ession (q)uit",
+    },
 }, { silent = false })
 
 require("mini.surround").setup({
     custom_surroundings = {
-        ["|"] = { output = { left = "|", right = "|" }},
+        ["|"] = { output = { left = "|", right = "|" } },
     },
     mappings = {
         add = "ys",
@@ -1016,8 +1109,7 @@ require("mini.surround").setup({
 require("luapad").config({
     count_limit = 5e4,
     print_highlight = "DiagnosticVirtualTextInfo",
-    on_init = function()
-    end,
+    on_init = function() end,
 })
 wk.register({
     ["<Leader>e"] = {
@@ -1026,11 +1118,13 @@ wk.register({
     },
 }, {})
 vapi.nvim_create_user_command("Luapad", function()
-    vapi.nvim_command[[botright vsplit ~/tmp/luapad.lua]]
-    require("luapad.evaluator"):new({
-        buf = 0,
-        context = _G.cfg_env,
-    }):start()
+    vapi.nvim_command([[botright vsplit ~/tmp/luapad.lua]])
+    require("luapad.evaluator")
+        :new({
+            buf = 0,
+            context = _G.cfg_env,
+        })
+        :start()
 end, {})
 
 ------------------------
@@ -1040,11 +1134,11 @@ end, {})
 local actions = require("telescope.actions")
 local telescope = require("telescope")
 
-telescope.setup {
+telescope.setup({
     defaults = {
         mappings = {
             i = {
-                ["<Esc>"] = actions.close,
+                -- ["<Esc>"] = actions.close,
             },
         },
         layout_config = {
@@ -1060,20 +1154,29 @@ telescope.setup {
         },
         gitmoji = {
             action = function(entry)
-                vim.ui.input({ prompt = "Enter commit msg: " .. entry.value .. " "}, function(msg)
-                    if not msg then return end
-                    local commit_message = entry.value .. " " .. msg
-                    lf.set_register_and_notify(commit_message)
-                end)
+                vim.ui.input(
+                    { prompt = "Enter commit msg: " .. entry.value .. " " },
+                    function(msg)
+                        if not msg then
+                            return
+                        end
+                        local commit_message = entry.value .. " " .. msg
+                        lf.set_register_and_notify(commit_message)
+                    end
+                )
             end,
         },
+        ["ui-select"] = {
+            require("telescope.themes").get_dropdown({}),
+        },
     },
-}
+})
 
 require("telescope-emoji").setup({
     action = function(emoji)
         require("yanky").history.push({
-            regcontents = emoji.value, regtype = "v"
+            regcontents = emoji.value,
+            regtype = "v",
         })
         lf.set_register_and_notify(emoji.value)
     end,
@@ -1081,10 +1184,13 @@ require("telescope-emoji").setup({
 
 telescope.load_extension("fzf")
 telescope.load_extension("emoji")
+telescope.load_extension("packer")
 telescope.load_extension("zoxide")
 telescope.load_extension("heading")
 telescope.load_extension("gitmoji")
+telescope.load_extension("ui-select")
 telescope.load_extension("yank_history")
+telescope.load_extension("file_browser")
 
 -- Telescope Keymaps
 wk.register({
@@ -1095,13 +1201,20 @@ wk.register({
             b = { ":Telescope buffers<Enter>", "(f)ind (b)uffers" },
             c = { ":Telescope commands<Enter>", "(f)ind (c)ommands" },
             d = { ":Telescope diagnostics<Enter>", "(f)ind (d)iagnostics" },
-            E = { ":Telescope emoji<Enter>", "(f)ind (E)mojis! 😎" },
+            e = { ":Telescope emoji<Enter>", "(f)ind (e)mojis! 😎" },
+            ["<C-e>"] = {
+                ":Telescope symbols<Enter>",
+                "(f)ind (e)mojis/symbols! (Advanced) 😎 λ",
+            },
+            -- TODO: Configure file browser to do things?
+            E = { ":Telescope file_browser<Enter>", "(f)ile (E)xplorer" },
             f = { ":Telescope find_files<Enter>", "(f)ind (f)iles" },
             g = { ":Telescope live_grep<Enter>", "(g)rep project" },
             h = { ":Telescope help_tags<Enter>", "(f)ind (h)elp" },
             k = { require("legendary").find, "(f)ind (k)eymaps" },
             m = { ":Telescope marks<Enter>", "(f)ind (m)arks" },
             M = { ":Telescope man_pages<Enter>", "(f)ind (M)an pages" },
+            p = { ":Telescope packer<Enter>", "(f)ind (p)acker/(p)lugins" },
             r = { ":Telescope oldfiles<Enter>", "(f)ind (r)ecent files" },
             t = { ":Telescope treesitter<Enter>", "(f)ind (t)reesitter symbols" },
             y = { ":Telescope yank_history<Enter>", "(f)ind (y)ank history" },
@@ -1113,7 +1226,7 @@ wk.register({
     },
     gr = { ":Telescope lsp_references<Enter>", "Find References" },
     ["z="] = { ":Telescope spell_suggest<Enter>", "Spelling Suggestions" },
-});
+})
 
 -------------------------
 -- Treesitter Setup 🌳 --
@@ -1127,12 +1240,38 @@ require("nvim-treesitter.configs").setup({
     },
     context_commentstring = { enable = true },
     ensure_installed = {
-        "c", "lua", "rust", "bash", "clojure", "cmake",
-        "css", "commonlisp", "erlang", "fennel", "go",
-        "glsl", "haskell", "java", "html", "http",
-        "javascript", "json", "latex", "make", "markdown",
-        "ocaml", "python", "regex", "scheme", "svelte",
-        "swift", "toml", "vim", "yaml", "wgsl", "tsx",
+        "c",
+        "lua",
+        "rust",
+        "bash",
+        "clojure",
+        "cmake",
+        "css",
+        "commonlisp",
+        "erlang",
+        "fennel",
+        "go",
+        "glsl",
+        "haskell",
+        "java",
+        "html",
+        "http",
+        "javascript",
+        "json",
+        "latex",
+        "make",
+        "markdown",
+        "ocaml",
+        "python",
+        "regex",
+        "scheme",
+        "svelte",
+        "swift",
+        "toml",
+        "vim",
+        "yaml",
+        "wgsl",
+        "tsx",
     },
     rainbow = {
         enable = true,
@@ -1151,7 +1290,7 @@ require("nvim-treesitter.configs").setup({
         -- highlight_current_scope = { enable = true },
         highlight_definitions = {
             enable = true,
-            clear_on_cursor_move = true
+            clear_on_cursor_move = true,
         },
         smart_rename = {
             enable = true,
@@ -1165,7 +1304,7 @@ require("nvim-treesitter.configs").setup({
                 goto_definition_lsp_fallback = "gd",
                 goto_next_usage = "g>",
                 goto_previous_usage = "g<",
-            }
+            },
         },
     },
     textobjects = {
@@ -1236,8 +1375,14 @@ require("treesitter-context").setup({
     enable = is_going_hard,
     patterns = {
         default = {
-            "class", "function", "method",
-            "for", "while", "if", "switch", "case",
+            "class",
+            "function",
+            "method",
+            "for",
+            "while",
+            "if",
+            "switch",
+            "case",
         },
     },
 })
@@ -1247,8 +1392,15 @@ require("nvim_context_vt").setup({
     min_rows = 5,
     custom_parser = function(node, _, _)
         local start_row, _, end_row = node:range()
-        local lines = vapi.nvim_buf_get_lines(vapi.nvim_get_current_buf(), start_row, end_row, false)
-        if node:type() == "function" then return nil end
+        local lines = vapi.nvim_buf_get_lines(
+            vapi.nvim_get_current_buf(),
+            start_row,
+            end_row,
+            false
+        )
+        if node:type() == "function" then
+            return nil
+        end
 
         return "~> " .. lines[1]:match("^%s*(.-)%s*$") .. "…"
     end,
@@ -1259,9 +1411,19 @@ require("nvim_context_vt").setup({
 ---------------------------------------------
 
 local lsp_servers = {
-    "rust_analyzer", "sumneko_lua", "clangd", "pyright",
-    "tsserver", "cssls", "html", "emmet_ls",
-    "hls", "bashls", "cmake", "yamlls", "vimls",
+    "rust_analyzer",
+    "sumneko_lua",
+    "clangd",
+    "pyright",
+    "tsserver",
+    "cssls",
+    "html",
+    "emmet_ls",
+    "hls",
+    "bashls",
+    "cmake",
+    "yamlls",
+    "vimls",
 }
 
 require("nvim-lsp-installer").setup({
@@ -1271,9 +1433,9 @@ require("nvim-lsp-installer").setup({
         icons = {
             server_installed = "✓",
             server_pending = "➜",
-            server_uninstalled = "✗"
-        }
-    }
+            server_uninstalled = "✗",
+        },
+    },
 })
 
 local on_attach = function(_, bufnr)
@@ -1300,11 +1462,13 @@ local on_attach = function(_, bufnr)
             fs = { ":Telescope lsp_document_symbols<Enter>", "(s)ymbols" },
             rn = { vim.lsp.buf.rename, "(r)e(n)ame symbol" },
         },
-    }, { buffer = bufnr });
+    }, { buffer = bufnr })
 end
 vapi.nvim_create_autocmd("User", {
     pattern = "TelescopePreviewerLoaded",
-    callback = function() vim.opt_local.wrap = true end,
+    callback = function()
+        vim.opt_local.wrap = true
+    end,
     -- TODO: Open issue on why wrap only works after you go to the file
     -- then come back
 })
@@ -1312,7 +1476,7 @@ vapi.nvim_create_autocmd("User", {
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 
-local runtime_path = vim.split(package.path, ';')
+local runtime_path = vim.split(package.path, ";")
 t.insert(runtime_path, "lua/?.lua")
 t.insert(runtime_path, "lua/?/init.lua")
 
@@ -1325,15 +1489,25 @@ local luadev = require("lua-dev").setup({
     lspconfig = {
         settings = {
             Lua = {
-                diagnostics = { globals = {
-                    -- Neovim Stuff
-                    "vim", "P", "MiniSessions",
-                    "MiniStatusline", "MiniTrailspace", "MiniBufremove",
+                diagnostics = {
+                    globals = {
+                        -- Neovim Stuff
+                        "vim",
+                        "P",
+                        "MiniSessions",
+                        "MiniStatusline",
+                        "MiniTrailspace",
+                        "MiniBufremove",
 
-                    -- AwesomeWM Stuff
-                    "awesome", "screen", "client",
-                    "root", "tag", "widget",
-                }},
+                        -- AwesomeWM Stuff
+                        "awesome",
+                        "screen",
+                        "client",
+                        "root",
+                        "tag",
+                        "widget",
+                    },
+                },
             },
         },
     },
@@ -1350,7 +1524,7 @@ local lsp_settings = {
     --         },
     --     },
     -- }
-    sumneko_lua = luadev
+    sumneko_lua = luadev,
 }
 
 if is_startup then -- Only load LSPs on startup
@@ -1367,7 +1541,7 @@ end
 
 require("lsp_signature").setup({
     hint_enable = true,
-    hint_prefix = "✅ "
+    hint_prefix = "✅ ",
 })
 
 -------------------------
@@ -1393,13 +1567,14 @@ cmp.setup({
         ["<C-j>"] = cmp.mapping.scroll_docs(4),
         ["<C-Space>"] = cmp.mapping.complete(),
         ["<C-e>"] = cmp.mapping({
-            i = cmp.mapping.close(), c = cmp.mapping.close()
+            i = cmp.mapping.close(),
+            c = cmp.mapping.close(),
         }),
         -- Enter Auto Confirm
-        ["<CR>"] = cmp.mapping.confirm {
+        ["<CR>"] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Replace,
             select = false,
-        },
+        }),
         -- Only use Tab for snippets
         ["<Tab>"] = cmp.mapping(function(fallback)
             if luasnip.expand_or_jumpable() then
@@ -1435,29 +1610,26 @@ cmp.setup({
         --     end
         -- end, { "i", "s" }),
     }),
-    sources = cmp.config.sources(
-        {
-            { name = "emoji", option = { insert = true } },
-            { name = "omni" },
-            { name = "conjure" },
-            { name = "nvim_lsp" },
-            { name = "nvim_lsp_signature_help" },
-            { name = "nvim_lua" },
-            { name = "path" },
-            { name = "luasnip" },
-            { name = "calc" },
-            { name = "treesitter" },
-        },
-        {
-            { name = "spell" },
-            { name = "fuzzy_buffer", keyword_length = 5 },
-            { name = "buffer" },
-        }
-    ),
+    sources = cmp.config.sources({
+        { name = "emoji", option = { insert = true } },
+        { name = "omni" },
+        { name = "conjure" },
+        { name = "nvim_lsp" },
+        { name = "nvim_lsp_signature_help" },
+        { name = "nvim_lua" },
+        { name = "path" },
+        { name = "luasnip" },
+        { name = "calc" },
+        { name = "treesitter" },
+    }, {
+        { name = "spell" },
+        { name = "fuzzy_buffer", keyword_length = 5 },
+        { name = "buffer" },
+    }),
     formatting = {
         format = lspkind.cmp_format({
             mode = "symbol_text",
-            menu = ({
+            menu = {
                 omni = "[Omni]",
                 buffer = "[Buffer]",
                 conjure = "[Conjure]",
@@ -1472,13 +1644,13 @@ cmp.setup({
                 spell = "[Spell]",
                 fuzzy_buffer = "[Fzy Buffer]",
                 cmdline_history = "[CMD History]",
-            }),
-        })
+            },
+        }),
     },
 })
 
 -- TODO: Make completion stuff my theme later (someday... maybe)
-vim.cmd[[
+vim.cmd([[
 " gray
 highlight! CmpItemAbbrDeprecated guibg=NONE gui=strikethrough guifg=#808080
 " blue
@@ -1495,9 +1667,9 @@ highlight! CmpItemKindMethod guibg=NONE guifg=#C586C0
 highlight! CmpItemKindKeyword guibg=NONE guifg=#D4D4D4
 highlight! CmpItemKindProperty guibg=NONE guifg=#D4D4D4
 highlight! CmpItemKindUnit guibg=NONE guifg=#D4D4D4
-]]
+]])
 
-for _, command_type in pairs({":", "@"}) do
+for _, command_type in pairs({ ":", "@" }) do
     require("cmp").setup.cmdline(command_type, {
         mapping = cmp.mapping.preset.cmdline(),
         sources = {
@@ -1508,7 +1680,7 @@ for _, command_type in pairs({":", "@"}) do
         },
     })
 end
-for _, command_type in pairs({"/", "?"}) do
+for _, command_type in pairs({ "/", "?" }) do
     require("cmp").setup.cmdline(command_type, {
         mapping = cmp.mapping.preset.cmdline(),
         sources = {
@@ -1527,7 +1699,7 @@ end
 -- Misc Mappings
 wk.register({
     s = {
-        name    = "(s)essions",
+        name = "(s)essions",
     },
     ["<Leader>s"] = {
         name = "(s)pelling",
@@ -1537,7 +1709,7 @@ wk.register({
         l = "Go to Next Spelling Error",
         h = "Go to Previous Spelling Error",
     },
-    w = { name = "(w)indow (Ctrl-w)" },
+    w = { name = "(w)indowing (Also Ctrl-w)" },
     c = {
         ["-"] = "Comment Banner (--)",
         ["="] = "Comment Banner (==)",
@@ -1545,12 +1717,15 @@ wk.register({
     },
     ["<Leader>"] = {
         q = { ":qa<Enter>", "(q)uit all" },
-        r = { function()
-            vim.cmd[[source $MYVIMRC]]
-            lf.notify_info("Configuration Reloaded")
-        end, "(r)e-source config" },
+        r = {
+            function()
+                vim.cmd([[source $MYVIMRC]])
+                lf.notify_info("Configuration Reloaded")
+            end,
+            "(r)e-source config",
+        },
     },
-}, { prefix     = "<Leader>" })
+}, { prefix = "<Leader>" })
 
 -- For REPL or Debug Purposes
 _G.cfg_env = lf.get_locals()
