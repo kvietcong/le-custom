@@ -39,7 +39,7 @@ set relativenumber number " Show relative number lines with regular number line 
 filetype plugin indent on " Enable filetype detection and indentation
 set backspace=indent,eol,start " More robust backspacing
 " set list listchars=eol:↴
-set guifont=CodeNewRoman\ NF:h14 " Set a font for GUI things
+set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
 set smartindent cindent autoindent " Better indenting
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
@@ -138,6 +138,9 @@ inoremap ] ]<C-g>u
 inoremap } }<C-g>u
 inoremap ! !<C-g>u
 inoremap ? ?<C-g>u
+
+nnoremap ' `
+nnoremap ` '
 
 " Banner comments
 nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
