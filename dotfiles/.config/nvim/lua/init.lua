@@ -795,17 +795,22 @@ vim.g.floaterm_width = 0.9
 vim.g.floaterm_height = 0.9
 vim.g.autoclose = 2
 -- Mapping in terminal mode is a bit weird in which-key right now
-local clean = function (mapping)
+local term = function (mapping)
     return vapi.nvim_replace_termcodes(mapping, true, true, true)
 end
 wk.register({["<C-t>"] = { ":FloatermToggle<Enter>", "Open Terminal" }});
 wk.register({
-    ["<C-t>"] = { clean("<C-\\><C-n>:FloatermToggle<Enter>"), "Close Terminal" },
-    ["<C-n>"] = { clean("<C-\\><C-n>:FloatermNext<Enter>"), "Go To Next Terminal" },
-    ["<C-p>"] = { clean("<C-\\><C-n>:FloatermPrev<Enter>"), "Go To Previous Terminal" },
-    ["<C-q>"] = { clean("<C-\\><C-n>:FloatermKill<Enter>"), "Quit/Kill The Current Terminal" },
-    ["<C-t><C-n>"] = { clean("<C-\\><C-n>:FloatermNew<Enter>"), "Create New Terminal" },
+    ["<C-t>"] = { term"<C-\\><C-n>:FloatermToggle<Enter>", "Close Terminal" },
+    ["<C-n>"] = { term"<C-\\><C-n>:FloatermNext<Enter>", "Go To Next Terminal" },
+    ["<C-p>"] = { term"<C-\\><C-n>:FloatermPrev<Enter>", "Go To Previous Terminal" },
+    ["<C-l>"] = { term"<C-\\><C-n>:FloatermNext<Enter>", "Go To Next Terminal" },
+    ["<C-h>"] = { term"<C-\\><C-n>:FloatermPrev<Enter>", "Go To Previous Terminal" },
+    ["<C-q>"] = { term"<C-\\><C-n>:FloatermKill<Enter>", "Quit/Kill The Current Terminal" },
+    ["<C-t><C-n>"] = { term("<C-\\><C-n>:FloatermNew<Enter>"), "Create New Terminal" },
 }, { mode = "t" });
+wk.register({
+    ["<C-t>"] = { ":FloatTermSend<Enter>", "Send Lines to Terminal" },
+}, { mode = "v" });
 
 require("yanky").setup({})
 vim.keymap.set("n", "y", "<Plug>(YankyYank)", {})
@@ -1136,10 +1141,10 @@ require("nvim-treesitter.configs").setup({
     incremental_selection = {
         enable = true,
         keymaps = { -- TODO: Look more at these
-            init_selection = "gnn",
-            node_incremental = "grn",
-            scope_incremental = "grc",
-            node_decremental = "grm",
+            init_selection = "gti",
+            node_incremental = "gtk",
+            scope_incremental = "gtl",
+            node_decremental = "gtj",
         },
     },
     refactor = {
@@ -1175,11 +1180,16 @@ require("nvim-treesitter.configs").setup({
                 ["ib"] = "@block.inner",
                 ["ac"] = "@class.outer",
                 ["ic"] = "@class.inner",
+                ["a?"] = "@conditional.outer",
+                ["i?"] = "@conditional.inner",
+                ["aC"] = "@call.outer",
+                ["iC"] = "@call.inner",
                 ["af"] = "@function.outer",
                 ["if"] = "@function.inner",
                 ["ap"] = "@parameter.outer",
                 ["ip"] = "@parameter.inner",
-                ["ak"] = "@comment.outer"
+                ["ak"] = "@comment.outer",
+                ["as"] = "@statement.outer",
             },
         },
         swap = {
