@@ -15,6 +15,7 @@
 - Learn how tabs work in Vim
 - Play around with Conjure (WHICH IS SUPER COOL)
 - Find out why I get a weird once in a while fold bug
+- Check if every required executable is installed w/ vfn.executable
 ]]
 
 --------------------------
@@ -148,6 +149,7 @@ packer.startup(function(use)
     -- LSP
     use("neovim/nvim-lspconfig")
     use("ray-x/lsp_signature.nvim")
+    use("jose-elias-alvarez/null-ls.nvim")
     use("williamboman/nvim-lsp-installer")
 
     -- Completion
@@ -208,21 +210,21 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
         vim.cmd([[abbreviate <buffer> l\ λ]])
         vim.cmd([[abbreviate <buffer> (lambda\ (λ]])
         vim.cmd([[abbreviate <buffer> (l\ (λ]])
-        wk.register({
-            ["<Leader>cf"] = {
-                function()
-                    local result = require("plenary.job")
-                        :new({
-                            command = "fnlfmt.bat",
-                            args = { vfn.expand("#" .. event.buf .. ":p", nil, nil) },
-                        })
-                        :sync()
-                    result[#result] = nil
-                    vapi.nvim_buf_set_lines(event.buf, 0, -1, true, result)
-                end,
-                "(c)ode (f)ormat",
-            },
-        }, { buffer = event.buf })
+        -- wk.register({
+        --     ["<Leader>cf"] = {
+        --         function()
+        --             local result = require("plenary.job")
+        --                 :new({
+        --                     command = "fnlfmt.bat",
+        --                     args = { vfn.expand("#" .. event.buf .. ":p", nil, nil) },
+        --                 })
+        --                 :sync()
+        --             result[#result] = nil
+        --             vapi.nvim_buf_set_lines(event.buf, 0, -1, true, result)
+        --         end,
+        --         "(c)ode (f)ormat",
+        --     },
+        -- }, { buffer = event.buf })
     end,
 })
 vapi.nvim_create_user_command("FnlCacheClear", function()
@@ -507,6 +509,12 @@ vim.g.haskell_enable_pattern_synonyms = 1 -- to enable highlighting of `pattern`
 vim.g.haskell_enable_typeroles = 1 -- to enable highlighting of type roles
 vim.g.haskell_enable_static_pointers = 1 -- to enable highlighting of `static`
 vim.g.haskell_backpack = 1 -- to enable highlighting of backpack keywords
+
+-- Formatting
+vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
+wk.register({
+    cf = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
+})
 
 ----------------------
 -- Writing Setup ✍️  --
@@ -1438,9 +1446,37 @@ require("nvim-lsp-installer").setup({
     },
 })
 
-local on_attach = function(_, bufnr)
-    vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
+-- Null-ls Hook Setup
+local null_ls = require("null-ls")
+null_ls.setup({
+    sources = {
+        -- Completion
+        null_ls.builtins.completion.spell,
 
+        -- Formatting
+        null_ls.builtins.formatting.stylua,
+        null_ls.builtins.formatting.fnlfmt,
+        null_ls.builtins.formatting.gofmt,
+        null_ls.builtins.formatting.jq,
+        null_ls.builtins.formatting.rustfmt,
+        null_ls.builtins.formatting.trim_newlines,
+        null_ls.builtins.formatting.clang_format,
+        null_ls.builtins.formatting.fourmolu,
+
+        -- Code Actions
+        null_ls.builtins.code_actions.eslint,
+        null_ls.builtins.code_actions.gitsigns,
+        null_ls.builtins.completion.luasnip,
+        null_ls.builtins.completion.spell,
+
+        -- Diagnostics
+        null_ls.builtins.diagnostics.eslint,
+        null_ls.builtins.diagnostics.flake8,
+        null_ls.builtins.diagnostics.markdownlint,
+    },
+})
+
+local on_attach = function(_, bufnr)
     -- TODO: Replace vim.lsp with telescope pickers when possible
     wk.register({
         g = {
@@ -1454,7 +1490,6 @@ local on_attach = function(_, bufnr)
             c = {
                 name = "(c)ode",
                 a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
-                f = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
                 h = { vim.lsp.buf.hover, "(c)ode (h)over" },
                 s = { vim.lsp.buf.signature_help, "(c)ode (s)ignature" },
                 t = { vim.lsp.buf.type_definition, "(c)ode (t)ype" },
@@ -1714,6 +1749,7 @@ wk.register({
         ["-"] = "Comment Banner (--)",
         ["="] = "Comment Banner (==)",
         ["/"] = "Comment Banner (//)",
+        f = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
     },
     ["<Leader>"] = {
         q = { ":qa<Enter>", "(q)uit all" },
