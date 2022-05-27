@@ -19,18 +19,18 @@ set undofile
 set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
-set lazyredraw
-" set scrolloff=3 " Ensure at least some number of lines is above/below the cursor
+set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set history=500
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
 set updatetime=250
 set signcolumn=yes
 set conceallevel=2
-set timeoutlen=350 " Delay for things to happen with multi key bindings
+set timeoutlen=300 " Delay for things to happen with multi key bindings
 set viminfo='100,f1 " Save marks and stuff
 set inccommand=split " Live update of commands like substitution
 set jumpoptions+=stack
+" set list listchars=eol:↴
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set spell spelllang=en_us " Spellcheck
@@ -38,15 +38,15 @@ set splitbelow splitright " Splits occur below or to the right of the current wi
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
 set backspace=indent,eol,start " More robust backspacing
-" set list listchars=eol:↴
 set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
 set smartindent cindent autoindent " Better indenting
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set wildmenu wildmode=longest,list,full " Display completion matches in a status line
+set synmaxcol=150 lazyredraw noswapfile " Performance
 set completeopt=menuone,noselect,preview
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
-set foldenable foldmethod=syntax foldlevel=8 " Dang I wish I could do both syntax and indent folding
+set foldenable foldmethod=indent foldlevel=60 " Dang I wish I could do both syntax and indent folding
 
 " Make Powershell work :)
 if has("win32")
@@ -80,55 +80,79 @@ let mapleader = "\<Space>"
 " == Mappings ==
 " ==============
 
-" General Shortcuts
-" New write command for sudo writing
-command! SudoWrite w !sudo tee > /dev/null %
 " Saving :)
 nnoremap <C-s> :w<Enter>
+
 " Redo stuff
 nnoremap U <C-r>
+
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
+
 " Help is now delegated to CTRL-h
 nnoremap <C-h> K
+
+" Other ways to reach command mode (Emacs moment XD)
 noremap <M-x> :
+inoremap <M-x> <Escape>:
 noremap <Leader><Leader><Leader> :
-nnoremap Q q:
-" "Regular" Copy and Paste
+
+" Alternate between two buffers or windows
+nnoremap <S-Tab> <C-^>
+nnoremap <C-Tab> <C-w><C-p>
+
+" Better Exit
+nnoremap <Leader><Leader>q :qa<Enter>
+
+" "Regular" Copy and Paste in various places
 inoremap <C-v> <Esc>"+pa
 vnoremap <C-c> "+y<Esc>
+cnoremap <C-v> <C-r>+
 
 " Custom Navigation Stuff
 nnoremap <expr> j v:count ? "j" : "gj"
 nnoremap <expr> k v:count ? "k" : "gk"
 vnoremap <expr> j v:count ? "j" : "gj"
 vnoremap <expr> k v:count ? "k" : "gk"
+nnoremap <C-d> <C-d>zz
+nnoremap <C-u> <C-u>zz
+vnoremap <C-d> <C-d>zz
+vnoremap <C-u> <C-u>zz
+nnoremap <Leader><Leader>h g^
+nnoremap <Leader><Leader>l g$
+vnoremap <Leader><Leader>h g^
+vnoremap <Leader><Leader>l g$
 nnoremap N Nzzzv
 nnoremap n nzzzv
+vnoremap N Nzzzv
+vnoremap n nzzzv
 nnoremap gm gM
 nnoremap gM gm
-nnoremap 0 g0
-vnoremap 0 g0
+vnoremap gm gM
+vnoremap gM gm
 nnoremap Y y$
 
-nnoremap H g^
-nnoremap L g$
-vnoremap H g^
-vnoremap L g$
-nnoremap <M-o> o<Esc>
-nnoremap <M-O> O<Esc>
-" I have to find a more ergonomic way to scroll up and down
-nnoremap \\ <C-d>
-nnoremap \|\| <C-u>
+" Enter Empty Lines
+nnoremap <M-o> o<Escape>k
+nnoremap <M-O> O<Escape>j
 
-" Easier Window
+" Easier Window Commanding
 nnoremap <Leader>w <C-w>
 nnoremap <C-S-Up> <C-w>+
 nnoremap <C-S-Down> <C-w>-
 nnoremap <C-Up> <C-w>>
 nnoremap <C-Down> <C-w><
-nnoremap <C-w>v <C-w>v<C-w><C-l>
-nnoremap <C-w><C-v> <C-w>v<C-w><C-l>
+
+" Keep pasted value on replace
+vnoremap p "_dP
+
+" Text Movement
+nnoremap <M-j> :m .+1<CR>==
+nnoremap <M-k> :m .-2<CR>==
+inoremap <M-j> <Esc>:m .+1<CR>==gi
+inoremap <M-k> <Esc>:m .-2<CR>==gi
+vnoremap <M-j> :m '>+1<CR>gv=gv
+vnoremap <M-k> :m '<-2<CR>gv=gv
 
 " Finer Undoing
 inoremap , ,<C-g>u
@@ -139,6 +163,10 @@ inoremap } }<C-g>u
 inoremap ! !<C-g>u
 inoremap ? ?<C-g>u
 
+" cd into directory of current buffer
+nnoremap <Leader>cd :cd %:p:h<CR>
+
+" Better Marks?
 nnoremap ' `
 nnoremap ` '
 
@@ -164,6 +192,8 @@ autocmd BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"
     \ |   exe "normal! g`\""
     \ | endif
+
+autocmd! BufNewFile,BufRead *.json,*.toml set foldmethod=indent
 
 " Refresh Colorscheme
 function! RefreshColor()
