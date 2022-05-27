@@ -67,132 +67,145 @@ end
 
 -- Install all the plugins
 local packer = require("packer")
-packer.startup(function(use)
-    use("wbthomason/packer.nvim")
-    use("dstein64/vim-startuptime") -- Run :StartupTime
-    use("lewis6991/impatient.nvim") -- Cache Lua Plugins
+packer.startup({
+    function(use)
+        use("wbthomason/packer.nvim")
+        use("dstein64/vim-startuptime") -- Run :StartupTime
+        use("lewis6991/impatient.nvim") -- Cache Lua Plugins
 
-    -- Common Dependencies
-    use("nvim-lua/popup.nvim")
-    use("nvim-lua/plenary.nvim")
-    use("kyazdani42/nvim-web-devicons")
+        -- Common Dependencies
+        use("nvim-lua/popup.nvim")
+        use("nvim-lua/plenary.nvim")
+        use("kyazdani42/nvim-web-devicons")
 
-    -- Quality of Life
-    use("tpope/vim-eunuch")
-    use("tpope/vim-repeat")
-    use("gbprod/yanky.nvim")
-    use("ggandor/leap.nvim")
-    use("nacro90/numb.nvim")
-    use("wellle/targets.vim")
-    use("nanotee/zoxide.vim")
-    use("jghauser/mkdir.nvim")
-    use("folke/which-key.nvim")
-    use("voldikss/vim-floaterm")
-    use("echasnovski/mini.nvim")
-    use("rafcamlet/nvim-luapad")
-    use("NTBBloodbath/rest.nvim")
-    use("TimUntersberger/neogit")
-    use("sindrets/winshift.nvim")
+        -- Quality of Life
+        use("tpope/vim-eunuch")
+        use("tpope/vim-repeat")
+        use("gbprod/yanky.nvim")
+        use("ggandor/leap.nvim")
+        use("nacro90/numb.nvim")
+        use("wellle/targets.vim")
+        use("nanotee/zoxide.vim")
+        use("jghauser/mkdir.nvim")
+        use("folke/which-key.nvim")
+        use("voldikss/vim-floaterm")
+        use("echasnovski/mini.nvim")
+        use("rafcamlet/nvim-luapad")
+        use("NTBBloodbath/rest.nvim")
+        use("TimUntersberger/neogit")
+        use("sindrets/winshift.nvim")
 
-    -- Neovim Development
-    use("Olical/conjure")
-    use("folke/lua-dev.nvim")
-    use("rktjmp/hotpot.nvim")
-    use("bakpakin/fennel.vim")
-    use("nanotee/luv-vimdocs")
-    use("milisims/nvim-luaref")
-    use("hrsh7th/cmp-nvim-lua")
+        -- Neovim Development
+        use("Olical/conjure")
+        use("folke/lua-dev.nvim")
+        use("rktjmp/hotpot.nvim")
+        use("bakpakin/fennel.vim")
+        use("nanotee/luv-vimdocs")
+        use("milisims/nvim-luaref")
+        use("hrsh7th/cmp-nvim-lua")
 
-    -- Pretty Things
-    use("folke/zen-mode.nvim")
-    use("rcarriga/nvim-notify")
-    use("shaunsingh/nord.nvim")
-    use("p00f/nvim-ts-rainbow")
-    use("rmehri01/onenord.nvim")
-    use("stevearc/dressing.nvim")
-    use("beauwilliams/focus.nvim")
-    use("lewis6991/gitsigns.nvim")
-    use("sainnhe/gruvbox-material")
-    use("neovimhaskell/haskell-vim")
-    use("mrjones2014/legendary.nvim")
-    use("norcalli/nvim-colorizer.lua") -- TODO: See if I can make this better?
-    use("akinsho/nvim-bufferline.lua")
+        -- Pretty Things
+        use("folke/zen-mode.nvim")
+        use("rcarriga/nvim-notify")
+        use("shaunsingh/nord.nvim")
+        use("p00f/nvim-ts-rainbow")
+        use("rmehri01/onenord.nvim")
+        use("stevearc/dressing.nvim")
+        use("beauwilliams/focus.nvim")
+        use("lewis6991/gitsigns.nvim")
+        use("sainnhe/gruvbox-material")
+        use("neovimhaskell/haskell-vim")
+        use("mrjones2014/legendary.nvim")
+        use("norcalli/nvim-colorizer.lua") -- TODO: See if I can make this better?
+        use("akinsho/nvim-bufferline.lua")
 
-    -- Writing
-    use({
-        "lervag/wiki.vim",
-        ft = { "markdown", "wiki" },
-    })
-    use({
-        "godlygeek/tabular",
-        ft = { "markdown", "wiki" },
-    })
-    use({
-        "jbyuki/carrot.nvim",
-        ft = { "markdown", "wiki" },
-    })
-    use({
-        "preservim/vim-markdown",
-        ft = { "markdown", "wiki" },
-    })
-    use("crispgm/telescope-heading.nvim")
+        -- Writing
+        use({
+            "lervag/wiki.vim",
+            ft = { "markdown", "wiki" },
+        })
+        use({
+            "godlygeek/tabular",
+            ft = { "markdown", "wiki" },
+        })
+        use({
+            "jbyuki/carrot.nvim",
+            ft = { "markdown", "wiki" },
+        })
+        use({
+            "preservim/vim-markdown",
+            ft = { "markdown", "wiki" },
+        })
+        use("crispgm/telescope-heading.nvim")
 
-    -- Pickers/Finders
-    use("tversteeg/registers.nvim")
-    use("jvgrootveld/telescope-zoxide")
-    use("nvim-telescope/telescope.nvim")
-    use("olacin/telescope-gitmoji.nvim")
-    use("kvietcong/telescope-emoji.nvim")
-    use("nvim-telescope/telescope-packer.nvim")
-    use("nvim-telescope/telescope-symbols.nvim")
-    use("nvim-telescope/telescope-ui-select.nvim")
-    use("nvim-telescope/telescope-file-browser.nvim")
-    use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
+        -- Pickers/Finders
+        use("tversteeg/registers.nvim")
+        use("jvgrootveld/telescope-zoxide")
+        use("nvim-telescope/telescope.nvim")
+        use("olacin/telescope-gitmoji.nvim")
+        use("kvietcong/telescope-emoji.nvim")
+        use("nvim-telescope/telescope-packer.nvim")
+        use("nvim-telescope/telescope-symbols.nvim")
+        use("nvim-telescope/telescope-ui-select.nvim")
+        use("nvim-telescope/telescope-file-browser.nvim")
+        use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
 
-    -- Treesitter
-    use("SmiteshP/nvim-gps")
-    use("lewis6991/spellsitter.nvim")
-    use("haringsrob/nvim_context_vt")
-    use("romgrk/nvim-treesitter-context")
-    use("nvim-treesitter/nvim-treesitter")
-    use("nvim-treesitter/nvim-treesitter-refactor")
-    use("nvim-treesitter/nvim-treesitter-textobjects")
-    use("JoosepAlviste/nvim-ts-context-commentstring")
+        -- Treesitter
+        use("SmiteshP/nvim-gps")
+        use("lewis6991/spellsitter.nvim")
+        use("haringsrob/nvim_context_vt")
+        use("romgrk/nvim-treesitter-context")
+        use("nvim-treesitter/nvim-treesitter")
+        use("nvim-treesitter/nvim-treesitter-refactor")
+        use("nvim-treesitter/nvim-treesitter-textobjects")
+        use("JoosepAlviste/nvim-ts-context-commentstring")
 
-    -- LSP
-    use("neovim/nvim-lspconfig")
-    use("ray-x/lsp_signature.nvim")
-    use("jose-elias-alvarez/null-ls.nvim")
-    use("williamboman/nvim-lsp-installer")
+        -- LSP
+        use("neovim/nvim-lspconfig")
+        use("ray-x/lsp_signature.nvim")
+        use("jose-elias-alvarez/null-ls.nvim")
+        use("williamboman/nvim-lsp-installer")
 
-    -- Completion
-    use("hrsh7th/cmp-omni")
-    use("hrsh7th/cmp-calc")
-    use("L3MON4D3/LuaSnip")
-    use("hrsh7th/nvim-cmp")
-    use("hrsh7th/cmp-path")
-    use("f3fora/cmp-spell")
-    use("hrsh7th/cmp-emoji")
-    use("tzachar/fuzzy.nvim")
-    use("hrsh7th/cmp-buffer")
-    use("hrsh7th/cmp-cmdline")
-    use("ray-x/cmp-treesitter")
-    use("onsails/lspkind.nvim")
-    use("hrsh7th/cmp-nvim-lsp")
-    use("PaterJason/cmp-conjure")
-    use("tzachar/cmp-fuzzy-buffer")
-    use("saadparwaiz1/cmp_luasnip")
-    use("dmitmel/cmp-cmdline-history")
-    use("hrsh7th/cmp-nvim-lsp-signature-help")
-    use("hrsh7th/cmp-nvim-lsp-document-symbol")
+        -- Completion
+        use("hrsh7th/cmp-omni")
+        use("hrsh7th/cmp-calc")
+        use("L3MON4D3/LuaSnip")
+        use("hrsh7th/nvim-cmp")
+        use("hrsh7th/cmp-path")
+        use("f3fora/cmp-spell")
+        use("hrsh7th/cmp-emoji")
+        use("tzachar/fuzzy.nvim")
+        use("hrsh7th/cmp-buffer")
+        use("hrsh7th/cmp-cmdline")
+        use("ray-x/cmp-treesitter")
+        use("onsails/lspkind.nvim")
+        use("hrsh7th/cmp-nvim-lsp")
+        use("PaterJason/cmp-conjure")
+        use("tzachar/cmp-fuzzy-buffer")
+        use("saadparwaiz1/cmp_luasnip")
+        use("dmitmel/cmp-cmdline-history")
+        use("hrsh7th/cmp-nvim-lsp-signature-help")
+        use("hrsh7th/cmp-nvim-lsp-document-symbol")
 
-    packer.clean()
-    packer.install()
+        packer.clean()
+        packer.install()
 
-    if packer_bootstrap then
-        packer.sync()
-    end
-end)
+        if packer_bootstrap then
+            packer.sync()
+        end
+    end,
+    config = {
+        display = {
+            open_fn = function()
+                return require("packer.util").float({ border = "single" })
+            end,
+        },
+        profile = {
+            enable = true,
+            threshold = 0.01,
+        },
+    },
+})
 
 -- Load cached plugins for speed
 require("impatient")
@@ -270,7 +283,13 @@ vapi.nvim_create_autocmd({ "BufWritePost" }, {
     command = "source $MYVIMRC | PackerCompile",
 })
 
-local plenary = require("plenary")
+-- Force reload specific modules for faster development
+if not is_startup then
+    local plenary = require("plenary")
+    plenary.reload.reload_module("le-fnl")
+    plenary.reload.reload_module("le_lua")
+    plenary.reload.reload_module("le-atlas")
+end
 
 -- Shortcuts to Table Functions
 _G.t = {
@@ -301,9 +320,7 @@ function String.__index:char_at(i)
 end
 
 -- Load Helper Modules
-plenary.reload.reload_module("le-fnl")
 _G.lf = require("le-fnl") -- My Helper module (Fennel)
-plenary.reload.reload_module("le_lua")
 _G.ll = require("le_lua") -- My Helper module (Lua)
 
 vapi.nvim_create_user_command("GetDate", function(command)
@@ -598,7 +615,6 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
 })
 
 -- Custom Note Workflow Stuff
-plenary.reload.reload_module("le-atlas")
 local le_atlas = require("le-atlas")
 le_atlas.setup({ wk = wk })
 
