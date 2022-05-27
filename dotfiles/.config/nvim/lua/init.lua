@@ -90,6 +90,7 @@ packer.startup(function(use)
     use("voldikss/vim-floaterm")
     use("echasnovski/mini.nvim")
     use("rafcamlet/nvim-luapad")
+    use("NTBBloodbath/rest.nvim")
     use("TimUntersberger/neogit")
     use("sindrets/winshift.nvim")
 
@@ -103,6 +104,7 @@ packer.startup(function(use)
     use("hrsh7th/cmp-nvim-lua")
 
     -- Pretty Things
+    use("folke/zen-mode.nvim")
     use("rcarriga/nvim-notify")
     use("shaunsingh/nord.nvim")
     use("p00f/nvim-ts-rainbow")
@@ -117,11 +119,22 @@ packer.startup(function(use)
     use("akinsho/nvim-bufferline.lua")
 
     -- Writing
-    use("lervag/wiki.vim")
-    use("godlygeek/tabular")
-    use("jbyuki/carrot.nvim")
-    use("folke/zen-mode.nvim")
-    use("preservim/vim-markdown")
+    use({
+        "lervag/wiki.vim",
+        ft = { "markdown", "wiki" },
+    })
+    use({
+        "godlygeek/tabular",
+        ft = { "markdown", "wiki" },
+    })
+    use({
+        "jbyuki/carrot.nvim",
+        ft = { "markdown", "wiki" },
+    })
+    use({
+        "preservim/vim-markdown",
+        ft = { "markdown", "wiki" },
+    })
     use("crispgm/telescope-heading.nvim")
 
     -- Pickers/Finders
@@ -203,7 +216,9 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Setup Fennel Specific things",
     pattern = { "*.fnl" },
-    callback = function(event)
+    callback = function(
+        _ --[[event]]
+    )
         vim.cmd([[abbreviate <buffer> (;\ (λ]])
         vim.cmd([[abbreviate <buffer> ;\ λ]])
         vim.cmd([[abbreviate <buffer> lambda\ λ]])
@@ -479,7 +494,11 @@ ColorschemeTimer = vfn.timer_start(1000 * 60 * 15, set_colorscheme, { ["repeat"]
 vapi.nvim_command("highlight NonText guifg=#6C768A")
 
 -- UI "Dressing"
-require("dressing").setup()
+require("dressing").setup({
+    select = {
+        enabled = false,
+    },
+})
 
 -- Fancy Notifications
 require("notify").setup({
@@ -513,8 +532,12 @@ vim.g.haskell_backpack = 1 -- to enable highlighting of backpack keywords
 -- Formatting
 vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
 wk.register({
-    cf = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
-})
+    c = {
+        f = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
+        a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
+        h = { vim.lsp.buf.hover, "(c)ode (h)over" },
+    },
+}, { prefix = "<Leader>" })
 
 ----------------------
 -- Writing Setup ✍️  --
@@ -676,14 +699,12 @@ wk.register({
     ["<Leader>b"] = {
         name = "(b)uffers",
         q = {
-            function()
-                MiniBufremove.unshow()
-            end,
+            MiniBufremove.unshow,
             "(b)uffer (q)uit [unshows buffer]",
         },
         d = {
             function()
-                MiniBufremove.delete()
+                MiniBufremove.delete(0, true)
             end,
             "(b)uffer (d)elete",
         },
@@ -696,8 +717,8 @@ wk.register({
     },
     ["<M-l>"] = { ":BufferLineCycleNext<Enter>", "buffer next" },
     ["<M-h>"] = { ":BufferLineCyclePrev<Enter>", "buffer prev" },
-    ["<M-j>"] = { ":BufferLineMoveNext<Enter>", "buffer move next" },
-    ["<M-k>"] = { ":BufferLineMovePrev<Enter>", "buffer move prev" },
+    ["<M-L>"] = { ":BufferLineMoveNext<Enter>", "buffer move next" },
+    ["<M-H>"] = { ":BufferLineMovePrev<Enter>", "buffer move prev" },
 })
 
 -- Indent Indication
@@ -720,6 +741,7 @@ require("focus").setup({
     signcolumn = false,
     cursorline = true,
     hybridnumber = true,
+    excluded_filetypes = { "netrw" },
 })
 wk.register({
     ["<Leader>ws"] = { ":FocusSplitNicely<Enter>", "(w)indow (s)plit" },
@@ -739,6 +761,7 @@ vim.g["conjure#highlight#enabled"] = true
 vim.g["conjure#log#hud#width"] = 0.40
 vim.g["conjure#log#hud#height"] = 0.50
 vim.g["conjure#log#hud#passive_close_delay"] = 0
+
 vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
     desc = "Add Conjure Keymap Labels",
@@ -1076,7 +1099,7 @@ wk.register({
         function()
             local message = "You are currently not in a session"
             local current_session = vim.v.this_session
-            if current_session ~= nil then
+            if not lf.get_is_falsy(current_session) then
                 local session_name = vfn.fnamemodify(current_session, ":t:r")
                 message = "You are currently in session `"
                     .. session_name
@@ -1135,11 +1158,47 @@ vapi.nvim_create_user_command("Luapad", function()
         :start()
 end, {})
 
+-- HTTP Testing
+require("rest-nvim").setup({
+    -- Open request results in a horizontal split
+    result_split_horizontal = false,
+    -- Keep the http file buffer above|left when split horizontal|vertical
+    result_split_in_place = false,
+    -- Skip SSL verification, useful for unknown certificates
+    skip_ssl_verification = false,
+    -- Highlight request on run
+    highlight = {
+        enabled = true,
+        timeout = 150,
+    },
+    result = {
+        -- toggle showing URL, HTTP info, headers at top the of result window
+        show_url = true,
+        show_http_info = true,
+        show_headers = true,
+    },
+    -- Jump to request line on run
+    jump_to_request = false,
+    env_file = ".env",
+    custom_dynamic_variables = {},
+    yank_dry_run = true,
+})
+vapi.nvim_create_autocmd({ "BufEnter" }, {
+    group = le_group,
+    pattern = { "*.http" },
+    callback = function(event)
+        wk.register({
+            ["<Enter>"] = { "<Plug>RestNvim", "Run HTTP Request" },
+            ["<Leader><Enter>"] = { "<Plug>RestNvimPreview", "Run HTTP Request" },
+        }, { buffer = event.buf })
+    end,
+})
+
 ------------------------
 -- Telescope Setup 🔭 --
 ------------------------
 
-local actions = require("telescope.actions")
+-- local actions = require("telescope.actions")
 local telescope = require("telescope")
 
 telescope.setup({
@@ -1157,6 +1216,9 @@ telescope.setup({
         set_env = { ["COLORTERM"] = "truecolor" },
     },
     extensions = {
+        ["ui-select"] = {
+            require("telescope.themes").get_cursor({}),
+        },
         heading = {
             treesitter = true,
         },
@@ -1173,9 +1235,6 @@ telescope.setup({
                     end
                 )
             end,
-        },
-        ["ui-select"] = {
-            require("telescope.themes").get_dropdown({}),
         },
     },
 })
@@ -1200,6 +1259,15 @@ telescope.load_extension("ui-select")
 telescope.load_extension("yank_history")
 telescope.load_extension("file_browser")
 
+vapi.nvim_create_autocmd("User", {
+    pattern = "TelescopePreviewerLoaded",
+    callback = function()
+        vim.opt_local.wrap = true
+    end,
+    -- TODO: Open issue on why wrap only works after you go to the file
+    -- then come back
+})
+
 -- Telescope Keymaps
 wk.register({
     ["<Leader>"] = {
@@ -1207,6 +1275,7 @@ wk.register({
             name = "(f)ind something (Telescope Pickers)",
             a = { ":Telescope<Enter>", "(f)ind (a)ll built in pickers" },
             b = { ":Telescope buffers<Enter>", "(f)ind (b)uffers" },
+            B = { ":Lexplore 30<Enter>", "(f)ile (B)rowser" },
             c = { ":Telescope commands<Enter>", "(f)ind (c)ommands" },
             d = { ":Telescope diagnostics<Enter>", "(f)ind (d)iagnostics" },
             e = { ":Telescope emoji<Enter>", "(f)ind (e)mojis! 😎" },
@@ -1449,29 +1518,32 @@ require("nvim-lsp-installer").setup({
 -- Null-ls Hook Setup
 local null_ls = require("null-ls")
 null_ls.setup({
+    autostart = true,
     sources = {
         -- Completion
-        null_ls.builtins.completion.spell,
+        null_ls.builtins.completion.luasnip,
 
         -- Formatting
+        null_ls.builtins.formatting.jq,
+        null_ls.builtins.formatting.gofmt,
         null_ls.builtins.formatting.stylua,
         null_ls.builtins.formatting.fnlfmt,
-        null_ls.builtins.formatting.gofmt,
-        null_ls.builtins.formatting.jq,
         null_ls.builtins.formatting.rustfmt,
-        null_ls.builtins.formatting.trim_newlines,
-        null_ls.builtins.formatting.clang_format,
         null_ls.builtins.formatting.fourmolu,
+        null_ls.builtins.formatting.clang_format,
+        null_ls.builtins.formatting.trim_newlines,
 
         -- Code Actions
         null_ls.builtins.code_actions.eslint,
         null_ls.builtins.code_actions.gitsigns,
-        null_ls.builtins.completion.luasnip,
-        null_ls.builtins.completion.spell,
+        null_ls.builtins.code_actions.proselint,
 
         -- Diagnostics
         null_ls.builtins.diagnostics.eslint,
         null_ls.builtins.diagnostics.flake8,
+
+        -- These lints don't seem to work
+        null_ls.builtins.diagnostics.proselint,
         null_ls.builtins.diagnostics.markdownlint,
     },
 })
@@ -1484,13 +1556,11 @@ local on_attach = function(_, bufnr)
             d = { ":Telescope lsp_definitions<Enter>", "(g)o to (d)efinition" },
             D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
             i = { vim.lsp.buf.implementation, "(g)o to (i)mplementation" },
-            -- r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
+            r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
         },
         ["<Leader>"] = {
             c = {
                 name = "(c)ode",
-                a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
-                h = { vim.lsp.buf.hover, "(c)ode (h)over" },
                 s = { vim.lsp.buf.signature_help, "(c)ode (s)ignature" },
                 t = { vim.lsp.buf.type_definition, "(c)ode (t)ype" },
             },
@@ -1499,14 +1569,6 @@ local on_attach = function(_, bufnr)
         },
     }, { buffer = bufnr })
 end
-vapi.nvim_create_autocmd("User", {
-    pattern = "TelescopePreviewerLoaded",
-    callback = function()
-        vim.opt_local.wrap = true
-    end,
-    -- TODO: Open issue on why wrap only works after you go to the file
-    -- then come back
-})
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
@@ -1647,16 +1709,16 @@ cmp.setup({
     }),
     sources = cmp.config.sources({
         { name = "emoji", option = { insert = true } },
-        { name = "omni" },
-        { name = "conjure" },
+        { name = "nvim_lua" },
         { name = "nvim_lsp" },
         { name = "nvim_lsp_signature_help" },
-        { name = "nvim_lua" },
+        { name = "treesitter" },
+        { name = "conjure" },
         { name = "path" },
         { name = "luasnip" },
         { name = "calc" },
-        { name = "treesitter" },
     }, {
+        { name = "omni" },
         { name = "spell" },
         { name = "fuzzy_buffer", keyword_length = 5 },
         { name = "buffer" },
@@ -1671,15 +1733,23 @@ cmp.setup({
                 nvim_lsp = "[LSP]",
                 luasnip = "[LuaSnip]",
                 nvim_lua = "[Lua]",
-                treesitter = "[TreeSitter]",
-                nvim_lsp_signature_help = "[LSP Sig]",
+                treesitter = "[TS]",
+                nvim_lsp_signature_help = "[LSP]",
                 path = "[Path]",
                 emoji = "[Emoji]",
                 calc = "[Calc]",
                 spell = "[Spell]",
-                fuzzy_buffer = "[Fzy Buffer]",
-                cmdline_history = "[CMD History]",
+                fuzzy_buffer = "[FzyBuf]",
+                cmdline_history = "[CMDHis]",
             },
+            before = function(entry, vim_item)
+                pcall(function()
+                    vim_item.menu = (vim_item.menu or "")
+                        .. " "
+                        .. entry:get_completion_item().detail
+                end)
+                return vim_item
+            end,
         }),
     },
 })
@@ -1752,7 +1822,7 @@ wk.register({
         f = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
     },
     ["<Leader>"] = {
-        q = { ":qa<Enter>", "(q)uit all" },
+        q = "(q)uit all",
         r = {
             function()
                 vim.cmd([[source $MYVIMRC]])

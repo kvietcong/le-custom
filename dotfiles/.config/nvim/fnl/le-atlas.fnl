@@ -17,7 +17,7 @@
 (local vfn vim.fn)
 (local vapi vim.api)
 (local wk (require :which-key))
-(import-macros {:fstring f=} :macros)
+(import-macros {:fstring f=} :le-macros)
 
 (λ path->filename [path]
   (type-check [:string path])
@@ -64,12 +64,12 @@
 ;; (local temp vim.g.minisurround_disable)
 ;; (set vim.g.minisurround_disable true)
 
-(λ get-possible-links-async [?callback]
+(λ get-possible-paths-async [?callback]
   (type-check [:function|nil ?callback])
   (fd-async {:callback ?callback :cwd vim.g.wiki_root :args [:-g "--" :*.md]}))
 
-(λ get-possible-links []
-  (let [job (get-possible-links-async)]
+(λ get-possible-paths []
+  (let [job (get-possible-paths-async)]
     (job:sync)))
 
 (λ filename->filepath-async [filename ?callback]
@@ -99,8 +99,8 @@
 
 (λ choose-wikilink [callback]
   (type-check [:function callback])
-  (let [possible-links (get-possible-links)]
-    (vim.ui.select possible-links
+  (let [possible-paths (get-possible-paths)]
+    (vim.ui.select possible-paths
                    {:prompt "Select a Note" :format_item path->filename}
                    (λ [?selection]
                      (if ?selection
@@ -122,7 +122,6 @@
                            line (vapi.nvim_get_current_line)
                            new-line (.. (line:sub 1 (++ column)) ?wikilink
                                         (line:sub (+ column 2)))]
-                       (P new-line)
                        (vapi.nvim_set_current_line new-line)
                        (vapi.nvim_win_set_cursor 0
                                                  [row
@@ -168,6 +167,8 @@
   (add-keymaps))
 
 {: setup
+ : choose-wikilink
+ :choose_wikilink choose-wikilink
  : choose-wikilink-and-insert
  :choose_wikilink_and_insert choose-wikilink-and-insert
  : choose-wikilink-and-copy
