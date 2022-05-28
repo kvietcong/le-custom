@@ -16,11 +16,26 @@
 - Play around with Conjure (WHICH IS SUPER COOL)
 - Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
+- Organize my config so that I can pcall everything
 ]]
 
 --------------------------
 -- Setting Things Up 🔧 --
 --------------------------
+
+-- EMERGENCY
+vim.api.nvim_set_keymap("n", "<F1>", "", {
+    noremap = true,
+    silent = true,
+    desc = "EMERGENCY EDIT",
+    callback = function()
+        vim.cmd("e $MYVIMRC")
+        vim.cmd("cd %:p:h")
+        vim.cmd("e ./lua/le/libl.lua")
+        vim.cmd("e ./fnl/le/libf.fnl")
+        vim.cmd("e ./lua/init.lua")
+    end,
+})
 
 -- Make built-in functions easier to access
 _G.vfn = vim.fn
@@ -39,7 +54,8 @@ _G.is_neovide = vim.g.neovide ~= nil
 _G.is_nvui = vim.g.nvui ~= nil
 _G.is_fvim = vim.g.fvim_loaded
 _G.is_goneovim = vim.g.goneovim
-_G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim
+_G.is_firenvim = vim.g.started_by_firenvim
+_G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim or is_firenvim
 _G.is_mac = vfn.has("mac") == 1
 _G.is_wsl = vfn.has("wsl") == 1
 _G.is_win = vfn.has("win32") == 1
@@ -83,17 +99,24 @@ packer.startup({
         use("tpope/vim-repeat")
         use("gbprod/yanky.nvim")
         use("ggandor/leap.nvim")
-        use("nacro90/numb.nvim")
-        use("wellle/targets.vim")
-        use("nanotee/zoxide.vim")
         use("jghauser/mkdir.nvim")
         use("folke/which-key.nvim")
         use("voldikss/vim-floaterm")
         use("echasnovski/mini.nvim")
-        use("rafcamlet/nvim-luapad")
-        use("NTBBloodbath/rest.nvim")
         use("TimUntersberger/neogit")
+        use("NTBBloodbath/rest.nvim")
         use("sindrets/winshift.nvim")
+
+        use({
+            "nanotee/zoxide.vim",
+            cmd = { "Z" },
+        })
+        use({
+            "glacambre/firenvim",
+            run = function()
+                vim.fn["firenvim#install"](0)
+            end,
+        })
 
         -- Neovim Development
         use("Olical/conjure")
@@ -102,24 +125,29 @@ packer.startup({
         use("bakpakin/fennel.vim")
         use("nanotee/luv-vimdocs")
         use("milisims/nvim-luaref")
-        use("hrsh7th/cmp-nvim-lua")
+        use("rafcamlet/nvim-luapad")
 
         -- Pretty Things
         use("folke/zen-mode.nvim")
         use("rcarriga/nvim-notify")
         use("shaunsingh/nord.nvim")
         use("p00f/nvim-ts-rainbow")
-        use("rmehri01/onenord.nvim")
         use("stevearc/dressing.nvim")
         use("beauwilliams/focus.nvim")
         use("lewis6991/gitsigns.nvim")
         use("sainnhe/gruvbox-material")
-        use("neovimhaskell/haskell-vim")
         use("mrjones2014/legendary.nvim")
-        use("norcalli/nvim-colorizer.lua") -- TODO: See if I can make this better?
+        use("norcalli/nvim-colorizer.lua")
         use("akinsho/nvim-bufferline.lua")
 
+        use({
+            "neovimhaskell/haskell-vim",
+            ft = { "haskell" },
+        })
+
         -- Writing
+        use("crispgm/telescope-heading.nvim")
+
         use({
             "lervag/wiki.vim",
             ft = { "markdown", "wiki" },
@@ -136,11 +164,9 @@ packer.startup({
             "preservim/vim-markdown",
             ft = { "markdown", "wiki" },
         })
-        use("crispgm/telescope-heading.nvim")
 
         -- Pickers/Finders
         use("tversteeg/registers.nvim")
-        use("jvgrootveld/telescope-zoxide")
         use("nvim-telescope/telescope.nvim")
         use("olacin/telescope-gitmoji.nvim")
         use("kvietcong/telescope-emoji.nvim")
@@ -153,8 +179,8 @@ packer.startup({
         -- Treesitter
         use("SmiteshP/nvim-gps")
         use("lewis6991/spellsitter.nvim")
-        use("haringsrob/nvim_context_vt")
-        use("romgrk/nvim-treesitter-context")
+        -- use("haringsrob/nvim_context_vt")
+        -- use("romgrk/nvim-treesitter-context")
         use("nvim-treesitter/nvim-treesitter")
         use("nvim-treesitter/nvim-treesitter-refactor")
         use("nvim-treesitter/nvim-treesitter-textobjects")
@@ -208,7 +234,7 @@ packer.startup({
 })
 
 -- Load cached plugins for speed
-require("impatient")
+require("impatient").enable_profile()
 
 -- Which Key (Mapping reminders)
 require("legendary").setup({})
@@ -238,21 +264,6 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
         vim.cmd([[abbreviate <buffer> l\ λ]])
         vim.cmd([[abbreviate <buffer> (lambda\ (λ]])
         vim.cmd([[abbreviate <buffer> (l\ (λ]])
-        -- wk.register({
-        --     ["<Leader>cf"] = {
-        --         function()
-        --             local result = require("plenary.job")
-        --                 :new({
-        --                     command = "fnlfmt.bat",
-        --                     args = { vfn.expand("#" .. event.buf .. ":p", nil, nil) },
-        --                 })
-        --                 :sync()
-        --             result[#result] = nil
-        --             vapi.nvim_buf_set_lines(event.buf, 0, -1, true, result)
-        --         end,
-        --         "(c)ode (f)ormat",
-        --     },
-        -- }, { buffer = event.buf })
     end,
 })
 vapi.nvim_create_user_command("FnlCacheClear", function()
@@ -286,9 +297,9 @@ vapi.nvim_create_autocmd({ "BufWritePost" }, {
 -- Force reload specific modules for faster development
 if not is_startup then
     local plenary = require("plenary")
-    plenary.reload.reload_module("le-fnl")
-    plenary.reload.reload_module("le_lua")
-    plenary.reload.reload_module("le-atlas")
+    plenary.reload.reload_module("le.libf")
+    plenary.reload.reload_module("le.libl")
+    plenary.reload.reload_module("le.atlas")
 end
 
 -- Shortcuts to Table Functions
@@ -320,8 +331,8 @@ function String.__index:char_at(i)
 end
 
 -- Load Helper Modules
-_G.lf = require("le-fnl") -- My Helper module (Fennel)
-_G.ll = require("le_lua") -- My Helper module (Lua)
+_G.lf = require("le.libf") -- My Helper module (Fennel)
+_G.ll = require("le.libl") -- My Helper module (Lua)
 
 vapi.nvim_create_user_command("GetDate", function(command)
     local time = lf.get_date(command.args)
@@ -371,16 +382,16 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
 -------------------------
 
 -- GUI Settings
-if is_neovide then
-    vim.g.neovide_no_idle = false
-    vim.g.neovide_refresh_rate = 165
-    vim.g.neovide_transparency = 0.98
-    vim.g.neovide_cursor_antialiasing = true
-    vim.g.neovide_cursor_vfx_mode = "railgun"
-    vim.g.neovide_cursor_animation_length = 0.1
-    vim.g.neovide_cursor_vfx_particle_phase = 3
-    vim.g.neovide_cursor_vfx_particle_density = 30.0
-elseif is_nvui then
+vim.g.neovide_no_idle = false
+vim.g.neovide_refresh_rate = 165
+vim.g.neovide_transparency = 0.98
+vim.g.neovide_cursor_antialiasing = true
+vim.g.neovide_cursor_vfx_mode = "railgun"
+vim.g.neovide_cursor_animation_length = 0.1
+vim.g.neovide_cursor_vfx_particle_phase = 3
+vim.g.neovide_cursor_vfx_particle_density = 30.0
+
+if is_nvui then
     vim.cmd([[
     NvuiOpacity 0.95
     NvuiTitlebarFontSize 13
@@ -395,6 +406,12 @@ elseif is_nvui then
     NvuiScrollAnimationDuration 0.5
     ]])
 end
+
+vim.g.firenvim_config = {
+    localSettings = {
+        [".*"] = { takeover = "never" },
+    },
+}
 
 if is_gui then
     -- GUI Font resizing
@@ -472,14 +489,6 @@ vim.g.nord_italic = true
 vim.g.nord_borders = true
 vim.g.nord_contrast = true
 vim.g.nord_disable_background = not is_gui
-
-require("onenord").setup({
-    theme = "dark",
-    fade_nc = false,
-    disable = {
-        background = true,
-    },
-})
 
 vim.g.gruvbox_material_enable_italic = 1
 vim.g.gruvbox_material_background = "soft"
@@ -615,7 +624,7 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
 })
 
 -- Custom Note Workflow Stuff
-local le_atlas = require("le-atlas")
+local le_atlas = require("le.atlas")
 le_atlas.setup({ wk = wk })
 
 -- Random FD command XD
@@ -628,6 +637,9 @@ end, { nargs = "?" })
 
 -- Minimal Status Line
 vim.go.laststatus = 3
+if is_firenvim then
+    vim.go.laststatus = 0
+end
 require("mini.statusline").setup({
     set_vim_settings = false,
     content = {
@@ -685,6 +697,7 @@ require("mini.statusline").setup({
 
 -- Start Screen
 require("mini.starter").setup({
+    enabled = not is_firenvim,
     header = [[
 __      __          _                                              _  __  __   __
 \ \    / / ___     | |     __      ___    _ __     ___      o O O | |/ /  \ \ / /
@@ -695,21 +708,23 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"
 })
 
 -- Bufferline (Easy Tabs) and Buffer Management
-require("bufferline").setup({
-    options = {
-        show_close_icon = false,
-        diagnostics = "nvim_lsp",
-        separator_style = "thick",
-        -- tab_size = 25,
-        offsets = {
-            {
-                filetype = "NvimTree",
-                text = "File Explorer",
-                text_align = "left",
+if not is_firenvim then
+    require("bufferline").setup({
+        options = {
+            show_close_icon = false,
+            diagnostics = "nvim_lsp",
+            separator_style = "thick",
+            -- tab_size = 25,
+            offsets = {
+                {
+                    filetype = "NvimTree",
+                    text = "File Explorer",
+                    text_align = "left",
+                },
             },
         },
-    },
-})
+    })
+end
 require("mini.bufremove").setup({})
 wk.register({
     ["<Leader>b"] = {
@@ -777,6 +792,8 @@ vim.g["conjure#highlight#enabled"] = true
 vim.g["conjure#log#hud#width"] = 0.40
 vim.g["conjure#log#hud#height"] = 0.50
 vim.g["conjure#log#hud#passive_close_delay"] = 0
+-- vim.g["conjure#filetype#fennel"] = "conjure.client.fennel.stdio"
+-- vim.g["conjure#client#fennel#stdio#command"] = "fennel.bat"
 
 vapi.nvim_create_autocmd({ "BufEnter" }, {
     group = le_group,
@@ -823,9 +840,6 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
         })
     end,
 })
-
--- Line Peeking
-require("numb").setup({ number_only = true })
 
 -- Zen Mode (Minimal Mode)
 require("zen-mode").setup({
@@ -980,6 +994,7 @@ require("mini.comment").setup({})
 -- Session Management
 -- Close buffers that don't restore from a session
 local close_bad_buffers = function()
+    vim.cmd([[ZenMode]])
     require("zen-mode").close()
     vim.notify.dismiss({ silent = true, pending = true })
     local buffer_numbers = vapi.nvim_list_bufs()
@@ -1268,12 +1283,11 @@ require("telescope-emoji").setup({
 telescope.load_extension("fzf")
 telescope.load_extension("emoji")
 telescope.load_extension("packer")
-telescope.load_extension("zoxide")
-telescope.load_extension("heading")
 telescope.load_extension("gitmoji")
+telescope.load_extension("heading")
 telescope.load_extension("ui-select")
-telescope.load_extension("yank_history")
 telescope.load_extension("file_browser")
+telescope.load_extension("yank_history")
 
 vapi.nvim_create_autocmd("User", {
     pattern = "TelescopePreviewerLoaded",
@@ -1311,7 +1325,6 @@ wk.register({
             r = { ":Telescope oldfiles<Enter>", "(f)ind (r)ecent files" },
             t = { ":Telescope treesitter<Enter>", "(f)ind (t)reesitter symbols" },
             y = { ":Telescope yank_history<Enter>", "(f)ind (y)ank history" },
-            z = { ":Telescope Zoxide list<Enter>", "(z)oxide" },
         },
         ["/"] = { ":Telescope current_buffer_fuzzy_find<Enter>", "Fuzzy Find In File" },
         ["?"] = { ":Telescope live_grep<Enter>", "Fuzzy Find Across Project" },
@@ -1464,40 +1477,40 @@ if is_going_hard then
     })
 end
 
-require("treesitter-context").setup({
-    enable = is_going_hard,
-    patterns = {
-        default = {
-            "class",
-            "function",
-            "method",
-            "for",
-            "while",
-            "if",
-            "switch",
-            "case",
-        },
-    },
-})
-
-require("nvim_context_vt").setup({
-    enabled = is_going_hard,
-    min_rows = 5,
-    custom_parser = function(node, _, _)
-        local start_row, _, end_row = node:range()
-        local lines = vapi.nvim_buf_get_lines(
-            vapi.nvim_get_current_buf(),
-            start_row,
-            end_row,
-            false
-        )
-        if node:type() == "function" then
-            return nil
-        end
-
-        return "~> " .. lines[1]:match("^%s*(.-)%s*$") .. "…"
-    end,
-})
+-- require("treesitter-context").setup({
+--     enable = is_going_hard,
+--     patterns = {
+--         default = {
+--             "class",
+--             "function",
+--             "method",
+--             "for",
+--             "while",
+--             "if",
+--             "switch",
+--             "case",
+--         },
+--     },
+-- })
+--
+-- require("nvim_context_vt").setup({
+--     enabled = is_going_hard,
+--     min_rows = 5,
+--     custom_parser = function(node, _, _)
+--         local start_row, _, end_row = node:range()
+--         local lines = vapi.nvim_buf_get_lines(
+--             vapi.nvim_get_current_buf(),
+--             start_row,
+--             end_row,
+--             false
+--         )
+--         if node:type() == "function" then
+--             return nil
+--         end
+--
+--         return "~> " .. lines[1]:match("^%s*(.-)%s*$") .. "…"
+--     end,
+-- })
 
 ---------------------------------------------
 -- Language Server Protocol (LSP) Setup 💡 --
@@ -1536,9 +1549,6 @@ local null_ls = require("null-ls")
 null_ls.setup({
     autostart = true,
     sources = {
-        -- Completion
-        null_ls.builtins.completion.luasnip,
-
         -- Formatting
         null_ls.builtins.formatting.jq,
         null_ls.builtins.formatting.gofmt,
@@ -1552,15 +1562,10 @@ null_ls.setup({
         -- Code Actions
         null_ls.builtins.code_actions.eslint,
         null_ls.builtins.code_actions.gitsigns,
-        null_ls.builtins.code_actions.proselint,
 
         -- Diagnostics
         null_ls.builtins.diagnostics.eslint,
         null_ls.builtins.diagnostics.flake8,
-
-        -- These lints don't seem to work
-        null_ls.builtins.diagnostics.proselint,
-        null_ls.builtins.diagnostics.markdownlint,
     },
 })
 

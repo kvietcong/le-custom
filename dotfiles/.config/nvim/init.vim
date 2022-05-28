@@ -118,10 +118,10 @@ nnoremap <C-d> <C-d>zz
 nnoremap <C-u> <C-u>zz
 vnoremap <C-d> <C-d>zz
 vnoremap <C-u> <C-u>zz
-nnoremap <Leader><Leader>h g^
-nnoremap <Leader><Leader>l g$
-vnoremap <Leader><Leader>h g^
-vnoremap <Leader><Leader>l g$
+nnoremap <Leader>H g^
+nnoremap <Leader>L g$
+vnoremap <Leader>H g^
+vnoremap <Leader>L g$
 nnoremap N Nzzzv
 nnoremap n nzzzv
 vnoremap N Nzzzv

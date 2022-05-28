@@ -16,47 +16,57 @@
 (λ id [...]
   ...)
 
-(λ type? [type-to-check x]
-  (= (type x) type-to-check))
+(local map t.map)
+(local list? t.islist)
+(local empty? t.isempty)
+(local contains? t.tbl_isempty)
 
-(λ nil? [x]
-  (type? :nil x))
+(λ type? [type-condition ?x]
+  (match type-condition
+    (where type-condition (= (type type-condition) :function)) (type-condition ?x)
+    :list (list? ?x)
+    _ (= (type ?x) type-condition)))
 
-(λ table? [x]
-  (type? :table x))
+(local all-types [:nil
+                  :boolean
+                  :number
+                  :string
+                  :function
+                  :userdata
+                  :thread
+                  :table])
 
-(λ string? [x]
-  (type? :string x))
+;; Create Type Checkers
+;; - `<TYPE>?`
+;; - `get_is_<TYPE>`
+(each [_ lua-type (ipairs all-types)]
+  (let [checker (λ [x]
+                  (type? lua-type x))]
+    (tset M (.. lua-type "?") checker)
+    (tset M (.. :get_is_ lua-type) checker)))
 
-(λ thread? [x]
-  (type? :thread x))
-
-(λ number? [x]
-  (type? :number x))
-
-(λ boolean? [x]
-  (type? :boolean x))
-
-(λ userdata? [x]
-  (type? :userdata x))
-
-(λ function? [x]
-  (type? :function x))
-
-(λ type-check [to-check]
-  (for [i 2 (length to-check) 2]
-    (let [expected-types (. to-check (- i 1))
-          value (. to-check i)
-          checks (icollect [_ expected-type (ipairs (vfn.split expected-types
-                                                               "|"))]
-                   (type? expected-type value))]
+;; Given a list of pairs, check types
+;; The pairs are <Type String or Type Predicate> and <Value>
+;; If anything fails, an error is thrown. If successful, the function returns true.
+;; Type strings may also be unions of multiple types (i.e. :string|table|nil)
+;; TODO: Move a lot of the logic into `type?`
+(λ type-check! [to-check]
+  (for [i 1 (length to-check) 2]
+    (let [string? M.string?
+          type-conditions (. to-check i)
+          value (. to-check (+ i 1))
+          checks (icollect [_ type-condition (ipairs (if (string? type-conditions)
+                                                         (vfn.split type-conditions
+                                                                    "|")
+                                                         [type-conditions]))]
+                   (type? type-condition value))]
       (assert (vim.tbl_contains checks true)
-              (.. "Type Mismatch! Expected: " expected-types)))))
+              (if (string? type-conditions)
+                  (.. "Type Mismatch! Expected: " type-conditions)
+                  "Failed to match type predicates"))))
+  true)
 
-(λ empty? [x]
-  (type-check [:table x])
-  (vim.tbl_isempty x))
-
+;; A Certified JavaScript Moment
 (fn falsy? [x]
   (or (not x) (= x "") (and (table? x) (empty? x)) (= x 0)))
 
@@ -64,7 +74,7 @@
   (not (falsy? x)))
 
 (λ reverse-get [table target]
-  (type-check [:table table])
+  (type-check! [:table table])
   (var found nil)
   (each [key value (pairs table)]
     :until
@@ -73,49 +83,11 @@
   found)
 
 (λ notify-level [message level ?custom-title]
-  (type-check [:string message :number level :string|nil ?custom-title])
+  (type-check! [:string message :number level :string|nil ?custom-title])
   (vim.notify message level
               {:title (or ?custom-title
                           (: (reverse-get vim.log.levels level) :gsub "^%l"
                              string.upper))}))
-
-(λ inc [x]
-  (type-check [:number x])
-  (+ x 1))
-
-(local ++ inc)
-(λ dec [x]
-  (type-check [:number x])
-  (- x 1))
-
-(local -- dec)
-
-(λ max [x y]
-  (type-check [:number x :number y])
-  (if (>= x y) x y))
-
-(λ min [x y]
-  (type-check [:number x :number y])
-  (if (<= x y) x y))
-
-(λ clamp [min# max# x]
-  (type-check [:number min# :number max# :number x])
-  (max min# (min max# x)))
-
-(λ inc-pos [pos inc-by]
-  (type-check [:table pos :number inc-by])
-  [(. pos 1) (+ (. pos 2) inc-by)])
-
-(λ dec-pos [pos dec-by]
-  (type-check [:table pos :number dec-by])
-  [(. pos 1) (max 0 (- (. pos 2) dec-by))])
-
-(λ even? [x]
-  (type-check [:number x])
-  (= (% x 2) 0))
-
-(λ odd? [x]
-  (not (even? x)))
 
 ;; Dynamically generate notify shortcuts
 ;; TODO: File issue on nvim-notify about Trace and Debug
@@ -132,8 +104,36 @@
     (tset M (.. :notify- level-l) notifier)
     (tset M (.. :notify_ level-l) notifier)))
 
+(λ head [xs]
+  (type-check! [list? xs])
+  (. xs 1))
+
+;; Expensive AF
+(λ tail [xs]
+  (type-check! [list? xs])
+  [(select 2 (unpack xs))])
+
+;; Weak reference to the tail
+;; TODO: Make this work
+; (λ tail! [xs]
+;   (type-check! [list? xs])
+;   (setmetatable {} {:__index (λ [_ i]
+;                                (. xs (+ i 1)))
+;                     :__newindex (λ [_ i value]
+;                                   (tset xs (+ i 1) value))
+;                     :__len (λ []
+;                              (- (length xs) 1))
+;                     :__ipairs (λ [_]
+;                                 (values (λ [_ i]
+;                                           (P i)
+;                                           (if (= (+ i 1) (length xs))
+;                                               nil
+;                                               (values (+ i 1) (. xs (+ i 2)))))
+;                                         xs 0))
+;                     :__pairs (λ [xs] (ipairs xs))}))
+
 (λ fold* [folder initial foldable iterator-maker]
-  (type-check [:function folder])
+  (type-check! [:function folder])
   (accumulate [accumulated initial key next (iterator-maker foldable)]
     (folder accumulated next key)))
 
@@ -145,6 +145,9 @@
   "Fold a table's keys and values (NOT STRICT ON ORDER)"
   (fold* folder initial foldable pairs))
 
+(λ reduce [folder foldable]
+  (foldl folder (head foldable) (tail foldable)))
+
 ;; A note for weary travelers like me. os.date uses C's
 ;; strftime under the hood. Vim's builtin strftime does too.
 ;; Now most websites don't have all the format specifiers
@@ -152,7 +155,7 @@
 ;; directly. It took me quite a while to discover this
 ;; and I finally found %V was what I was looking for.
 (λ get-date [?format]
-  (type-check [:string|nil ?format])
+  (type-check! [:string|nil ?format])
   (let [datetime os.date]
     (if (falsy? ?format) {:year (tonumber (datetime "%Y"))
                           :month (tonumber (datetime "%m"))
@@ -168,10 +171,10 @@
 (λ day? []
   (let [date-info (get-date)
         hour date-info.hour]
-    (and (> hour 6) (< hour 18))))
+    (and (< 6 hour) (< hour 18))))
 
 (λ set-register-and-notify [item ?message ?title]
-  (type-check [:string item :string|function|nil ?message :string|nil ?title])
+  (type-check! [:string item :string|function|nil ?message :string|nil ?title])
   (let [title (or ?title "Register Set")]
     (var final-message ?message)
     (if (= (type final-message) :function)
@@ -181,7 +184,7 @@
     (vim.notify final-message :info {: title})))
 
 (λ get-locals [?stack-max]
-  (type-check [:number|nil ?stack-max])
+  (type-check! [:number|nil ?stack-max])
   (local locals {})
   (var j 1)
   (var remaining? true)
@@ -195,7 +198,7 @@
   locals)
 
 (λ fd-async [options]
-  (type-check [:table options])
+  (type-check! [:table options])
   (when options.cwd ; WHY YOU SO WACK WINDOWS
     (if is_win (set options.cwd (options.cwd:gsub "~" :$HOME)))
     (set options.cwd (vfn.expand options.cwd)))
@@ -213,7 +216,10 @@
 (t.extend :keep {: fold
                  : foldl
                  : fold*
-                 : type-check
+                 : type?
+                 :get_is_type type?
+                 : type-check!
+                 :TYPE_CHECK type-check!
                  :fold_ fold*
                  :to_string view
                  :*->string view
@@ -224,39 +230,12 @@
                  :notify_level notify-level
                  : set-register-and-notify
                  :set_register_and_notify set-register-and-notify
-                 : inc
-                 : ++
-                 : dec
-                 : --
-                 : max
-                 : min
-                 : clamp
-                 : inc-pos
-                 :inc_pos inc-pos
-                 : dec-pos
-                 :dec_pos dec-pos
                  : fd-async
                  :fd_async fd-async
-                 : day?
-                 :get_is_day day?
                  : get-date
                  :get_date get-date
-                 : nil?
-                 :get_is_nil nil?
-                 : table?
-                 :get_is_table table?
-                 : thread?
-                 :get_is_thread thread?
-                 : string?
-                 :get_is_string string?
-                 : number?
-                 :get_is_number number?
-                 : boolean?
-                 :get_is_boolean boolean?
-                 : userdata?
-                 :get_is_userdata userdata?
-                 : function?
-                 :get_is_function function?
+                 : day?
+                 :get_is_day day?
                  : empty?
                  :get_is_empty empty?
                  : falsy?

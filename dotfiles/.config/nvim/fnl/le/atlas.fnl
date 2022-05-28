@@ -10,17 +10,17 @@
         : not-falsy?
         : set-register-and-notify
         : *->string
-        : type-check
-        : --
-        : ++} (require :le-fnl))
+        : type-check!} (require :le.libf))
+(local {: --
+        : ++} (require :le.math))
+(import-macros {:fstring f=} :le.macros)
 
 (local vfn vim.fn)
 (local vapi vim.api)
 (local wk (require :which-key))
-(import-macros {:fstring f=} :le-macros)
 
 (λ path->filename [path]
-  (type-check [:string path])
+  (type-check! [:string path])
   (vfn.fnamemodify path ":t:r"))
 
 (λ get-wikilink-info-under-cursor []
@@ -65,7 +65,7 @@
 ;; (set vim.g.minisurround_disable true)
 
 (λ get-possible-paths-async [?callback]
-  (type-check [:function|nil ?callback])
+  (type-check! [:function|nil ?callback])
   (fd-async {:callback ?callback :cwd vim.g.wiki_root :args [:-g "--" :*.md]}))
 
 (λ get-possible-paths []
@@ -73,32 +73,32 @@
     (job:sync)))
 
 (λ filename->filepath-async [filename ?callback]
-  (type-check [:string filename :function|nil ?callback])
+  (type-check! [:string filename :function|nil ?callback])
   (fd-async {:callback ?callback
              :cwd vim.g.wiki_root
              :args [:-g "--" (f= "${filename}.md")]}))
 
 (λ filename->filepath [filename]
-  (type-check [:string filename])
+  (type-check! [:string filename])
   (let [job (filename->filepath-async filename)]
     (job:sync)))
 
 (λ open-wikilink-under-cursor [?will-split]
-  (type-check [:boolean|nil ?will-split])
-  (let [filename (match-try (get-wikilink-info-under-cursor) wikilink-info
-                            wikilink-info.filename)]
-    (if filename
-        (filename->filepath-async filename
-                                  (λ [filepaths]
-                                    (let [file (. filepaths 1)]
-                                      (if file
-                                          ((vim.schedule_wrap #(if ?will-split
-                                                                   (vim.cmd (f= "FocusSplitNicely \"${file}\""))
-                                                                   (vim.cmd (f= "e ${file}")))))
-                                          (notify-error "Couldn't Find File"))))))))
+  (type-check! [:boolean|nil ?will-split])
+  (match-try (get-wikilink-info-under-cursor) wikilink-info
+             wikilink-info.filename filename
+             (filename->filepath-async filename
+                                       (λ [filepaths]
+                                         ((vim.schedule_wrap #(let [file (. filepaths
+                                                                            1)]
+                                                                (if file
+                                                                    (if ?will-split
+                                                                        (vim.cmd (f= "FocusSplitNicely \"${file}\""))
+                                                                        (vim.cmd (f= "e ${file}")))
+                                                                    (notify-error "Couldn't Find File")))))))))
 
 (λ choose-wikilink [callback]
-  (type-check [:function callback])
+  (type-check! [:function callback])
   (let [possible-paths (get-possible-paths)]
     (vim.ui.select possible-paths
                    {:prompt "Select a Note" :format_item path->filename}
