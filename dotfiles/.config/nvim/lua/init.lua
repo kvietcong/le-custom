@@ -17,6 +17,7 @@
 - Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
 - Organize my config so that I can pcall everything
+    - Also make it more modular because long files make it not as fast
 ]]
 
 --------------------------
@@ -708,27 +709,34 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"
 })
 
 -- Bufferline (Easy Tabs) and Buffer Management
+require("mini.bufremove").setup({})
+
 if not is_firenvim then
     require("bufferline").setup({
         options = {
             show_close_icon = false,
             diagnostics = "nvim_lsp",
             separator_style = "thick",
-            -- tab_size = 25,
-            offsets = {
-                {
-                    filetype = "NvimTree",
-                    text = "File Explorer",
-                    text_align = "left",
-                },
-            },
+            tab_size = 20,
+            persist_buffer_sort = true, -- This doesn't work for some reason
+            sort_by = "directory",
+            right_mouse_command = function(buffer)
+                MiniBufremove.delete(buffer, true)
+            end,
+            middle_mouse_command = function(buffer)
+                MiniBufremove.unshow(buffer)
+            end,
+            indicator_icon = " ⨠ ",
+            buffer_close_icon = "x",
         },
     })
 end
-require("mini.bufremove").setup({})
+
 wk.register({
     ["<Leader>b"] = {
         name = "(b)uffers",
+        b = { ":Telescope buffers<Enter>", "find (b)uffer" },
+        f = { ":Telescope buffers<Enter>", "(b)uffer (f)ind" },
         q = {
             MiniBufremove.unshow,
             "(b)uffer (q)uit [unshows buffer]",
@@ -1386,10 +1394,10 @@ require("nvim-treesitter.configs").setup({
     incremental_selection = {
         enable = true,
         keymaps = { -- TODO: Look more at these
-            init_selection = "gti",
-            node_incremental = "gtk",
-            scope_incremental = "gtl",
-            node_decremental = "gtj",
+            init_selection = [[\\ti]],
+            node_incremental = [[\\tk]],
+            scope_incremental = [[\\tK]],
+            node_decremental = [[\\tj]],
         },
     },
     refactor = {
@@ -1431,8 +1439,8 @@ require("nvim-treesitter.configs").setup({
                 ["iC"] = "@call.inner",
                 ["af"] = "@function.outer",
                 ["if"] = "@function.inner",
-                ["ap"] = "@parameter.outer",
-                ["ip"] = "@parameter.inner",
+                ["aP"] = "@parameter.outer",
+                ["iP"] = "@parameter.inner",
                 ["ak"] = "@comment.outer",
                 ["as"] = "@statement.outer",
             },
@@ -1476,41 +1484,6 @@ if is_going_hard then
         separator = " ▶ ",
     })
 end
-
--- require("treesitter-context").setup({
---     enable = is_going_hard,
---     patterns = {
---         default = {
---             "class",
---             "function",
---             "method",
---             "for",
---             "while",
---             "if",
---             "switch",
---             "case",
---         },
---     },
--- })
---
--- require("nvim_context_vt").setup({
---     enabled = is_going_hard,
---     min_rows = 5,
---     custom_parser = function(node, _, _)
---         local start_row, _, end_row = node:range()
---         local lines = vapi.nvim_buf_get_lines(
---             vapi.nvim_get_current_buf(),
---             start_row,
---             end_row,
---             false
---         )
---         if node:type() == "function" then
---             return nil
---         end
---
---         return "~> " .. lines[1]:match("^%s*(.-)%s*$") .. "…"
---     end,
--- })
 
 ---------------------------------------------
 -- Language Server Protocol (LSP) Setup 💡 --

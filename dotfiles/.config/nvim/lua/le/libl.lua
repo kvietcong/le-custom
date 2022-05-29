@@ -1,6 +1,6 @@
-----------------------------
--- Le Lua Module (le_lua) --
-----------------------------
+-----------------------------
+-- Le Lua Module (le.libl) --
+-----------------------------
 
 -- The Fennel Took Over XD
 -- I will add some duplicated efforts here just to have both implementations for reference.

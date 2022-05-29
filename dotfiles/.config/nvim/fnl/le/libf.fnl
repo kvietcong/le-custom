@@ -1,6 +1,6 @@
-;;; ===============================
-;;; == Le Fennel Module (le-fnl) ==
-;;; ===============================
+;;; ================================
+;;; == Le Fennel Module (le.libf) ==
+;;; ================================
 
 ;; A fennel library with useful functions?
 ;; Essentially me playin' around with Fennel in Neovim.
@@ -19,7 +19,8 @@
 (local map t.map)
 (local list? t.islist)
 (local empty? t.isempty)
-(local contains? t.tbl_isempty)
+(local keys t.keys)
+(local contains? t.contains)
 
 (λ type? [type-condition ?x]
   (match type-condition
@@ -68,7 +69,7 @@
 
 ;; A Certified JavaScript Moment
 (fn falsy? [x]
-  (or (not x) (= x "") (and (table? x) (empty? x)) (= x 0)))
+  (or (not x) (= x "") (and (M.table? x) (empty? x)) (= x 0)))
 
 (fn not-falsy? [x]
   (not (falsy? x)))
@@ -113,40 +114,58 @@
   (type-check! [list? xs])
   [(select 2 (unpack xs))])
 
-;; Weak reference to the tail
-;; TODO: Make this work
-; (λ tail! [xs]
-;   (type-check! [list? xs])
-;   (setmetatable {} {:__index (λ [_ i]
-;                                (. xs (+ i 1)))
-;                     :__newindex (λ [_ i value]
-;                                   (tset xs (+ i 1) value))
-;                     :__len (λ []
-;                              (- (length xs) 1))
-;                     :__ipairs (λ [_]
-;                                 (values (λ [_ i]
-;                                           (P i)
-;                                           (if (= (+ i 1) (length xs))
-;                                               nil
-;                                               (values (+ i 1) (. xs (+ i 2)))))
-;                                         xs 0))
-;                     :__pairs (λ [xs] (ipairs xs))}))
-
-(λ fold* [folder initial foldable iterator-maker]
+(λ fold* [folder ?initial foldable iterator-maker]
   (type-check! [:function folder])
-  (accumulate [accumulated initial key next (iterator-maker foldable)]
+  (accumulate [accumulated ?initial key next (iterator-maker foldable)]
     (folder accumulated next key)))
 
-(λ foldl [folder initial foldable]
-  "Fold a sequence from the left"
-  (fold* folder initial foldable ipairs))
-
-(λ fold [folder initial foldable]
+(λ fold [folder ?initial foldable]
   "Fold a table's keys and values (NOT STRICT ON ORDER)"
-  (fold* folder initial foldable pairs))
+  (fold* folder ?initial foldable pairs))
+
+(λ foldl [folder ?initial foldable]
+  "Fold a sequence from the left"
+  (fold* folder ?initial foldable ipairs))
+
+(λ compose [f1 f2]
+  (λ [...]
+    (f1 (f2 ...))))
+
+;; Not particularly nice XD
+(λ foldr [folder ?initial foldable]
+  "Fold a sequence from the right"
+  (fold* (λ [?acc ?next]
+           (folder ?next ?acc)) ?initial foldable
+         (compose ipairs vfn.reverse)))
+
+;; Head and Tail using fold but I think inefficient.
+;; Got from Haskell wiki though and it's cool
+(local head! (partial foldr #(values $1) nil))
+(local tail! (partial foldl #(values $2) nil))
 
 (λ reduce [folder foldable]
   (foldl folder (head foldable) (tail foldable)))
+
+;; Weird I implemented scan in terms of fold lol.
+(λ scan* [scanner foldable iterator-maker]
+  (type-check! [:function scanner])
+  (var result [(head foldable)])
+  (let [new-scanner (λ [...]
+                      (local scan (scanner ...))
+                      (t.insert result scan)
+                      scan)]
+    (fold* new-scanner (head foldable) (tail foldable) iterator-maker))
+  result)
+
+(λ scan [scanner foldable]
+  (scan* scanner foldable pairs))
+
+(λ scanl [scanner foldable]
+  (scan* scanner foldable ipairs))
+
+(λ for-each [table function]
+  (each [index value (ipairs table)]
+    (function value index)))
 
 ;; A note for weary travelers like me. os.date uses C's
 ;; strftime under the hood. Vim's builtin strftime does too.
@@ -216,7 +235,17 @@
 (t.extend :keep {: fold
                  : foldl
                  : fold*
+                 : scan*
+                 : scan
+                 : scanl
+                 : map
+                 : reduce
                  : type?
+                 : keys
+                 : contains?
+                 :get_does_contain contains?
+                 : list?
+                 :get_is_list list?
                  :get_is_type type?
                  : type-check!
                  :TYPE_CHECK type-check!
