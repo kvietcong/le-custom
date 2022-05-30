@@ -2,8 +2,7 @@
 ;;; == Le Math Module +/- ==
 ;;; ========================
 
-(local {: type-check!
-        } (require :le.libf))
+(local {: type-check!} (require :le.libf))
 
 (λ inc [x]
   (type-check! [:number x])
@@ -82,5 +81,4 @@
  : +?
  :get_is_pos +?
  : -?
- :get_is_neg -?
- }
+ :get_is_neg -?}

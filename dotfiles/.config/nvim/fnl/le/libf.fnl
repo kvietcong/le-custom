@@ -167,7 +167,9 @@
   (each [index value (ipairs table)]
     (function value index)))
 
-(λ ! [function] (λ [...] (not (function ...))))
+(λ ! [function]
+  (λ [...]
+    (not (function ...))))
 
 ;; A note for weary travelers like me. os.date uses C's
 ;; strftime under the hood. Vim's builtin strftime does too.

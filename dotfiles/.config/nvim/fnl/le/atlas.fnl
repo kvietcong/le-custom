@@ -11,13 +11,14 @@
         : set-register-and-notify
         : *->string
         : type-check!} (require :le.libf))
-(local {: --
-        : ++} (require :le.math))
+
+(local {: -- : ++} (require :le.math))
+
 (import-macros {:fstring f=} :le.macros)
 
 (local vfn vim.fn)
 (local vapi vim.api)
-(local wk (require :which-key))
+(local wk (require :le.which-key))
 
 (λ path->filename [path]
   (type-check! [:string path])

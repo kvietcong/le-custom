@@ -55,7 +55,7 @@ _G.is_neovide = vim.g.neovide ~= nil
 _G.is_nvui = vim.g.nvui ~= nil
 _G.is_fvim = vim.g.fvim_loaded
 _G.is_goneovim = vim.g.goneovim
-_G.is_firenvim = vim.g.started_by_firenvim
+_G.is_firenvim = vim.g.started_by_firenvim or false
 _G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim or is_firenvim
 _G.is_mac = vfn.has("mac") == 1
 _G.is_wsl = vfn.has("wsl") == 1
@@ -67,180 +67,10 @@ _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
 _G.is_going_hard = is_neovide
 
--- Install packer if needed
-local packer_bootstrap
-local packer_path = data_path .. "/site/pack/packer/start/packer.nvim"
-if vfn.empty(vfn.glob(packer_path, nil, nil)) > 0 then
-    packer_bootstrap = vfn.system({
-        "git",
-        "clone",
-        "--depth",
-        "1",
-        "https://github.com/wbthomason/packer.nvim",
-        packer_path,
-    })
-    vapi.nvim_command("packadd packer.nvim")
-end
-
--- Install all the plugins
-local packer = require("packer")
-packer.startup({
-    function(use)
-        use("wbthomason/packer.nvim")
-        use("dstein64/vim-startuptime") -- Run :StartupTime
-        use("lewis6991/impatient.nvim") -- Cache Lua Plugins
-
-        -- Common Dependencies
-        use("nvim-lua/popup.nvim")
-        use("nvim-lua/plenary.nvim")
-        use("kyazdani42/nvim-web-devicons")
-
-        -- Quality of Life
-        use("tpope/vim-eunuch")
-        use("tpope/vim-repeat")
-        use("gbprod/yanky.nvim")
-        use("ggandor/leap.nvim")
-        use("jghauser/mkdir.nvim")
-        use("folke/which-key.nvim")
-        use("voldikss/vim-floaterm")
-        use("echasnovski/mini.nvim")
-        use("TimUntersberger/neogit")
-        use("NTBBloodbath/rest.nvim")
-        use("sindrets/winshift.nvim")
-
-        use({
-            "nanotee/zoxide.vim",
-            cmd = { "Z" },
-        })
-        use({
-            "glacambre/firenvim",
-            run = function()
-                vim.fn["firenvim#install"](0)
-            end,
-        })
-
-        -- Neovim Development
-        use("Olical/conjure")
-        use("folke/lua-dev.nvim")
-        use("rktjmp/hotpot.nvim")
-        use("bakpakin/fennel.vim")
-        use("nanotee/luv-vimdocs")
-        use("milisims/nvim-luaref")
-        use("rafcamlet/nvim-luapad")
-
-        -- Pretty Things
-        use("folke/zen-mode.nvim")
-        use("rcarriga/nvim-notify")
-        use("shaunsingh/nord.nvim")
-        use("p00f/nvim-ts-rainbow")
-        use("stevearc/dressing.nvim")
-        use("beauwilliams/focus.nvim")
-        use("lewis6991/gitsigns.nvim")
-        use("sainnhe/gruvbox-material")
-        use("mrjones2014/legendary.nvim")
-        use("norcalli/nvim-colorizer.lua")
-        use("akinsho/nvim-bufferline.lua")
-
-        use({
-            "neovimhaskell/haskell-vim",
-            ft = { "haskell" },
-        })
-
-        -- Writing
-        use("crispgm/telescope-heading.nvim")
-
-        use({
-            "lervag/wiki.vim",
-            ft = { "markdown", "wiki" },
-        })
-        use({
-            "godlygeek/tabular",
-            ft = { "markdown", "wiki" },
-        })
-        use({
-            "jbyuki/carrot.nvim",
-            ft = { "markdown", "wiki" },
-        })
-        use({
-            "preservim/vim-markdown",
-            ft = { "markdown", "wiki" },
-        })
-
-        -- Pickers/Finders
-        use("tversteeg/registers.nvim")
-        use("nvim-telescope/telescope.nvim")
-        use("olacin/telescope-gitmoji.nvim")
-        use("kvietcong/telescope-emoji.nvim")
-        use("nvim-telescope/telescope-packer.nvim")
-        use("nvim-telescope/telescope-symbols.nvim")
-        use("nvim-telescope/telescope-ui-select.nvim")
-        use("nvim-telescope/telescope-file-browser.nvim")
-        use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
-
-        -- Treesitter
-        use("SmiteshP/nvim-gps")
-        use("lewis6991/spellsitter.nvim")
-        -- use("haringsrob/nvim_context_vt")
-        -- use("romgrk/nvim-treesitter-context")
-        use("nvim-treesitter/nvim-treesitter")
-        use("nvim-treesitter/nvim-treesitter-refactor")
-        use("nvim-treesitter/nvim-treesitter-textobjects")
-        use("JoosepAlviste/nvim-ts-context-commentstring")
-
-        -- LSP
-        use("neovim/nvim-lspconfig")
-        use("ray-x/lsp_signature.nvim")
-        use("jose-elias-alvarez/null-ls.nvim")
-        use("williamboman/nvim-lsp-installer")
-
-        -- Completion
-        use("hrsh7th/cmp-omni")
-        use("hrsh7th/cmp-calc")
-        use("L3MON4D3/LuaSnip")
-        use("hrsh7th/nvim-cmp")
-        use("hrsh7th/cmp-path")
-        use("f3fora/cmp-spell")
-        use("hrsh7th/cmp-emoji")
-        use("tzachar/fuzzy.nvim")
-        use("hrsh7th/cmp-buffer")
-        use("hrsh7th/cmp-cmdline")
-        use("ray-x/cmp-treesitter")
-        use("onsails/lspkind.nvim")
-        use("hrsh7th/cmp-nvim-lsp")
-        use("PaterJason/cmp-conjure")
-        use("tzachar/cmp-fuzzy-buffer")
-        use("saadparwaiz1/cmp_luasnip")
-        use("dmitmel/cmp-cmdline-history")
-        use("hrsh7th/cmp-nvim-lsp-signature-help")
-        use("hrsh7th/cmp-nvim-lsp-document-symbol")
-
-        packer.clean()
-        packer.install()
-
-        if packer_bootstrap then
-            packer.sync()
-        end
-    end,
-    config = {
-        display = {
-            open_fn = function()
-                return require("packer.util").float({ border = "single" })
-            end,
-        },
-        profile = {
-            enable = true,
-            threshold = 0.01,
-        },
-    },
-})
+require("le.packer")
 
 -- Load cached plugins for speed
 require("impatient").enable_profile()
-
--- Which Key (Mapping reminders)
-require("legendary").setup({})
-local wk = require("which-key")
-wk.setup()
 
 -- Load Fennel Integration
 local hotpot = require("hotpot")
@@ -271,6 +101,10 @@ vapi.nvim_create_user_command("FnlCacheClear", function()
     local hotpot_cache = require("hotpot.api.cache")
     hotpot_cache["clear-cache"]()
 end, {})
+
+-- Which Key (Mapping reminders)
+require("le.legendary")
+local wk = require("le.which-key")
 
 -- Ensure old timers are cleaned upon reloading
 if not is_startup then
@@ -497,64 +331,11 @@ vim.g.gruvbox_material_diagnostic_virtual_text = 1
 vim.g.gruvbox_material_diagnostic_text_highlight = 1
 vim.g.gruvbox_material_diagnostic_line_highlight = 1
 
--- Select day/night colorscheme every 15 minutes
-local colorschemes = { day = "gruvbox-material", night = "nord" }
-local set_colorscheme = function(
-    _ --[[timer_id]]
-)
-    local colorscheme
-    if lf.get_is_day() then
-        colorscheme = colorschemes.day
-        vim.cmd([[set background=light]])
-    else
-        vim.cmd([[set background=dark]])
-        colorscheme = colorschemes.night
-    end
-
-    -- Set Colorscheme
-    vim.cmd("colorscheme " .. colorscheme)
-end
-set_colorscheme()
-ColorschemeTimer = vfn.timer_start(1000 * 60 * 15, set_colorscheme, { ["repeat"] = -1 })
-
--- Make Virtual text visible with transparent backgrounds
-vapi.nvim_command("highlight NonText guifg=#6C768A")
-
--- UI "Dressing"
-require("dressing").setup({
-    select = {
-        enabled = false,
-    },
-})
-
--- Fancy Notifications
-require("notify").setup({
-    stages = "slide",
-    timeout = 3000,
-})
-vim.notify = require("notify")
-
--- Color Previews in Code
-require("colorizer").setup({ "*" }, {
-    RGB = false,
-    RRGGBB = true,
-    names = false,
-    RRGGBBAA = false,
-    rgb_fn = false,
-    hsl_fn = false,
-    css = false,
-    css_fn = false,
-    mode = "background",
-})
-
--- Haskell Improvements
-vim.g.haskell_enable_quantification = 1 -- to enable highlighting of `forall`
-vim.g.haskell_enable_recursivedo = 1 -- to enable highlighting of `mdo` and `rec`
-vim.g.haskell_enable_arrowsyntax = 1 -- to enable highlighting of `proc`
-vim.g.haskell_enable_pattern_synonyms = 1 -- to enable highlighting of `pattern`
-vim.g.haskell_enable_typeroles = 1 -- to enable highlighting of type roles
-vim.g.haskell_enable_static_pointers = 1 -- to enable highlighting of `static`
-vim.g.haskell_backpack = 1 -- to enable highlighting of backpack keywords
+require("le.colorscheme")
+require("le.dressing")
+require("le.notify")
+require("le.colorizer")
+require("le.haskell")
 
 -- Formatting
 vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
@@ -636,129 +417,21 @@ vapi.nvim_create_user_command("FD", function(command)
     })
 end, { nargs = "?" })
 
--- Minimal Status Line
-vim.go.laststatus = 3
-if is_firenvim then
-    vim.go.laststatus = 0
-end
-require("mini.statusline").setup({
-    set_vim_settings = false,
-    content = {
-        active = function()
-            -- TODO: Add colors :D
-            local os_symbols = {
-                unix = "", -- e712
-                dos = "", -- e70f
-                mac = "", -- e711
-            }
-            local current_os = os_symbols.unix
-            if is_win then
-                current_os = os_symbols.dos
-            elseif is_mac then
-                current_os = os_symbols.mac
-            elseif is_wsl then
-                current_os = os_symbols.dos .. "+" .. os_symbols.unix
-            end
+require("le.statusline")
 
-            local gps = require("nvim-gps")
-            local gps_string = gps.is_available() and gps.get_location() or nil
-
-            local mode, mode_hl = MiniStatusline.section_mode({})
-            mode = mode:upper()
-
-            local git = MiniStatusline.section_git({})
-            local diagnostics = MiniStatusline.section_diagnostics({})
-            local filename = vfn.expand("%:~:.", nil, nil)
-
-            local fileinfo = MiniStatusline.section_fileinfo({})
-
-            local os = vim.bo.fileformat
-            local os_symbol = os_symbols[os]
-            if os_symbol then
-                fileinfo = fileinfo:gsub(os, os_symbol)
-            end
-
-            local location = "%l:%v (%p%%)"
-
-            local status_line = MiniStatusline.combine_groups({
-                { hl = mode_hl, strings = { mode } },
-                { hl = "MiniStatuslineDevinfo", strings = { git } },
-                { hl = "MiniStatuslineFilename", strings = { diagnostics } },
-                { hl = "MiniStatuslineDevinfo", strings = { gps_string } },
-                "%=", -- End left alignment
-                { hl = "MiniStatuslineDevinfo", strings = { current_os } },
-                { hl = mode_hl, strings = { filename } },
-                { hl = "MiniStatuslineFileinfo", strings = { fileinfo } },
-                { hl = mode_hl, strings = { location } },
-            })
-            return status_line
-        end,
-    },
-})
-
--- Start Screen
-require("mini.starter").setup({
-    enabled = not is_firenvim,
-    header = [[
+-- Escaped Strings are Pain in Fennel
+HeaderString = [[
 __      __          _                                              _  __  __   __
 \ \    / / ___     | |     __      ___    _ __     ___      o O O | |/ /  \ \ / /
  \ \/\/ / / -_)    | |    / _|    / _ \  | '  \   / -_)    o      | ' <    \ V /
   \_/\_/  \___|   _|_|_   \__|_   \___/  |_|_|_|  \___|   TS__[O] |_|\_\   _\_/_
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"|
-"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']],
-})
+"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']]
+require("le.starter")
 
--- Bufferline (Easy Tabs) and Buffer Management
-require("mini.bufremove").setup({})
+require("le.bufremove")
 
-if not is_firenvim then
-    require("bufferline").setup({
-        options = {
-            show_close_icon = false,
-            diagnostics = "nvim_lsp",
-            separator_style = "thick",
-            tab_size = 20,
-            persist_buffer_sort = true, -- This doesn't work for some reason
-            sort_by = "directory",
-            right_mouse_command = function(buffer)
-                MiniBufremove.delete(buffer, true)
-            end,
-            middle_mouse_command = function(buffer)
-                MiniBufremove.unshow(buffer)
-            end,
-            indicator_icon = " ⨠ ",
-            buffer_close_icon = "x",
-        },
-    })
-end
-
-wk.register({
-    ["<Leader>b"] = {
-        name = "(b)uffers",
-        b = { ":Telescope buffers<Enter>", "find (b)uffer" },
-        f = { ":Telescope buffers<Enter>", "(b)uffer (f)ind" },
-        q = {
-            MiniBufremove.unshow,
-            "(b)uffer (q)uit [unshows buffer]",
-        },
-        d = {
-            function()
-                MiniBufremove.delete(0, true)
-            end,
-            "(b)uffer (d)elete",
-        },
-        c = { ":bd<Enter>", "(b)uffer (c)lose" },
-        l = { ":BufferLineCycleNext<Enter>", "(b)uffer next" },
-        h = { ":BufferLineCyclePrev<Enter>", "(b)uffer prev" },
-        j = { ":BufferLineMoveNext<Enter>", "(b)uffer move next" },
-        k = { ":BufferLineMovePrev<Enter>", "(b)uffer move prev" },
-        o = { ":BO<Enter>", "(b)uffer (o)nly (Close all but this)" },
-    },
-    ["<M-l>"] = { ":BufferLineCycleNext<Enter>", "buffer next" },
-    ["<M-h>"] = { ":BufferLineCyclePrev<Enter>", "buffer prev" },
-    ["<M-L>"] = { ":BufferLineMoveNext<Enter>", "buffer move next" },
-    ["<M-H>"] = { ":BufferLineMovePrev<Enter>", "buffer move prev" },
-})
+require("le.bufferline")
 
 -- Indent Indication
 if is_going_hard then
@@ -792,91 +465,11 @@ wk.register({
 -- Useful Utilities Setup ⚙️ --
 ------------------------------
 
--- Conjure Setup
-vim.g["conjure#eval#result_register"] = "*"
-vim.g["conjure#mapping#prefix"] = "<Leader>"
-vim.g["conjure#eval#inline#highlight"] = "DiagnosticInfo"
-vim.g["conjure#eval#inline#prefix"] = "~~> "
-vim.g["conjure#highlight#enabled"] = true
-vim.g["conjure#log#hud#width"] = 0.40
-vim.g["conjure#log#hud#height"] = 0.50
-vim.g["conjure#log#hud#passive_close_delay"] = 0
--- vim.g["conjure#filetype#fennel"] = "conjure.client.fennel.stdio"
--- vim.g["conjure#client#fennel#stdio#command"] = "fennel.bat"
+require("le.conjure")
 
-vapi.nvim_create_autocmd({ "BufEnter" }, {
-    group = le_group,
-    desc = "Add Conjure Keymap Labels",
-    callback = function(event)
-        local filetype = vapi.nvim_buf_get_option(0, "filetype")
-        if not t.contains(vim.g["conjure#filetypes"], filetype) then
-            return
-        end
-        wk.register({
-            [vim.g["conjure#mapping#prefix"]] = {
-                e = {
-                    b = "(e)valuate (b)uffer",
-                    f = "(e)valuate (f)ile [what's saved]",
-                    e = "(e)valuate form under cursor",
-                    c = {
-                        "(e)valuate w/ result as appended (c)omment",
-                    },
-                    r = "(e)valuate (r)oot form under cursor",
-                    w = "(e)vaulate (w)ord under cursor",
-                    m = "(e)vaulate at (m)ark",
-                    ["!"] = "(e)vaulate form and replace w/ result",
-                },
-                l = {
-                    name = "evaluation (l)og commands",
-                    v = "(v)ertical split log buffer",
-                    s = "(s)plit log buffer",
-                    r = "soft (r)eset log buffer",
-                    l = "go to (l)atest log buffer result",
-                    R = "hard (r)eset log buffer",
-                },
-            },
-            E = "(E)valuate motion",
-        }, {
-            buffer = event.buffer,
-        })
-        wk.register({
-            [vim.g["conjure#mapping#prefix"]] = {
-                E = "(E)valuate seleciton",
-            },
-        }, {
-            mode = "v",
-            buffer = event.buffer,
-        })
-    end,
-})
+require("le.zen-mode")
 
--- Zen Mode (Minimal Mode)
-require("zen-mode").setup({
-    window = { width = 90, backdrop = 0.6 },
-    on_open = function()
-        vim.cmd([[:FocusDisable]])
-        pcall(function()
-            vapi.nvim_set_keymap("n", "<Escape>", ":ZenMode<Enter>", {})
-        end)
-    end,
-    on_close = function()
-        pcall(function()
-            vapi.nvim_del_keymap("n", "<Escape>")
-        end)
-        vim.cmd([[:FocusEnable]])
-    end,
-})
-wk.register({
-    ["<Leader>z"] = { ":ZenMode<Enter>", "(z)en mode" },
-})
-
--- Easy Window Movement
-require("winshift").setup({
-    focused_hl_group = "CursorLine",
-})
-wk.register({
-    ["<Leader>wm"] = { ":WinShift<Enter>", "(w)indow (m)ove mode" },
-}, {})
+require("le.winshift")
 
 -- Gitsigns (Sidebar Git Indicators)
 require("gitsigns").setup({
@@ -903,47 +496,9 @@ wk.register({
     },
 })
 
--- Leap Movement
-require("leap").setup({
-    special_keys = {
-        repeat_search = "<Enter>",
-        next_match = "<Enter>",
-        prev_match = "<Tab>",
-        next_group = "<Space>",
-        prev_group = "<Tab>",
-        eol = "<Space>",
-    },
-})
-require("leap").set_default_keymaps()
+require("le.leap")
 
-local conceal_level = vim.o.conceallevel
-vapi.nvim_create_autocmd({ "User" }, {
-    group = le_group,
-    pattern = "LeapEnter",
-    callback = function()
-        vim.opt_local.conceallevel = 0
-    end,
-})
-vapi.nvim_create_autocmd({ "User" }, {
-    group = le_group,
-    pattern = "LeapLeave",
-    callback = function()
-        vim.opt_local.conceallevel = conceal_level
-    end,
-})
-
--- Git Porcelain for Neovim
-require("neogit").setup({
-    kind = "vsplit",
-    disable_commit_confirmation = true,
-    mappings = {
-        -- TODO: Find out how to use escape everywhere
-        status = {
-            ["<Escape>"] = "Close",
-        },
-    },
-})
-wk.register({ ["<Leader>gg"] = { ":Neogit<Enter>", "(g)it Neo(g)it" } })
+require("le.neogit")
 
 -- Floating Terminal Stuff
 vim.g.floaterm_width = 0.9
@@ -983,9 +538,6 @@ vim.keymap.set("x", "gp", "<Plug>(YankyGPutAfter)", {})
 vim.keymap.set("x", "gP", "<Plug>(YankyGPutBefore)", {})
 vapi.nvim_set_keymap("n", "<c-n>", "<Plug>(YankyCycleForward)", {})
 vapi.nvim_set_keymap("n", "<c-p>", "<Plug>(YankyCycleBackward)", {})
-
--- Automatically make directory upon save
-require("mkdir")
 
 -- Highlight Occurances
 require("mini.cursorword").setup({ delay = 500 })
