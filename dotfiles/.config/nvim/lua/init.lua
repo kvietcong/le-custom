@@ -11,9 +11,7 @@
 - Check out Lua Snips
 - Sort out nvim-cmp sources!
 - Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
-- See what I can do with Fennel configuration
 - Learn how tabs work in Vim
-- Play around with Conjure (WHICH IS SUPER COOL)
 - Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
 - Organize my config so that I can pcall everything
@@ -67,6 +65,16 @@ _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
 _G.is_going_hard = is_neovide
 
+-- Ensure old timers are cleaned upon reloading
+if not is_startup then
+    vfn.timer_stopall()
+end
+
+-- Trigger autoread manually every second
+AutoReadTimer = vfn.timer_start(1000, function()
+    vim.cmd([[silent! checktime]])
+end, { ["repeat"] = -1 })
+
 require("le.packer")
 
 -- Load cached plugins for speed
@@ -102,19 +110,9 @@ vapi.nvim_create_user_command("FnlCacheClear", function()
     hotpot_cache["clear-cache"]()
 end, {})
 
--- Which Key (Mapping reminders)
 require("le.legendary")
+
 local wk = require("le.which-key")
-
--- Ensure old timers are cleaned upon reloading
-if not is_startup then
-    vfn.timer_stopall()
-end
-
--- Trigger autoread manually every second
-AutoReadTimer = vfn.timer_start(1000, function()
-    vim.cmd([[silent! checktime]])
-end, { ["repeat"] = -1 })
 
 -- Autocommand group for configuration
 _G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
@@ -192,7 +190,7 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
             l = {
                 function()
                     local to_eval = loadstring(
-                        "P(" .. vapi.nvim_get_current_line() .. ")",
+                        "PR(" .. vapi.nvim_get_current_line() .. ")",
                         nil
                     )
                     if to_eval then
@@ -288,8 +286,7 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
 })
 
 -- Custom Note Workflow Stuff
-local le_atlas = require("le.atlas")
-le_atlas.setup({ wk = wk })
+require("le.atlas").setup()
 
 -- Random FD command XD
 vapi.nvim_create_user_command("FD", function(command)
@@ -383,44 +380,11 @@ wk.register({
     ["<C-t>"] = { ":FloatTermSend<Enter>", "Send Lines to Terminal" },
 }, { mode = "v" })
 
-require("yanky").setup({})
-vim.keymap.set("n", "y", "<Plug>(YankyYank)", {})
-vim.keymap.set("x", "y", "<Plug>(YankyYank)", {})
-vim.keymap.set("n", "p", "<Plug>(YankyPutAfter)", {})
-vim.keymap.set("n", "P", "<Plug>(YankyPutBefore)", {})
-vim.keymap.set("x", "p", "<Plug>(YankyPutAfter)", {})
-vim.keymap.set("x", "P", "<Plug>(YankyPutBefore)", {})
-vim.keymap.set("n", "gp", "<Plug>(YankyGPutAfter)", {})
-vim.keymap.set("n", "gP", "<Plug>(YankyGPutBefore)", {})
-vim.keymap.set("x", "gp", "<Plug>(YankyGPutAfter)", {})
-vim.keymap.set("x", "gP", "<Plug>(YankyGPutBefore)", {})
-vapi.nvim_set_keymap("n", "<c-n>", "<Plug>(YankyCycleForward)", {})
-vapi.nvim_set_keymap("n", "<c-p>", "<Plug>(YankyCycleBackward)", {})
+require("le.yanky")
 
 require("le.cursorword")
 
--- Trailing Space Diagnostics
-require("mini.trailspace").setup({})
--- Disable Trailing Space Highlights in Certain Buffers
-vapi.nvim_create_autocmd({ "BufEnter" }, {
-    group = le_group,
-    desc = "Disable trailing space highlighting in certain buffers.",
-    callback = function()
-        local bufferName = vapi.nvim_eval([[bufname()]])
-        local tabPageNumber = vapi.nvim_eval([[tabpagenr()]])
-        if bufferName == "NvimTree_" .. tabPageNumber then
-            MiniTrailspace.unhighlight()
-        end
-    end,
-})
--- Trim Space on Save
-vapi.nvim_create_autocmd({ "BufWritePre" }, {
-    group = le_group,
-    desc = "Trim trailing spaces on save.",
-    callback = function()
-        MiniTrailspace.trim()
-    end,
-})
+require("le.trailspace")
 
 require("le.comment")
 
@@ -585,20 +549,7 @@ wk.register({
     },
 }, { silent = false })
 
-require("mini.surround").setup({
-    custom_surroundings = {
-        ["|"] = { output = { left = "|", right = "|" } },
-    },
-    mappings = {
-        add = "ys",
-        delete = "ds",
-        find = ">S",
-        find_left = "<s",
-        highlight = "",
-        replace = "cs",
-        update_n_lines = "",
-    },
-})
+require("le.surround")
 
 -- Lua Pad (Quick Lua Testing)
 require("luapad").config({
@@ -1064,10 +1015,10 @@ require("lsp_signature").setup({
 -- Completion Setup ✅ --
 -------------------------
 
-local luasnip = require("luasnip")
+local luasnip = require("le.luasnip")
 
 -- nvim-cmp setup
-local lspkind = require("lspkind")
+local lspkind = require("le.lspkind")
 local cmp = require("cmp")
 cmp.setup({
     experimental = {
@@ -1193,6 +1144,7 @@ highlight! CmpItemKindProperty guibg=NONE guifg=#D4D4D4
 highlight! CmpItemKindUnit guibg=NONE guifg=#D4D4D4
 ]])
 
+-- TODO: Decide whether to keep these or not
 for _, command_type in pairs({ ":", "@" }) do
     require("cmp").setup.cmdline(command_type, {
         mapping = cmp.mapping.preset.cmdline(),
