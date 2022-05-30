@@ -31,6 +31,8 @@ set viminfo='100,f1 " Save marks and stuff
 set inccommand=split " Live update of commands like substitution
 set jumpoptions+=stack
 " set list listchars=eol:↴
+syntax sync minlines=250
+syntax sync maxlines=250
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set spell spelllang=en_us " Spellcheck
