@@ -179,10 +179,6 @@ vapi.nvim_create_user_command("GetDate", function(command)
     return time
 end, { nargs = "?" })
 
-vapi.nvim_create_user_command("GetMyDate", function()
-    lf.set_register_and_notify(lf.get_date().my_date)
-end, {})
-
 -- Setup Evaluation w/ Lua
 -- TODO: Make this much better
 vapi.nvim_create_autocmd({ "BufEnter" }, {
@@ -216,121 +212,7 @@ vapi.nvim_create_autocmd({ "BufEnter" }, {
 -- Make Neovim Pretty! --
 -------------------------
 
--- GUI Settings
-vim.g.neovide_no_idle = false
-vim.g.neovide_refresh_rate = 165
-vim.g.neovide_transparency = 0.98
-vim.g.neovide_cursor_antialiasing = true
-vim.g.neovide_cursor_vfx_mode = "railgun"
-vim.g.neovide_cursor_animation_length = 0.1
-vim.g.neovide_cursor_vfx_particle_phase = 3
-vim.g.neovide_cursor_vfx_particle_density = 30.0
-
-if is_nvui then
-    vim.cmd([[
-    NvuiOpacity 0.95
-    NvuiTitlebarFontSize 13
-
-    NvuiCmdCenterXPos 0.5
-    NvuiCmdCenterYPos 0.5
-    NvuiCmdline v:true
-    NvuiCmdFontSize 14
-    NvuiCmdBigFontScaleFactor 1.25
-
-    NvuiSnapshotLimit 10
-    NvuiScrollAnimationDuration 0.5
-    ]])
-end
-
-vim.g.firenvim_config = {
-    localSettings = {
-        [".*"] = { takeover = "never" },
-    },
-}
-
-if is_gui then
-    -- GUI Font resizing
-    -- Thank you so much https://github.com/neovide/neovide/issues/1301#issuecomment-1119370546
-    vim.g.gui_font_default_size = 14
-    vim.g.gui_font_size = vim.g.gui_font_default_size
-    vim.g.gui_font_face = "CodeNewRoman NF"
-
-    local refreshGuiFont = function()
-        vim.opt.guifont = string.format(
-            "%s:h%s",
-            vim.g.gui_font_face,
-            vim.g.gui_font_size
-        )
-    end
-
-    local resizeGuiFont = function(delta)
-        vim.g.gui_font_size = vim.g.gui_font_size + delta
-        print(vim.g.gui_font_size)
-        refreshGuiFont()
-    end
-
-    local resetGuiFont = function()
-        vim.g.gui_font_size = vim.g.gui_font_default_size
-        refreshGuiFont()
-    end
-
-    -- Call function on startup to set default value
-    resetGuiFont()
-
-    wk.register({
-        ["<Leader><Leader>"] = {
-            f = {
-                name = "(f)ont",
-                r = {
-                    name = "(r)esize",
-                    k = {
-                        function()
-                            resizeGuiFont(1)
-                        end,
-                        "Bigger Font",
-                    },
-                    j = {
-                        function()
-                            resizeGuiFont(-1)
-                        end,
-                        "Smaller Font",
-                    },
-                    ["+"] = {
-                        function()
-                            resizeGuiFont(1)
-                        end,
-                        "Bigger Font",
-                    },
-                    ["-"] = {
-                        function()
-                            resizeGuiFont(-1)
-                        end,
-                        "Smaller Font",
-                    },
-                    ["="] = {
-                        function()
-                            resetGuiFont()
-                        end,
-                        "Reset Font",
-                    },
-                },
-            },
-        },
-    }, {})
-end
-
--- Colorscheme Options
-vim.g.nord_italic = true
-vim.g.nord_borders = true
-vim.g.nord_contrast = true
-vim.g.nord_disable_background = not is_gui
-
-vim.g.gruvbox_material_enable_italic = 1
-vim.g.gruvbox_material_background = "soft"
-vim.g.gruvbox_material_diagnostic_virtual_text = 1
-vim.g.gruvbox_material_diagnostic_text_highlight = 1
-vim.g.gruvbox_material_diagnostic_line_highlight = 1
-
+require("le.gui")
 require("le.colorscheme")
 require("le.dressing")
 require("le.notify")
@@ -433,33 +315,9 @@ require("le.bufremove")
 
 require("le.bufferline")
 
--- Indent Indication
-if is_going_hard then
-    require("mini.indentscope").setup({
-        draw = { delay = 500 },
-        symbol = "⟫",
-    })
-    vapi.nvim_create_autocmd({ "TermOpen" }, {
-        group = le_group,
-        callback = function()
-            vim.b.miniindentscope_disable = true
-        end,
-    })
-end
-vapi.nvim_command([[highlight Delimiter guifg=#4C566A]]) -- Make Delimiters Less Obtrusive
+require("le.indentscope")
 
--- Auto Window Resizing
-require("focus").setup({
-    signcolumn = false,
-    cursorline = true,
-    hybridnumber = true,
-    excluded_filetypes = { "netrw" },
-})
-wk.register({
-    ["<Leader>ws"] = { ":FocusSplitNicely<Enter>", "(w)indow (s)plit" },
-    ["<Leader>w="] = { ":FocusEqualise<Enter>", "(w)indow (=)equalize" },
-    ["<Leader>wt"] = { ":FocusToggle<Enter>", "(w)indow (t)oggle" },
-})
+require("le.focus")
 
 ------------------------------
 -- Useful Utilities Setup ⚙️ --
@@ -539,8 +397,7 @@ vim.keymap.set("x", "gP", "<Plug>(YankyGPutBefore)", {})
 vapi.nvim_set_keymap("n", "<c-n>", "<Plug>(YankyCycleForward)", {})
 vapi.nvim_set_keymap("n", "<c-p>", "<Plug>(YankyCycleBackward)", {})
 
--- Highlight Occurances
-require("mini.cursorword").setup({ delay = 500 })
+require("le.cursorword")
 
 -- Trailing Space Diagnostics
 require("mini.trailspace").setup({})
@@ -565,8 +422,7 @@ vapi.nvim_create_autocmd({ "BufWritePre" }, {
     end,
 })
 
--- Easy Commenting
-require("mini.comment").setup({})
+require("le.comment")
 
 -- Session Management
 -- Close buffers that don't restore from a session
