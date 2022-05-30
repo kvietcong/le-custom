@@ -5,3 +5,4 @@ Just a repo to store my customizations
 
 - [Some good(?) Linux tips](GoodToKnowLinux.md)
 - [My Dot Files](dotfiles/)
+- [My Bloated Neovim Config](dotfiles/.config/nvim)
