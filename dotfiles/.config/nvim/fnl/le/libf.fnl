@@ -138,10 +138,10 @@
            (folder ?next ?acc)) ?initial foldable
          (compose ipairs vfn.reverse)))
 
-;; Head and Tail using fold but I think inefficient.
-;; Got from Haskell wiki though and it's cool
+;; Head and Last using fold but I think it's inefficient.
+;; Got from the Haskell wiki though and kept it b/c it's cool
 (local head! (partial foldr #(values $1) nil))
-(local tail! (partial foldl #(values $2) nil))
+(local last! (partial foldl #(values $2) nil))
 
 (λ reduce [folder foldable]
   (foldl folder (head foldable) (tail foldable)))

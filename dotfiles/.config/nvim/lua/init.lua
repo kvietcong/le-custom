@@ -784,7 +784,8 @@ require("focus").setup({
 })
 wk.register({
     ["<Leader>ws"] = { ":FocusSplitNicely<Enter>", "(w)indow (s)plit" },
-    ["<Leader>w="] = { ":FocusEqualise<Enter>", "(=) Equalize Windows" },
+    ["<Leader>w="] = { ":FocusEqualise<Enter>", "(w)indow (=)equalize" },
+    ["<Leader>wt"] = { ":FocusToggle<Enter>", "(w)indow (t)oggle" },
 })
 
 ------------------------------
@@ -914,6 +915,22 @@ require("leap").setup({
     },
 })
 require("leap").set_default_keymaps()
+
+local conceal_level = vim.o.conceallevel
+vapi.nvim_create_autocmd({ "User" }, {
+    group = le_group,
+    pattern = "LeapEnter",
+    callback = function()
+        vim.opt_local.conceallevel = 0
+    end,
+})
+vapi.nvim_create_autocmd({ "User" }, {
+    group = le_group,
+    pattern = "LeapLeave",
+    callback = function()
+        vim.opt_local.conceallevel = conceal_level
+    end,
+})
 
 -- Git Porcelain for Neovim
 require("neogit").setup({
