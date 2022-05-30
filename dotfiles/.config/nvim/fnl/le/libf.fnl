@@ -167,6 +167,8 @@
   (each [index value (ipairs table)]
     (function value index)))
 
+(λ ! [function] (λ [...] (not (function ...))))
+
 ;; A note for weary travelers like me. os.date uses C's
 ;; strftime under the hood. Vim's builtin strftime does too.
 ;; Now most websites don't have all the format specifiers
@@ -232,7 +234,8 @@
     job))
 
 ; Module Export
-(t.extend :keep {: fold
+(t.extend :keep {: !
+                 : fold
                  : foldl
                  : fold*
                  : scan*
