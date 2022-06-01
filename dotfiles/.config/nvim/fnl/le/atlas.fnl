@@ -24,6 +24,50 @@
   (type-check! [:string path])
   (vfn.fnamemodify path ":t:r"))
 
+(λ get-raw-wikilink-under-cursor []
+  (let [[row column] (vapi.nvim_win_get_cursor 0)
+        column (+ column 1) ; Change to 1 Indexed Column
+        line (vapi.nvim_get_current_line)
+        (before after) (values (line:sub 1 (-- column)) (line:sub (++ column)))
+        char-current (or (line:char_at column) "")
+        char-before (or (before:char_at -1) "")
+        char-after (or (after:char_at 1) "")
+        (is-right is-left) (values (= "]" char-current) (= "[" char-current))
+        is-most-right (= "]]" (.. char-before char-current))
+        is-most-left (= "[[" (.. char-current char-after))
+        before-pattern (if is-most-left "" is-left "%[$"
+                           (if is-most-right "%[%[[^%[]*$" "%[%[[^%[%]]*$"))
+        after-pattern (if is-most-right ""
+                          is-right "^%]"
+                          (if is-most-left "^[^%]]*%]%]" "^[^%[%]]*%]%]"))
+        before-match (before:match before-pattern)
+        after-match (after:match after-pattern)]
+    (if (and after-match before-match char-current)
+        (.. before-match char-current after-match))))
+
+;; TODO: Verify Wikilink Based on Raw Form
+(λ verify-raw-wikilink [?raw-wikilink]
+  (or (and ?raw-wikilink true) false))
+
+(λ raw-wikilink->wikilink-info [raw-wikilink]
+  (let [wikilink-info (match-try (raw-wikilink:match "%[%[(.+)%]%]") wikilink
+                                 (vim.split wikilink "|" true))]
+    (when wikilink-info
+      (if (= (length wikilink-info) 1)
+          (t.insert wikilink-info (. wikilink-info 1)))
+      (tset wikilink-info :filename (path->filename (. wikilink-info 1)))
+      (tset wikilink-info :alias (. wikilink-info 2)))
+    wikilink-info))
+
+;; TODO: Verify Wikilink Based on Info Form
+(λ verify-wikilink-info [?wikilink-info]
+  (or (and ?wikilink-info true) false))
+
+(λ get-wikilink-info-under-cursor* []
+  (let [raw-wikilink (get-raw-wikilink-under-cursor)]
+    (if (verify-raw-wikilink raw-wikilink)
+        (raw-wikilink->wikilink-info raw-wikilink))))
+
 (λ get-wikilink-info-under-cursor []
   "Get Wikilink `filename` and `alias`"
   (let [[row column] (vapi.nvim_win_get_cursor 0)
