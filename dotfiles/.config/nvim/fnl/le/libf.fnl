@@ -182,6 +182,7 @@
   (let [datetime os.date]
     (if (falsy? ?format) {:year (tonumber (datetime "%Y"))
                           :month (tonumber (datetime "%m"))
+                          :week (tonumber (datetime "%V"))
                           :day (tonumber (datetime "%d"))
                           :hour (tonumber (datetime "%H"))
                           :minute (tonumber (datetime "%M"))

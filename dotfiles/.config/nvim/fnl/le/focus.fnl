@@ -3,7 +3,7 @@
 (local which-key (require :le.which-key))
 
 (focus.setup {:signcolumn false
-              :cursorline true
+              :cursorline false
               :hybridnumber true
               :excluded_filetypes [:netrw]})
 

@@ -8,6 +8,7 @@
                                  :find_left :<S
                                  :highlight ""
                                  :replace :cs
-                                 :update_n_lines ""}})
+                                 :update_n_lines ""}
+                      :n_lines 150})
 
 mini-surround

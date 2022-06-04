@@ -75,10 +75,15 @@ AutoReadTimer = vfn.timer_start(1000, function()
     vim.cmd([[silent! checktime]])
 end, { ["repeat"] = -1 })
 
+package.loaded["le.packer"] = nil
 require("le.packer")
 
 -- Load cached plugins for speed
 require("impatient").enable_profile()
+
+-- Autocommand group for configuration
+_G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
+_G["le-group"] = _G.le_group
 
 -- Load Fennel Integration
 local hotpot = require("hotpot")
@@ -113,10 +118,6 @@ end, {})
 require("le.legendary")
 
 local wk = require("le.which-key")
-
--- Autocommand group for configuration
-_G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
-_G["le-group"] = _G.le_group
 
 -- This is for sourcing on configuration change
 vapi.nvim_create_autocmd({ "BufWritePost" }, {
@@ -628,11 +629,16 @@ telescope.setup({
         },
         layout_strategy = "flex",
         sorting_strategy = "ascending",
-        set_env = { ["COLORTERM"] = "truecolor" },
     },
     extensions = {
         ["ui-select"] = {
-            require("telescope.themes").get_cursor({}),
+            require("telescope.themes").get_ivy({
+                layout_strategy = "center",
+                layout_config = {
+                    width = 0.333,
+                    height = 0.666,
+                },
+            }),
         },
         heading = {
             treesitter = true,

@@ -57,6 +57,7 @@ packer.startup({
         use("nanotee/luv-vimdocs")
         use("milisims/nvim-luaref")
         use("rafcamlet/nvim-luapad")
+        use({ "eraserhd/parinfer-rust", run = "cargo build --release" })
 
         -- Pretty Things
         use("folke/zen-mode.nvim")
