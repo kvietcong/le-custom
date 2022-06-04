@@ -14,20 +14,25 @@
 (set vim.g.gruvbox_material_diagnostic_text_highlight 1)
 (set vim.g.gruvbox_material_diagnostic_line_highlight 1)
 
-;; Select day/night colorscheme every 15 minutes
 (local colorschemes {:day :gruvbox-material :night :nord})
 
+(var was-day nil)
 (λ set-colorscheme []
   (let [is-day (day?)]
-    (vim.cmd (.. "set background=" (if is-day :light :dark)))
-    (vim.cmd (.. "colorscheme " (if is-day colorschemes.day colorschemes.night)))))
+    (when (not= is-day was-day)
+      (set was-day is-day)
+      (vim.cmd (.. "set background=" (if is-day :light :dark)))
+      (vim.cmd (.. "colorscheme "
+                   (if is-day colorschemes.day colorschemes.night)))
+      ;; Make virtual text visible with transparent backgrounds
+      (vapi.nvim_command "highlight NonText guifg=#6C768A")
+      ;; Make matching parenthesis easier to see.
+      (vapi.nvim_command "highlight MatchParen guifg=#000000 guibg=#FFFFFF"))))
 
 (set-colorscheme)
 
+;; Select day/night colorscheme every 15 minutes
 (global ColorschemeTimer
         (vfn.timer_start (* 100 60 15) set-colorscheme {:repeat -1}))
-
-;; Make Virtual text visible with transparent backgrounds
-(vapi.nvim_command "highlight NonText guifg=#6C768A")
 
 {: set-colorscheme}
