@@ -24,7 +24,7 @@
   (type-check! [:string path])
   (vfn.fnamemodify path ":t:r"))
 
-(λ get-raw-wikilink-under-cursor []
+(λ raw-wikilink-under-cursor []
   (let [[row column] (vapi.nvim_win_get_cursor 0)
         column (+ column 1) ; Change to 1 Indexed Column
         line (vapi.nvim_get_current_line)
@@ -46,7 +46,7 @@
         (.. before-match char-current after-match))))
 
 ;; TODO: Verify Wikilink Based on Raw Form
-(λ verify-raw-wikilink [?raw-wikilink]
+(λ good-raw-wikilink? [?raw-wikilink]
   (or (and ?raw-wikilink true) false))
 
 (λ raw-wikilink->wikilink-info [raw-wikilink]
@@ -59,51 +59,17 @@
       (tset wikilink-info :alias (. wikilink-info 2)))
     wikilink-info))
 
-;; TODO: Verify Wikilink Based on Info Form
-(λ verify-wikilink-info [?wikilink-info]
-  (or (and ?wikilink-info true) false))
+(λ good-wikilink-info? [?wikilink-info]
+  (if (not ?wikilink-info) false
+      (?wikilink-info.filename:match "[!\\/%$%^%%*%?]") false
+      true))
 
-(λ get-wikilink-info-under-cursor* []
-  (let [raw-wikilink (get-raw-wikilink-under-cursor)]
-    (if (verify-raw-wikilink raw-wikilink)
-        (raw-wikilink->wikilink-info raw-wikilink))))
-
-(λ get-wikilink-info-under-cursor []
-  "Get Wikilink `filename` and `alias`"
-  (let [[row column] (vapi.nvim_win_get_cursor 0)
-        column (+ column 1) ; Change to 1 Indexed Column
-        line (vapi.nvim_get_current_line)
-        before (line:sub 1 (-- column))
-        after (line:sub (++ column))
-        char-current (or (line:char_at column) "")
-        char-before (or (before:char_at -1) "")
-        char-after (or (after:char_at 1) "")
-        is-right (= "]" char-current)
-        is-left (= "[" char-current)
-        is-most-right (= "]]" (.. char-before char-current))
-        is-most-left (= "[[" (.. char-current char-after))
-        before-pattern (if is-most-left "" is-left "%[$"
-                           (if is-most-right "%[%[[^%[]*$" "%[%[[^%[%]]*$"))
-        after-pattern (if is-most-right ""
-                          is-right "^%]"
-                          (if is-most-left "^[^%]]*%]%]" "^[^%[%]]*%]%]"))
-        before-match (before:match before-pattern)
-        after-match (after:match after-pattern)
-        wikilink-info (match-try (and after-match before-match
-                                      (.. before-match char-current after-match))
-                                 wikilink-raw
-                                 (wikilink-raw:match "%[%[(.+)%]%]") wikilink
-                                 (vim.split wikilink "|" true))]
-    (if wikilink-info
-        (do
-          (if (= (length wikilink-info) 1)
-              (tset wikilink-info 2 (. wikilink-info 1)))
-          (tset wikilink-info :filename (path->filename (. wikilink-info 1)))
-          (tset wikilink-info :alias (. wikilink-info 2))
-          wikilink-info)
-        (let [error-message "No Valid Link Under Your Cursor"]
-          (lf.notify-error error-message)
-          (values nil error-message)))))
+(λ wikilink-info-under-cursor []
+  (or (match-try (raw-wikilink-under-cursor) raw-wikilink
+                 (good-raw-wikilink? raw-wikilink) true
+                 (raw-wikilink->wikilink-info raw-wikilink) wikilink-info
+                 (good-wikilink-info? wikilink-info) true wikilink-info)
+      nil))
 
 ;; TODO: File issue with how disabling still makes it auto detect around (jump around)
 ;; (local temp vim.g.minisurround_disable)
@@ -130,8 +96,8 @@
 
 (λ open-wikilink-under-cursor [?will-split]
   (type-check! [:boolean|nil ?will-split])
-  (match-try (get-wikilink-info-under-cursor) wikilink-info
-             wikilink-info.filename filename
+  (match-try (wikilink-info-under-cursor) wikilink-info wikilink-info.filename
+             filename
              (filename->filepath-async filename
                                        (λ [filepaths]
                                          ((vim.schedule_wrap #(let [file (. filepaths
@@ -140,7 +106,8 @@
                                                                     (if ?will-split
                                                                         (vim.cmd (f= "FocusSplitNicely \"${file}\""))
                                                                         (vim.cmd (f= "e ${file}")))
-                                                                    (notify-error "Couldn't Find File")))))))))
+                                                                    (notify-error "Couldn't Find File")))))))
+             (catch nil (notify-error "Invalid Wikilink Under Cursor"))))
 
 (λ choose-wikilink [callback]
   (type-check! [:function callback])
