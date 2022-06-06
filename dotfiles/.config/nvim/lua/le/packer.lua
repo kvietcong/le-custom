@@ -31,6 +31,7 @@ packer.startup({
         use("tpope/vim-repeat")
         use("gbprod/yanky.nvim")
         use("ggandor/leap.nvim")
+        use("github/copilot.vim")
         use("folke/which-key.nvim")
         use("voldikss/vim-floaterm")
         use("echasnovski/mini.nvim")
@@ -57,6 +58,7 @@ packer.startup({
         use("nanotee/luv-vimdocs")
         use("milisims/nvim-luaref")
         use("rafcamlet/nvim-luapad")
+        use("wlangstroth/vim-racket")
         use({ "eraserhd/parinfer-rust", run = "cargo build --release" })
 
         -- Pretty Things
@@ -111,8 +113,6 @@ packer.startup({
         -- Treesitter
         use("SmiteshP/nvim-gps")
         use("lewis6991/spellsitter.nvim")
-        -- use("haringsrob/nvim_context_vt")
-        -- use("romgrk/nvim-treesitter-context")
         use("nvim-treesitter/nvim-treesitter")
         use("nvim-treesitter/nvim-treesitter-refactor")
         use("nvim-treesitter/nvim-treesitter-textobjects")
@@ -134,6 +134,7 @@ packer.startup({
         use("hrsh7th/cmp-emoji")
         use("tzachar/fuzzy.nvim")
         use("hrsh7th/cmp-buffer")
+        use("hrsh7th/cmp-copilot")
         use("hrsh7th/cmp-cmdline")
         use("ray-x/cmp-treesitter")
         use("onsails/lspkind.nvim")
@@ -141,6 +142,7 @@ packer.startup({
         use("PaterJason/cmp-conjure")
         use("tzachar/cmp-fuzzy-buffer")
         use("saadparwaiz1/cmp_luasnip")
+        use("kdheepak/cmp-latex-symbols")
         use("dmitmel/cmp-cmdline-history")
         use("hrsh7th/cmp-nvim-lsp-signature-help")
         use("hrsh7th/cmp-nvim-lsp-document-symbol")

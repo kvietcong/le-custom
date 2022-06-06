@@ -5,7 +5,8 @@
 (focus.setup {:signcolumn false
               :cursorline false
               :hybridnumber true
-              :excluded_filetypes [:netrw]})
+              :excluded_filetypes [:netrw :terminal :floaterm]
+              :excluded_buftypes [:nofile :prompt :popup :terminal]})
 
 (which-key.register {:s [":FocusSplitNicely<Enter>" "(w)indow (s)plit"]
                      := [":FocusEqualise<Enter>" "(w)indow (=)equalize"]

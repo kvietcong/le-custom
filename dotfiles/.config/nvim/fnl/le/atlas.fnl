@@ -2,7 +2,7 @@
 ;;; == Le Atlas Module 🗺️ ==
 ;;; ========================
 
-;; My note-taking setup
+;; My custom note-taking setup
 
 (local {: notify-error
         : get-date
