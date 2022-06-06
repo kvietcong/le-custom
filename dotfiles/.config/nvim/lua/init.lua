@@ -8,14 +8,11 @@
 - Find out why Windows emoji selector doesn't work with Neovide
 - See if I can bring most of my Obsidian Workflow into Vim
 - Check out :help ins-completion
-- Check out Lua Snips
 - Sort out nvim-cmp sources!
 - Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
 - Learn how tabs work in Vim
 - Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
-- Organize my config so that I can pcall everything
-    - Also make it more modular because long files make it not as fast
 ]]
 
 --------------------------
