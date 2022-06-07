@@ -236,6 +236,9 @@
     (job:start)
     job))
 
+(λ clean [right-hand-side]
+  (vapi.nvim_replace_termcodes right-hand-side true true true))
+
 ; Module Export
 (t.extend :keep {: !
                  : fold
@@ -278,4 +281,5 @@
                  : not-falsy?
                  :get_is_not_falsy not-falsy?
                  : get-locals
-                 :get_locals get-locals} M)
+                 :get_locals get-locals
+                 : clean} M)

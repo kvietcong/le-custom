@@ -42,7 +42,7 @@ whichkey.register({
         q = "(q)uit all",
         r = {
             function()
-                vim.cmd([[source $MYVIMRC]])
+                vim.cmd("source $MYVIMRC")
                 lf.notify_info("Configuration Reloaded")
             end,
             "(r)e-source config",

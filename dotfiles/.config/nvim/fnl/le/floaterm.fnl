@@ -1,12 +1,10 @@
 ;; Floating Terminal Configuration
 (local which-key (require :le.which-key))
+(local {: clean} (require :le.libf))
 
 (set vim.g.floaterm_width 0.9)
 (set vim.g.floaterm_height 0.9)
 (set vim.g.autolose 1)
-
-(λ clean [right-hand-side]
-  (vapi.nvim_replace_termcodes right-hand-side true true true))
 
 (which-key.register {:<C-t> [":FloatermToggle<Enter>" "Open Terminal"]})
 

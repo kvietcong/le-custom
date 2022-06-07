@@ -1,5 +1,6 @@
 ;; Conjure REPL setup
 (local which-key (require :le.which-key))
+(local {: clean} (require :le.libf))
 
 (set vim.g.conjure#eval#result_register "\"")
 (set vim.g.conjure#mapping#prefix :<Leader>)
@@ -20,6 +21,10 @@
                                      :e "(e)valuate form under cursor"
                                      :c "(e)valuate w/ result as appended (c)omment"
                                      :r "(e)valuate (r)oot form under cursor"
+                                     :l [(λ []
+                                           (vapi.nvim_feedkeys (clean "<Escape>V:ConjureEval<Enter>")
+                                                               :m true))
+                                         "(e)valuate (l)ine"]
                                      :w "(e)vaulate (w)ord under cursor"
                                      :m "(e)vaulate at (m)ark"
                                      :! "(e)vaulate form and replace w/ result"}
