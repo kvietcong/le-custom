@@ -9,7 +9,6 @@ local whichkey = require("le.which-key")
 local lsp_servers = {
     "rust_analyzer",
     "sumneko_lua",
-    "clangd",
     "pyright",
     "tsserver",
     "cssls",
@@ -20,6 +19,9 @@ local lsp_servers = {
     "cmake",
     "yamlls",
     "vimls",
+    -- Make this an ARM specific ban later
+    -- rather than an all "not Windows" ban
+    is_win and "clangd" or nil,
 }
 
 require("nvim-lsp-installer").setup({

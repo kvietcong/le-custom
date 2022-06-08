@@ -356,10 +356,10 @@ Prevent Emacs Pinky and improve ergonomics with a key that lets me easily execut
       "fr" '(consult-buffer :which-key "Find Recent Files")
       "fR" '(recover-file :which-key "Find and Recover")
 
-      "x"  '(:ignore t :which-key "Execute...")
-      "xr" '(eval-region :which-key "Execute Region")
-      "xb" '(eval-buffer :which-key "Execute Buffer")
-      "xe" '(eval-last-sexp :which-key "Execute Expression")
+      "e"  '(:ignore t :which-key "Execute...")
+      "er" '(eval-region :which-key "Execute Region")
+      "eb" '(eval-buffer :which-key "Execute Buffer")
+      "ee" '(eval-last-sexp :which-key "Execute Expression")
 
       "n"  '(:ignore t :which-key "Narrowing...")
       "nd"  '(narrow-to-defun :which-key "Narrow to Defun")

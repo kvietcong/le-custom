@@ -13,6 +13,7 @@ require("nvim-treesitter.configs").setup({
     },
     context_commentstring = { enable = true },
     ensure_installed = "all",
+    ignore_install = { "phpdoc" },
     rainbow = {
         enable = true,
         extended_mode = true,
