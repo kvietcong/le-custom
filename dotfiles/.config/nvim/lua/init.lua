@@ -75,11 +75,10 @@ _G.PR = function(...)
     return ...
 end
 
--- Trigger autoread manually every second
--- This is so Vim auto-updates files on external change
-AutoReadTimer = vfn.timer_start(1000, function()
-    vim.cmd([[silent! checktime]])
-end, { ["repeat"] = -1 })
+-- Ensure old timers are cleaned upon reloading
+if not is_startup then
+    vfn.timer_stopall()
+end
 
 -- Autocommand group for configuration
 _G.le_group = vapi.nvim_create_augroup("LeConfiguration", { clear = true })
@@ -103,10 +102,11 @@ _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
 _G.is_going_hard = is_neovide
 
--- Ensure old timers are cleaned upon reloading
-if not is_startup then
-    vfn.timer_stopall()
-end
+-- Trigger autoread manually every second
+-- This is so Vim auto-updates files on external change
+AutoReadTimer = vfn.timer_start(1000, function()
+    vim.cmd([[silent! checktime]])
+end, { ["repeat"] = -1 })
 
 -- This is for sourcing on configuration change
 vapi.nvim_create_autocmd({ "BufWritePost" }, {
@@ -121,7 +121,9 @@ vapi.nvim_create_autocmd({ "BufWritePost" }, {
     end,
 })
 
-package.loaded["le.packer"] = nil
+if not is_startup then
+    package.loaded["le.packer"] = nil
+end
 require("le.packer")
 
 -- Allow Fennel to be used

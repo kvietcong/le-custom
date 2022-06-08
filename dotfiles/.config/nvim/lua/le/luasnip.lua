@@ -29,9 +29,12 @@ luasnip.add_snippets("all", {
             f(function() return "D"..(lf.get_date()["day"]) end),
             f(function() return "W"..(lf.get_date()["week"]) end),
             f(function() return "H"..(lf.get_date()["hour"]) end),
+            f(function() return "M"..(lf.get_date()["minute"]) end),
             f(function() return "S"..(lf.get_date()["second"]) end),
         }),
     }),
+}, {
+    key = "general",
 })
 
 luasnip.add_snippets("markdown", {
@@ -48,6 +51,8 @@ luasnip.add_snippets("markdown", {
     s("@quick-content", {
         t("[["), i(1, "Title"), t(" ~ "), i(2, "Originators"), t("]]"),
     }),
+}, {
+    key = "note-taking",
 })
 
 return luasnip
