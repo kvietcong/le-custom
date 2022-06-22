@@ -1,5 +1,5 @@
 ;; Colorscheme!
-(local {: day?} (require :le.libf))
+(local {: day? : nil? : boolean?} (require :le.libf))
 
 ;; Nord Options
 (set vim.g.nord_italic true)
@@ -17,8 +17,11 @@
 (local colorschemes {:day :gruvbox-material :night :nord})
 
 (var was-day nil)
-(λ set-colorscheme []
-  (let [is-day (day?)]
+(var override-was-day nil)
+(λ set-colorscheme [?override-is-day]
+  (if (boolean? ?override-is-day)
+    (set override-was-day ?override-is-day))
+  (let [is-day (if (nil? override-was-day) (day?) override-was-day)]
     (when (not= is-day was-day)
       (set was-day is-day)
       (vim.cmd (.. "set background=" (if is-day :light :dark)))

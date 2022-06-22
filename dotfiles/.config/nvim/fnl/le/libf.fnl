@@ -41,8 +41,8 @@
 ;; - `<TYPE>?`
 ;; - `get_is_<TYPE>`
 (each [_ lua-type (ipairs all-types)]
-  (let [checker (λ [x]
-                  (type? lua-type x))]
+  (let [checker (λ [?x]
+                  (type? lua-type ?x))]
     (tset M (.. lua-type "?") checker)
     (tset M (.. :get_is_ lua-type) checker)))
 
