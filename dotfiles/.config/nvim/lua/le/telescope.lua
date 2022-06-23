@@ -5,6 +5,7 @@
 -- local actions = require("telescope.actions")
 local telescope = require("telescope")
 local whichkey = require("le.which-key")
+local lf = require("le.libf")
 
 telescope.setup({
     defaults = {

@@ -14,6 +14,7 @@
 - Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
 - Remove the need for wiki.vim. It also seems to have stopped working for me :(
+- PDF makes telescope crash
 ]]
 
 --------------------------

@@ -18,6 +18,7 @@ local c = luasnip.choice_node
 -- local lambda = require("luasnip.extras").l
 
 vim.keymap.set("i", "<C-n>", "<Plug>luasnip-next-choice", {})
+vim.keymap.set("i", "<C-u>", require("luasnip.extras.select_choice"), {})
 vim.keymap.set("s", "<C-n>", "<Plug>luasnip-next-choice", {})
 vim.keymap.set("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
 vim.keymap.set("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
