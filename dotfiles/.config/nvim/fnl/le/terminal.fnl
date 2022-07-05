@@ -14,6 +14,8 @@
                              "Go To Next Terminal"]
                      :<A-h> [(clean "<C-\\><C-n>:FloatermPrev<Enter>")
                              "Go To Previous Terminal"]
+                     :<A-t> [(clean "<C-\\><C-n>:FloatermToggle<Enter>")
+                             "Close Terminal"]
                      :<C-q> [(clean "<C-\\><C-n>:FloatermKill<Enter>")
                              "Quit/Kill The Current Terminal"]
                      :<C-t><C-n> [(clean "<C-\\><C-n>:FloatermNew<Enter>")
