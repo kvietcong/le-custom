@@ -34,7 +34,10 @@ packer.startup({
         use("github/copilot.vim")
         use("folke/which-key.nvim")
         use("voldikss/vim-floaterm")
-        use("echasnovski/mini.nvim")
+        use({
+            "echasnovski/mini.nvim",
+            commit = "c820abfe561a5946e1b327ff9912491876cbf366",
+        })
         use("TimUntersberger/neogit")
         use("NTBBloodbath/rest.nvim")
         use("sindrets/winshift.nvim")
@@ -67,7 +70,6 @@ packer.startup({
         use("shaunsingh/nord.nvim")
         use("p00f/nvim-ts-rainbow")
         use("stevearc/dressing.nvim")
-        use("beauwilliams/focus.nvim")
         use("lewis6991/gitsigns.nvim")
         use("sainnhe/gruvbox-material")
         use("mrjones2014/legendary.nvim")
@@ -135,7 +137,6 @@ packer.startup({
         use("tzachar/fuzzy.nvim")
         use("hrsh7th/cmp-buffer")
         use("hrsh7th/cmp-copilot")
-        use("hrsh7th/cmp-cmdline")
         use("ray-x/cmp-treesitter")
         use("onsails/lspkind.nvim")
         use("hrsh7th/cmp-nvim-lsp")
@@ -143,7 +144,6 @@ packer.startup({
         use("tzachar/cmp-fuzzy-buffer")
         use("saadparwaiz1/cmp_luasnip")
         use("kdheepak/cmp-latex-symbols")
-        use("dmitmel/cmp-cmdline-history")
         use("hrsh7th/cmp-nvim-lsp-signature-help")
         use("hrsh7th/cmp-nvim-lsp-document-symbol")
 

@@ -189,6 +189,12 @@ nnoremap <Leader><Leader>sh [s
 " Under last dictionary task (Spelling Undo)
 nnoremap <Leader><Leader>su zug
 
+" Terminal
+autocmd TermOpen * setlocal nonu
+autocmd TermOpen * setlocal nornu
+autocmd TermOpen * setlocal nospell
+tnoremap <Escape><Escape><Escape> <C-\><C-n>
+
 " Jump to the last known cursor position.
 autocmd BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"

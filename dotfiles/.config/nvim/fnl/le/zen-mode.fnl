@@ -4,12 +4,10 @@
 
 (zen-mode.setup {:window {:width 90 :backdrop 0.6}
                  :on_open (λ []
-                            (vim.cmd :FocusDisable)
-                            (pcall #(vapi.nvim_set_keymap :n :<Escape><Escape>
+                            (pcall #(vapi.nvim_set_keymap :n :<Escape><Escape><Escape>
                                                           ":ZenMode<Enter>" {})))
                  :on_close (λ []
-                             (vim.cmd :FocusEnable)
-                             (pcall #(vapi.nvim_del_keymap :n :<Escape><Escape>)))})
+                             (pcall #(vapi.nvim_del_keymap :n :<Escape><Escape><Escape>)))})
 
 (which-key.register {:<Leader>z [":ZenMode<Enter>" "(z)en mode"]})
 

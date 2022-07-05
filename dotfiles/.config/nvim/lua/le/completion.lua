@@ -99,7 +99,6 @@ cmp.setup({
                 calc = "[Calc]",
                 spell = "[Spell]",
                 fuzzy_buffer = "[FzyBuf]",
-                cmdline_history = "[CMDHis]",
                 copilot = "[🤖]",
                 latex_symbols = "[LaTeX]",
             },
@@ -156,13 +155,12 @@ for _, command_type in pairs({ ":", "@" }) do
     require("cmp").setup.cmdline(command_type, {
         mapping = cmp.mapping.preset.cmdline(),
         sources = {
-            { name = "cmdline" },
             { name = "calc" },
-            { name = "cmdline_history" },
             { name = "path" },
         },
     })
 end
+
 for _, command_type in pairs({ "/", "?" }) do
     require("cmp").setup.cmdline(command_type, {
         mapping = cmp.mapping.preset.cmdline(),
@@ -170,7 +168,6 @@ for _, command_type in pairs({ "/", "?" }) do
             { name = "nvim_lsp_document_symbol" },
             { name = "buffer" },
             { name = "fuzzy_buffer" },
-            { name = "cmdline_history" },
         },
     })
 end
