@@ -34,10 +34,7 @@ packer.startup({
         use("github/copilot.vim")
         use("folke/which-key.nvim")
         use("voldikss/vim-floaterm")
-        use({
-            "echasnovski/mini.nvim",
-            commit = "c820abfe561a5946e1b327ff9912491876cbf366",
-        })
+        use("echasnovski/mini.nvim")
         use("TimUntersberger/neogit")
         use("NTBBloodbath/rest.nvim")
         use("sindrets/winshift.nvim")
