@@ -19,6 +19,7 @@ telescope.setup({
         },
         layout_strategy = "flex",
         sorting_strategy = "ascending",
+        file_ignore_patterns = { "node_modules" },
     },
     extensions = {
         ["ui-select"] = {
