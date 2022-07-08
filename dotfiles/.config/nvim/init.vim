@@ -89,7 +89,7 @@ nnoremap <C-s> :w<Enter>
 nnoremap U <C-r>
 
 " Reload config
-nnoremap silent <Leader><Leader>r :source $MYVIMRC<Enter>
+nnoremap <silent> <Leader><Leader>r :source $MYVIMRC<Enter>
 
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
@@ -169,7 +169,7 @@ inoremap ! !<C-g>u
 inoremap ? ?<C-g>u
 
 " cd into directory of current buffer
-nnoremap silent <Leader>cd :cd %:p:h<CR>
+nnoremap <silent> <Leader>cd :cd %:p:h<CR>
 
 " Better Marks?
 nnoremap ' `
