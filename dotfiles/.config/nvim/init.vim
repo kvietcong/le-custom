@@ -28,8 +28,6 @@ set signcolumn=yes
 set conceallevel=2
 set timeoutlen=300 " Delay for things to happen with multi key bindings
 set viminfo='100,f1 " Save marks and stuff
-set inccommand=split " Live update of commands like substitution
-set jumpoptions+=stack
 " set list listchars=eol:↴
 syntax sync minlines=250
 syntax sync maxlines=250
@@ -63,9 +61,22 @@ if has("nvim")
     " Ensure init is freshly loaded
     lua package.loaded.init = nil
     lua require("init")
+
+    set inccommand=split " Live update of commands like substitution
+    set jumpoptions+=stack
+
+    autocmd TermOpen * setlocal nonu
+    autocmd TermOpen * setlocal nornu
+    autocmd TermOpen * setlocal nospell
 else
     colorscheme nord
+
+    autocmd TerminalOpen * setlocal nonu
+    autocmd TerminalOpen * setlocal nornu
+    autocmd TerminalOpen * setlocal nospell
 endif
+tnoremap <Escape><Escape><Escape> <C-\><C-n>
+tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 
 let mapleader = "\<Space>"
 let g:netrw_banner = 0
@@ -191,13 +202,6 @@ nnoremap <Leader><Leader>sl ]s
 nnoremap <Leader><Leader>sh [s
 " Under last dictionary task (Spelling Undo)
 nnoremap <Leader><Leader>su zug
-
-" Terminal Shenanigans
-autocmd TermOpen * setlocal nonu
-autocmd TermOpen * setlocal nornu
-autocmd TermOpen * setlocal nospell
-tnoremap <Escape><Escape><Escape> <C-\><C-n>
-tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 
 " Jump to the last known cursor position.
 autocmd! BufReadPost *
