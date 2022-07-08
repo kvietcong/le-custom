@@ -44,7 +44,6 @@ set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for
 set smartindent cindent autoindent " Better indenting
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
-set wildmenu wildmode=longest,list,full " Display completion matches in a status line
 set synmaxcol=150 lazyredraw noswapfile " Performance
 set completeopt=menuone,noselect,preview
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
@@ -69,6 +68,7 @@ else
 endif
 
 let mapleader = "\<Space>"
+let g:netrw_banner = 0
 
 " Make capital quitting quit all
 :cabbrev WQ wqa
@@ -87,6 +87,9 @@ nnoremap <C-s> :w<Enter>
 
 " Redo stuff
 nnoremap U <C-r>
+
+" Reload config
+nnoremap silent <Leader><Leader>r :source $MYVIMRC<Enter>
 
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
@@ -166,7 +169,7 @@ inoremap ! !<C-g>u
 inoremap ? ?<C-g>u
 
 " cd into directory of current buffer
-nnoremap <Leader>cd :cd %:p:h<CR>
+nnoremap silent <Leader>cd :cd %:p:h<CR>
 
 " Better Marks?
 nnoremap ' `
@@ -189,27 +192,20 @@ nnoremap <Leader><Leader>sh [s
 " Under last dictionary task (Spelling Undo)
 nnoremap <Leader><Leader>su zug
 
-" Terminal
+" Terminal Shenanigans
 autocmd TermOpen * setlocal nonu
 autocmd TermOpen * setlocal nornu
 autocmd TermOpen * setlocal nospell
 tnoremap <Escape><Escape><Escape> <C-\><C-n>
+tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 
 " Jump to the last known cursor position.
-autocmd BufReadPost *
+autocmd! BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"
     \ |   exe "normal! g`\""
     \ | endif
 
-autocmd! BufNewFile,BufRead *.json,*.toml set foldmethod=indent
 
-" Refresh Colorscheme
-function! RefreshColor()
-    if exists("g:colors_name")
-        let current = g:colors_name
-    else
-        let current = "default"
-    endif
-    execute "colorscheme ".current
-endfunction
-nnoremap <F5> :call RefreshColor()<Enter>
+" Make configuration files indent based on indent
+autocmd! BufNewFile,BufRead *.json,*.toml,*.yml,*.yaml set foldmethod=indent
+
