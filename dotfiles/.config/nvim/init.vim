@@ -71,6 +71,7 @@ if has("nvim")
 else
     colorscheme nord
 
+    set undodir=~/.vim/undos
     autocmd TerminalOpen * setlocal nonu
     autocmd TerminalOpen * setlocal nornu
     autocmd TerminalOpen * setlocal nospell
