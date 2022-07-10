@@ -98,10 +98,10 @@ _G.is_wsl = vfn.has("wsl") == 1
 _G.is_win = vfn.has("win32") == 1
 -- local is_unix = fn.has("unix") == 1
 -- local is_linux = fn.has("linux") == 1
-_G.is_dev_mode = true
+_G.is_dev_mode = false
 _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
-_G.is_going_hard = is_neovide
+_G.is_going_hard = is_gui
 
 -- Trigger autoread manually every second
 -- This is so Vim auto-updates files on external change
@@ -211,7 +211,6 @@ local utility_modules = {
     "le.lsp",
     "le.misc",
     "le.leap",
-    "le.yanky",
     "le.neogit",
     "le.luapad",
     "le.luasnip",
@@ -224,7 +223,6 @@ local utility_modules = {
     "le.fnl-init",
     "le.sessions",
     "le.surround",
-    "le.rest-nvim",
     "le.telescope",
     "le.bufremove",
     "le.cursorword",

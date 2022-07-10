@@ -29,14 +29,12 @@ packer.startup({
         -- Quality of Life
         use("tpope/vim-eunuch")
         use("tpope/vim-repeat")
-        use("gbprod/yanky.nvim")
         use("ggandor/leap.nvim")
         use("github/copilot.vim")
         use("folke/which-key.nvim")
         use("voldikss/vim-floaterm")
         use("echasnovski/mini.nvim")
         use("TimUntersberger/neogit")
-        use("NTBBloodbath/rest.nvim")
         use("sindrets/winshift.nvim")
 
         use({
