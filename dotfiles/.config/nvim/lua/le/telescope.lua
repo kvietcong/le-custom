@@ -53,10 +53,6 @@ telescope.setup({
 
 require("telescope-emoji").setup({
     action = function(emoji)
-        require("yanky").history.push({
-            regcontents = emoji.value,
-            regtype = "v",
-        })
         lf.set_register_and_notify(emoji.value)
     end,
 })
@@ -68,7 +64,6 @@ telescope.load_extension("gitmoji")
 telescope.load_extension("heading")
 telescope.load_extension("ui-select")
 telescope.load_extension("file_browser")
-telescope.load_extension("yank_history")
 
 vapi.nvim_create_autocmd("User", {
     pattern = "TelescopePreviewerLoaded",
@@ -105,7 +100,6 @@ whichkey.register({
             p = { ":Telescope packer<Enter>", "(f)ind (p)acker/(p)lugins" },
             r = { ":Telescope oldfiles<Enter>", "(f)ind (r)ecent files" },
             t = { ":Telescope treesitter<Enter>", "(f)ind (t)reesitter symbols" },
-            y = { ":Telescope yank_history<Enter>", "(f)ind (y)ank history" },
         },
         ["/"] = { ":Telescope current_buffer_fuzzy_find<Enter>", "Fuzzy Find In File" },
         ["?"] = { ":Telescope live_grep<Enter>", "Fuzzy Find Across Project" },
