@@ -10,7 +10,8 @@
         : not-falsy?
         : set-register-and-notify
         : *->string
-        : type-check!} (require :le.libf))
+        : type-check!
+        : head} (require :le.libf))
 
 (local {: -- : ++} (require :le.math))
 
@@ -55,7 +56,9 @@
     (when wikilink-info
       (if (= (length wikilink-info) 1)
           (t.insert wikilink-info (. wikilink-info 1)))
-      (tset wikilink-info :filename (path->filename (. wikilink-info 1)))
+      ;; TODO: Find a way to communicate subheadings
+      (tset wikilink-info :filename
+            (path->filename (. (vim.split (. wikilink-info 1) "#") 1)))
       (tset wikilink-info :alias (. wikilink-info 2)))
     wikilink-info))
 
@@ -94,6 +97,40 @@
   (let [job (filename->filepath-async filename)]
     (job:sync)))
 
+(λ get-year []
+  (let [date (get-date)]
+    (tonumber date.year)))
+
+(λ get-week-# []
+  (let [date (get-date)]
+    (tonumber (date.format "%V"))))
+
+;; TODO: Fix for single digit weeks
+(λ get-weekly-note-name []
+  (let [week-# (get-week-#)
+        year (get-year)]
+    (f= "${year}-W${week-#}")))
+
+(λ get-monthly-note-name []
+  ((. (get-date) :format) "%Y-%m"))
+
+;; TODO: Abstract out file opening
+(λ open-weekly-note [?will-split]
+  (type-check! [:boolean|nil ?will-split])
+  (let [note-path (head (filename->filepath (get-weekly-note-name)))]
+    (if ?will-split
+        (vim.cmd (f= "FocusSplitNicely \"${note-path}\""))
+        (vim.cmd (f= "e ${note-path}")))))
+
+;; TODO: Abstract out file opening
+(λ open-monthly-note [?will-split]
+  (type-check! [:boolean|nil ?will-split])
+  (let [note-path (head (filename->filepath (get-monthly-note-name)))]
+    (if ?will-split
+        (vim.cmd (f= "FocusSplitNicely \"${note-path}\""))
+        (vim.cmd (f= "e ${note-path}")))))
+
+;; TODO: Make it so splitting actually works
 (λ open-wikilink-under-cursor [?will-split]
   (type-check! [:boolean|nil ?will-split])
   (match-try (wikilink-info-under-cursor) wikilink-info wikilink-info.filename
@@ -156,23 +193,24 @@
                                           (vapi.nvim_win_set_cursor 0
                                                                     cursor-position))}))
 
+(λ add-keymaps-to-buffer [event-info]
+  (wk.register {:<Enter> [open-wikilink-under-cursor "Go To Wikilink"]
+                :<Leader><Enter> [#(open-wikilink-under-cursor true)
+                                  "Go To Wikilink (Split)"]
+                ;; TODO: Add prev and next
+                :<Leader>nww [#(open-weekly-note) "Go to Weekly Note"]
+                :<Leader>nmm [#(open-monthly-note) "Go to Monthly Note"]
+                :<Leader>nl [choose-wikilink-and-copy "Get a wikilink"]}
+               {:buffer event-info.buf})
+  (wk.register {:<C-l> [choose-wikilink-and-insert "Insert a wikilink"]}
+               {:buffer event-info.buf :mode :i}))
+
 (λ add-keymaps []
   (vapi.nvim_create_autocmd :BufEnter
                             {:group le-group
                              :desc "Add Note Taking Keymaps"
                              :pattern [:*.md :*.mdx :*.wiki]
-                             :callback (λ [event-info]
-                                         (wk.register {:<Enter> [open-wikilink-under-cursor
-                                                                 "Go To Wikilink"]
-                                                       :<Leader><Enter> [#(open-wikilink-under-cursor true)
-                                                                         "Go To Wikilink (Split)"]
-                                                       :<Leader>nl [choose-wikilink-and-copy
-                                                                    "Get a wikilink"]}
-                                                      {:buffer event-info.buf})
-                                         (wk.register {:<C-l> [choose-wikilink-and-insert
-                                                               "Insert a wikilink"]}
-                                                      {:buffer event-info.buf
-                                                       :mode :i}))}))
+                             :callback add-keymaps-to-buffer}))
 
 (λ setup []
   (add-save-hook)
@@ -186,4 +224,8 @@
  : choose-wikilink-and-copy
  :choose_wikilink_and_copy choose-wikilink-and-copy
  : open-wikilink-under-cursor
- :open_wikilink_under_cursor open-wikilink-under-cursor}
+ :open_wikilink_under_cursor open-wikilink-under-cursor
+ : open-weekly-note
+ :open_weekly_note open-weekly-note
+ : open-monthly-note
+ :open_monthly_note open-monthly-note}

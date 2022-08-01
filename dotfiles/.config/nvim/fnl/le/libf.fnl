@@ -247,6 +247,7 @@
                  : scan*
                  : scan
                  : scanl
+                 : head
                  : map
                  : reduce
                  : type?

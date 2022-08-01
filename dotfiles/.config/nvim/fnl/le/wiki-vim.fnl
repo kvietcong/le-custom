@@ -18,14 +18,7 @@
                                    :b ["<Plug>(wiki-graph-find-backlinks)"
                                        "(n)ote (b)acklinks"]
                                    :t [":Telescope heading<Enter>"
-                                       "(n)ote (t)able of contents"]
-                                   :w {:name "(w)eekly"
-                                       :w ["<Plug>(wiki-journal)"
-                                           "(n)ote (w)eekly current"]
-                                       :l ["<Plug>(wiki-journal-next)"
-                                           "(n)ote (w)eekly next"]
-                                       :h ["<Plug>(wiki-journal-prev)"
-                                           "(n)ote (w)eekly previous"]}}
+                                       "(n)ote (t)able of contents"]}
                        :<Leader>el [":CarrotEval<Enter>"
                                     "(e)valuate (l)ua code block"]
                        :<Leader><Leader><Enter> ["<Plug>(wiki-link-toggle)"
