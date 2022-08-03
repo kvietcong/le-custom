@@ -30,7 +30,7 @@
       ;; Make virtual text visible with transparent backgrounds
       (vapi.nvim_command "highlight NonText guifg=#6C768A")
       ;; Make matching parenthesis easier to see.
-      (vapi.nvim_command "highlight MatchParen guifg=#000000 guibg=#FFFFFF"))))
+      (vapi.nvim_command "highlight MatchParen guifg=#ECEFF4 guibg=#BF616A"))))
 
 (set-colorscheme)
 
