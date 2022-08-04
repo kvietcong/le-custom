@@ -68,8 +68,8 @@ local on_attach = function(_, bufnr)
             name = "(g)o to",
             d = { ":Telescope lsp_definitions<Enter>", "(g)o to (d)efinition" },
             D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
-            i = { vim.lsp.buf.implementation, "(g)o to (i)mplementation" },
-            r = { vim.lsp.buf.references, "(g)o to (r)eferences" },
+            i = { ":Telescope lsp_implementations<Enter>", "(g)o to (i)mplementation" },
+            r = { ":Telescope lsp_references<Enter>", "(g)o to (r)eferences" },
         },
         ["<Leader>"] = {
             c = {

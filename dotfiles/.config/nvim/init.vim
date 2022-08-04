@@ -33,6 +33,7 @@ syntax sync minlines=250
 syntax sync maxlines=250
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
+set lazyredraw noswapfile " Performance
 set spell spelllang=en_us " Spellcheck
 set splitbelow splitright " Splits occur below or to the right of the current window
 set relativenumber number " Show relative number lines with regular number line on current line
@@ -42,7 +43,6 @@ set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for
 set smartindent cindent autoindent " Better indenting
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
-set synmaxcol=150 lazyredraw noswapfile " Performance
 set completeopt=menuone,noselect,preview
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 set foldenable foldmethod=indent foldlevel=60 " Dang I wish I could do both syntax and indent folding
@@ -209,7 +209,6 @@ autocmd! BufReadPost *
     \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# "commit"
     \ |   exe "normal! g`\""
     \ | endif
-
 
 " Make configuration files indent based on indent
 autocmd! BufNewFile,BufRead *.json,*.toml,*.yml,*.yaml set foldmethod=indent
