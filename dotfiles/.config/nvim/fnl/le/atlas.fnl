@@ -114,37 +114,34 @@
 (λ get-monthly-note-name []
   ((. (get-date) :format) "%Y-%m"))
 
-;; TODO: Abstract out file opening
-(λ open-weekly-note [?will-split]
-  (type-check! [:boolean|nil ?will-split])
-  (let [note-path (head (filename->filepath (get-weekly-note-name)))]
-    (if ?will-split
-        (vim.cmd (f= "FocusSplitNicely \"${note-path}\""))
-        (vim.cmd (f= "e ${note-path}")))))
+(λ open-first-filepath-async [filepaths ?will-split]
+  ((vim.schedule_wrap #(let [file (head filepaths)]
+                         (if file
+                             (let [file (file:gsub "\\\\" "/")
+                                   file (vfn.fnameescape file)]
+                               (if ?will-split
+                                   (vim.cmd (f= "vsplit ${file}"))
+                                   (vim.cmd (f= "e ${file}"))))
+                             (notify-error "Couldn't Find File"))))))
 
-;; TODO: Abstract out file opening
-(λ open-monthly-note [?will-split]
-  (type-check! [:boolean|nil ?will-split])
-  (let [note-path (head (filename->filepath (get-monthly-note-name)))]
-    (if ?will-split
-        (vim.cmd (f= "FocusSplitNicely \"${note-path}\""))
-        (vim.cmd (f= "e ${note-path}")))))
+(λ open-filename-async [filename ?will-split]
+  (filename->filepath-async filename
+                            (λ [filepaths]
+                              (open-first-filepath-async filepaths ?will-split))))
 
-;; TODO: Make it so splitting actually works
 (λ open-wikilink-under-cursor [?will-split]
   (type-check! [:boolean|nil ?will-split])
   (match-try (wikilink-info-under-cursor) wikilink-info wikilink-info.filename
-             filename
-             (filename->filepath-async filename
-                                       (λ [filepaths]
-                                         ((vim.schedule_wrap #(let [file (. filepaths
-                                                                            1)]
-                                                                (if file
-                                                                    (if ?will-split
-                                                                        (vim.cmd (f= "FocusSplitNicely \"${file}\""))
-                                                                        (vim.cmd (f= "e ${file}")))
-                                                                    (notify-error "Couldn't Find File")))))))
+             filename (open-filename-async filename ?will-split)
              (catch nil (notify-error "Invalid Wikilink Under Cursor"))))
+
+(λ open-weekly-note [?will-split]
+  (type-check! [:boolean|nil ?will-split])
+  (open-filename-async (get-weekly-note-name) ?will-split))
+
+(λ open-monthly-note [?will-split]
+  (type-check! [:boolean|nil ?will-split])
+  (open-filename-async (get-monthly-note-name) ?will-split))
 
 (λ choose-wikilink [callback]
   (type-check! [:function callback])
@@ -200,6 +197,10 @@
                 ;; TODO: Add prev and next
                 :<Leader>nww [#(open-weekly-note) "Go to Weekly Note"]
                 :<Leader>nmm [#(open-monthly-note) "Go to Monthly Note"]
+                :<Leader>nWW [#(open-weekly-note true)
+                              "Go to Weekly Note (Split)"]
+                :<Leader>nMM [#(open-monthly-note true)
+                              "Go to Monthly Note (Split)"]
                 :<Leader>nl [choose-wikilink-and-copy "Get a wikilink"]}
                {:buffer event-info.buf})
   (wk.register {:<C-l> [choose-wikilink-and-insert "Insert a wikilink"]}
