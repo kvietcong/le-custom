@@ -229,7 +229,10 @@
   (let [callback options.callback
         callback-table (if callback
                            {:on_exit (λ [job]
-                                       (callback (job:result)))}
+                                       (let [result (job:result)
+                                             result (icollect [_ item (ipairs result)]
+                                                      (item:gsub "\\\\" "/"))]
+                                         (callback result)))}
                            {})
         job-options (t.extend :keep {:command :fd} options callback-table)
         job (Job:new job-options)]

@@ -117,8 +117,7 @@
 (λ open-first-filepath-async [filepaths ?will-split]
   ((vim.schedule_wrap #(let [file (head filepaths)]
                          (if file
-                             (let [file (file:gsub "\\\\" "/")
-                                   file (vfn.fnameescape file)]
+                             (let [file (vfn.fnameescape file)]
                                (if ?will-split
                                    (vim.cmd (f= "vsplit ${file}"))
                                    (vim.cmd (f= "e ${file}"))))
