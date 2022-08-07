@@ -40,6 +40,9 @@ vim.api.nvim_set_keymap("n", "<F1>", "", {
 _G.vfn = vim.fn
 _G.vapi = vim.api
 
+-- Add luafun to the global scope
+require("fun")()
+
 -- Shortcuts to Table Functions
 _G.t = {
     filter = vim.tbl_filter,
