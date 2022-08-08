@@ -58,13 +58,16 @@
           (t.insert wikilink-info (. wikilink-info 1)))
       ;; TODO: Find a way to communicate subheadings
       (tset wikilink-info :filename
-            (path->filename (. (vim.split (. wikilink-info 1) "#") 1)))
+            (path->filename (-> wikilink-info
+                                (. 1)
+                                (vim.split "#")
+                                (. 1))))
       (tset wikilink-info :alias (. wikilink-info 2)))
     wikilink-info))
 
 (λ good-wikilink-info? [?wikilink-info]
   (if (not ?wikilink-info) false
-      (?wikilink-info.filename:match "[!\\/%$%^%%*%?]") false
+      (?wikilink-info.filename:match "[\\/%$%^%%*%?]") false
       true))
 
 (λ wikilink-info-under-cursor []
