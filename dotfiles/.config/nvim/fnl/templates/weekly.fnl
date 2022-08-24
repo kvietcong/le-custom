@@ -40,8 +40,21 @@ tags:
 [[<%- last_week:fmt('%Y-W%V') %>|⏮]] | [[- My Journal -|📖]] | [[<%- next_week:fmt('%Y-W%V') %>|⏭]]
 
 # <%- ordinal_suffix(the_date:fmt('%W')) %> Week of <%- the_date:fmt('%Y') %>
-
 #TODO
+
+## Monday
+
+## Tuesday
+
+## Wednesday
+
+## Thursday
+
+## Friday
+
+## Saturday
+
+## Sunday
 
 "))
 
