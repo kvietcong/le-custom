@@ -1,6 +1,7 @@
 -- Snippets
 local luasnip = require("luasnip")
 local lf = require("le/libf")
+local get_weekly = require("templates/weekly")
 
 local s = luasnip.snippet
 -- local sn = luasnip.snippet_node
@@ -52,6 +53,7 @@ luasnip.add_snippets("markdown", {
     s("@quick-content", {
         t("[["), i(1, "Title"), t(" ~ "), i(2, "Originators"), t("]]"),
     }),
+    s("@weekly", f(function() return vfn.split(get_weekly(), "\n") end)),
 }, {
     key = "note-taking",
 })

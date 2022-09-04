@@ -74,7 +74,6 @@ cmp.setup({
         { name = "path" },
         { name = "luasnip" },
         { name = "calc" },
-        { name = "copilot" },
     }, {
         { name = "omni" },
         { name = "spell" },
@@ -99,7 +98,6 @@ cmp.setup({
                 calc = "[Calc]",
                 spell = "[Spell]",
                 fuzzy_buffer = "[FzyBuf]",
-                copilot = "[🤖]",
                 latex_symbols = "[LaTeX]",
             },
             before = function(entry, vim_item)
