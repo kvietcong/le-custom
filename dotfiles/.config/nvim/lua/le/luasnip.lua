@@ -1,12 +1,13 @@
 -- Snippets
-local luasnip = require("luasnip")
+local date = require("date")
 local lf = require("le/libf")
+local luasnip = require("luasnip")
 local get_weekly = require("templates/weekly")
+local get_monthly = require("templates/monthly")
 
 local s = luasnip.snippet
 -- local sn = luasnip.snippet_node
--- local isn = luasnip.indent_snippet_node
-local t = luasnip.text_node
+-- local isn = luasnip.indent_snippet_node local t = luasnip.text_node
 local i = luasnip.insert_node
 local f = luasnip.function_node
 local c = luasnip.choice_node
@@ -27,12 +28,24 @@ vim.keymap.set("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
 luasnip.add_snippets("all", {
     s("@@", {
         c(1, {
-            f(function() return lf.get_date()["my-date"] end),
-            f(function() return "D"..(lf.get_date()["day"]) end),
-            f(function() return "W"..(lf.get_date()["week"]) end),
-            f(function() return "H"..(lf.get_date()["hour"]) end),
-            f(function() return "M"..(lf.get_date()["minute"]) end),
-            f(function() return "S"..(lf.get_date()["second"]) end),
+            f(function()
+                return lf.get_date()["my-date"]
+            end),
+            f(function()
+                return "D" .. lf.get_date()["day"]
+            end),
+            f(function()
+                return "W" .. lf.get_date()["week"]
+            end),
+            f(function()
+                return "H" .. lf.get_date()["hour"]
+            end),
+            f(function()
+                return "M" .. lf.get_date()["minute"]
+            end),
+            f(function()
+                return "S" .. lf.get_date()["second"]
+            end),
         }),
     }),
 }, {
@@ -42,18 +55,60 @@ luasnip.add_snippets("all", {
 luasnip.add_snippets("markdown", {
     s("@meta", {
         t("---"),
-        t({"", "aliases: "}), c(1, {t("~"), {t({"", "- "}), i(1)}}),
+        t({ "", "aliases: " }),
+        c(1, { t("~"), { t({ "", "- " }), i(1) } }),
         -- TODO: Weird how I can't store function node in a local variable and reuse
-        t({"", "created: "}), f(function() return lf.get_date()["my-date"] end),
-        t({"", "edited: "}), f(function() return lf.get_date()["my-date"] end),
-        t({"", "tags: "}), c(2, {t("~"), {t({"", "- "}), i(1)}}),
-        t({"", "---"}),
+        t({ "", "created: " }),
+        f(function()
+            return lf.get_date()["my-date"]
+        end),
+        t({ "", "edited: " }),
+        f(function()
+            return lf.get_date()["my-date"]
+        end),
+        t({ "", "tags: " }),
+        c(2, { t("~"), { t({ "", "- " }), i(1) } }),
+        t({ "", "---" }),
     }),
-    s("@today", f(function() return lf.get_date()["my-date"] end)),
+    s(
+        "@today",
+        f(function()
+            return lf.get_date()["my-date"]
+        end)
+    ),
     s("@quick-content", {
-        t("[["), i(1, "Title"), t(" ~ "), i(2, "Originators"), t("]]"),
+        t("[["),
+        i(1, "Title"),
+        t(" ~ "),
+        i(2, "Originators"),
+        t("]]"),
     }),
-    s("@weekly", f(function() return vfn.split(get_weekly(), "\n") end)),
+    s("@weekly", {
+        c(1, {
+            f(function()
+                return vfn.split(get_weekly(date():adddays(-7)), "\n")
+            end),
+            f(function()
+                return vfn.split(get_weekly(), "\n")
+            end),
+            f(function()
+                return vfn.split(get_weekly(date():adddays(7)), "\n")
+            end),
+        }),
+    }),
+    s("@monthly", {
+        c(1, {
+            f(function()
+                return vfn.split(get_monthly(date():addmonths(-1)), "\n")
+            end),
+            f(function()
+                return vfn.split(get_monthly(), "\n")
+            end),
+            f(function()
+                return vfn.split(get_monthly(date():addmonths(1)), "\n")
+            end),
+        }),
+    }),
 }, {
     key = "note-taking",
 })

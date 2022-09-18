@@ -31,8 +31,8 @@ aliases:<% if get_is_falsy(aliases) then %> ~<% end %>
 <% for _, alias in pairs(aliases) do -%>
 - <%- alias %>
 <% end -%>
-created: <%- the_date:fmt('%Y-%m-%dT%H:%M:%S') %>
-edited: <%- the_date:fmt('%Y-%m-%dT%H:%M:%S') %>
+created: <%- now:fmt('%Y-%m-%dT%H:%M:%S') %>
+edited: <%- now:fmt('%Y-%m-%dT%H:%M:%S') %>
 tags:
 - Journal/Weekly
 ---
@@ -40,7 +40,7 @@ tags:
 [[<%- last_week:fmt('%Y-W%V') %>|⏮]] | [[- My Journal -|📖]] | [[<%- next_week:fmt('%Y-W%V') %>|⏭]]
 
 # <%- ordinal_suffix(the_date:fmt('%W')) %> Week of <%- the_date:fmt('%Y') %>
-#TODO
+This is #TODO
 
 ## Monday
 
@@ -61,6 +61,7 @@ tags:
 (λ get-weekly [?the-date]
   (local the-date (or ?the-date (date)))
   (pick-values 1 (-> (template {:the_date the-date
+                                :now (date)
                                 :aliases (get-aliases the-date)
                                 :ordinal_suffix ordinal-suffix
                                 :last_week (: (the-date:copy) :adddays (- 7))
