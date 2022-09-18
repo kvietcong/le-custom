@@ -7,7 +7,8 @@ local get_monthly = require("templates/monthly")
 
 local s = luasnip.snippet
 -- local sn = luasnip.snippet_node
--- local isn = luasnip.indent_snippet_node local t = luasnip.text_node
+-- local isn = luasnip.indent_snippet_node
+local t = luasnip.text_node
 local i = luasnip.insert_node
 local f = luasnip.function_node
 local c = luasnip.choice_node
