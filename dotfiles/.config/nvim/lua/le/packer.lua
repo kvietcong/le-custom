@@ -108,7 +108,6 @@ packer.startup({
 
         -- Treesitter
         use("SmiteshP/nvim-gps")
-        use("lewis6991/spellsitter.nvim")
         use("nvim-treesitter/nvim-treesitter")
         use("nvim-treesitter/nvim-treesitter-refactor")
         use("nvim-treesitter/nvim-treesitter-textobjects")

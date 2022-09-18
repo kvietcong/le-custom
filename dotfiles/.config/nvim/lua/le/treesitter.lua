@@ -104,8 +104,6 @@ require("nvim-treesitter.configs").setup({
     },
 })
 
-require("spellsitter").setup()
-
 if is_going_hard then
     require("nvim-gps").setup({
         separator = " ▶ ",
