@@ -16,7 +16,7 @@ tags:
 - Journal/Monthly
 ---
 
-[[<%- last_month:fmt("%Y-%m") %>|⏮] | [[- My Journal -|📖]] | [[<%- next_month:fmt("%Y-%m") %>|⏭]]
+[[<%- last_month:fmt("%Y-%m") %>|⏮]] | [[- My Journal -|📖]] | [[<%- next_month:fmt("%Y-%m") %>|⏭]]
 
 # Review for <%- the_date:fmt("%B %Y") %>
 This is #TODO

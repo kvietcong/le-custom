@@ -87,10 +87,10 @@ luasnip.add_snippets("markdown", {
     s("@weekly", {
         c(1, {
             f(function()
-                return vfn.split(get_weekly(date():adddays(-7)), "\n")
+                return vfn.split(get_weekly(), "\n")
             end),
             f(function()
-                return vfn.split(get_weekly(), "\n")
+                return vfn.split(get_weekly(date():adddays(-7)), "\n")
             end),
             f(function()
                 return vfn.split(get_weekly(date():adddays(7)), "\n")
@@ -100,10 +100,10 @@ luasnip.add_snippets("markdown", {
     s("@monthly", {
         c(1, {
             f(function()
-                return vfn.split(get_monthly(date():addmonths(-1)), "\n")
+                return vfn.split(get_monthly(), "\n")
             end),
             f(function()
-                return vfn.split(get_monthly(), "\n")
+                return vfn.split(get_monthly(date():addmonths(-1)), "\n")
             end),
             f(function()
                 return vfn.split(get_monthly(date():addmonths(1)), "\n")
