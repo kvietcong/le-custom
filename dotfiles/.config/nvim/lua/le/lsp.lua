@@ -84,21 +84,24 @@ local on_attach = function(_, bufnr)
 end
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
-local runtime_path = vim.split(package.path, ";")
+local runtime_path = vim.split(package.path, ";", nil)
 t.insert(runtime_path, "lua/?.lua")
 t.insert(runtime_path, "lua/?/init.lua")
 
 local lspconfig = require("lspconfig")
-local luadev = require("lua-dev").setup({
+local luadev = require("neodev").setup({
     library = {
         plugins = { "nvim-treesitter", "plenary.nvim", "telescope.nvim" },
     },
-    runtime_path = true,
-    lspconfig = {
+})
+
+local lsp_settings = {
+    sumneko_lua = {
         settings = {
             Lua = {
+                runtime = { version = "LuaJIT", path = runtime_path },
                 diagnostics = {
                     globals = {
                         -- Neovim Stuff
@@ -118,24 +121,11 @@ local luadev = require("lua-dev").setup({
                         "widget",
                     },
                 },
+                -- Make the server aware of Neovim runtime files
+                workspace = { library = vapi.nvim_get_runtime_file("", true) },
             },
         },
-    },
-})
-
-local lsp_settings = {
-    -- My Old Lua LSP settings (Might be useful for non vim projects?)
-    -- sumneko_lua = {
-    --     settings = {
-    --         Lua = {
-    --             runtime = { version = "LuaJIT", path = runtime_path },
-    --             diagnostics = { globals = { "vim" } },
-    --             -- Make the server aware of Neovim runtime files
-    --             workspace = { library = vapi.nvim_get_runtime_file("", true) },
-    --         },
-    --     },
-    -- }
-    sumneko_lua = luadev,
+    }
 }
 
 if is_startup then -- Only load LSPs on startup

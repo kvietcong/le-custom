@@ -49,7 +49,7 @@ packer.startup({
 
         -- Neovim Development
         use("Olical/conjure")
-        use("folke/lua-dev.nvim")
+        use("folke/neodev.nvim")
         use("rktjmp/hotpot.nvim")
         use("bakpakin/fennel.vim")
         use("nanotee/luv-vimdocs")

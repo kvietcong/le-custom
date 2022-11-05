@@ -14,7 +14,9 @@ vapi.nvim_create_user_command("FD", function(command)
 end, { nargs = "?" })
 
 -- Formatting
-vapi.nvim_create_user_command("Format", vim.lsp.buf.formatting, {})
+vapi.nvim_create_user_command("Format", function()
+    vim.lsp.buf.format({ async = true })
+end, {})
 
 -- Misc Mappings
 whichkey.register({
@@ -34,7 +36,12 @@ whichkey.register({
         ["-"] = "Comment Banner (--)",
         ["="] = "Comment Banner (==)",
         ["/"] = "Comment Banner (//)",
-        f = { vim.lsp.buf.formatting, "(c)ode (f)ormatting" },
+        f = {
+            function()
+                vim.lsp.buf.format({ async = true })
+            end,
+            "(c)ode (f)ormatting",
+        },
         a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
         h = { vim.lsp.buf.hover, "(c)ode (h)over" },
     },

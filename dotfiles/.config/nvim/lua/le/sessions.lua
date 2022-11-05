@@ -4,33 +4,14 @@ local whichkey = require("le.which-key")
 local lf = require("le.libf") -- My Helper module (Fennel)
 -- local ll = require("le.libl") -- My Helper module (Lua)
 
--- Close buffers that don't restore from a session
-local close_bad_buffers = function()
-    vim.cmd([[ZenMode]])
-    require("zen-mode").close()
-    vim.notify.dismiss({ silent = true, pending = true })
-    local buffer_numbers = vapi.nvim_list_bufs()
-    for _, buffer_number in pairs(buffer_numbers) do
-        -- local buffer_name = vapi.nvim_buf_get_name(buffer_number)
-        local buffer_type = vapi.nvim_buf_get_option(buffer_number, "buftype")
-        local is_modifiable = vapi.nvim_buf_get_option(buffer_number, "modifiable")
-        if buffer_type == "nofile" or not is_modifiable then
-            vapi.nvim_buf_delete(buffer_number, { force = true })
-        end
-    end
-end
-
 local session_path = data_path .. "/session/"
 if vfn.empty(vfn.glob(session_path, nil, nil)) > 0 then
     vim.cmd("!mkdir " .. session_path)
 end
 
+-- TODO: Determine how to restore terminal sessions on Windows (Powershell)
 mini_sessions.setup({
     hooks = {
-        pre = {
-            read = close_bad_buffers,
-            write = close_bad_buffers,
-        },
         post = {
             read = function()
                 lf.notify_info(

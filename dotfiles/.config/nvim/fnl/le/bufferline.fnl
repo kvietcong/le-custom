@@ -14,7 +14,7 @@
                                        (mini-bufremove.delete buffer true))
                 :middle_mouse_command (λ [buffer]
                                         (mini-bufremove.unshow buffer))
-                :indicator_icon " ⨠ "
+                :indicator {:icon " ⨠ "}
                 :buffer_close_icon :x})
 
 (when (not is_firenvim)
