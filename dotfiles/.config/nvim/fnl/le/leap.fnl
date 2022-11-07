@@ -1,13 +1,6 @@
 ;; Leap Movement
 (local leap (require :leap))
 
-(leap.setup {:special_keys {:repeat_search :<Enter>
-                            :next_match :<Enter>
-                            :prev_match :<Tab>
-                            :next_group :<Space>
-                            :prev_group :<Tab>
-                            :eol :<Space>}})
-
 (leap.set_default_keymaps)
 
 ;; Disable conceal while leaping
