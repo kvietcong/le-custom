@@ -2,7 +2,6 @@
 local mini_sessions = require("mini.sessions")
 local whichkey = require("le.which-key")
 local lf = require("le.libf") -- My Helper module (Fennel)
--- local ll = require("le.libl") -- My Helper module (Lua)
 
 local session_path = data_path .. "/session/"
 if vfn.empty(vfn.glob(session_path, nil, nil)) > 0 then

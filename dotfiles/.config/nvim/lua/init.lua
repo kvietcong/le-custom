@@ -30,7 +30,6 @@ vim.api.nvim_set_keymap("n", "<F1>", "", {
     callback = function()
         vim.cmd("e $MYVIMRC")
         vim.cmd("cd %:p:h")
-        vim.cmd("e ./lua/le/libl.lua")
         vim.cmd("e ./fnl/le/libf.fnl")
         vim.cmd("e ./lua/init.lua")
     end,
@@ -146,12 +145,10 @@ require("le.which-key")
 -- Force reload specific modules for faster development
 if not is_startup then
     plenary.reload.reload_module("le.libf")
-    plenary.reload.reload_module("le.libl")
 end
 
--- Load Helper Modules
+-- Load Helper Module
 local lf = require("le.libf") -- My Helper module (Fennel)
--- local ll = require("le.libl") -- My Helper module (Lua)
 
 -- Escaped Strings are Pain in Fennel
 DashboardArt = [[
