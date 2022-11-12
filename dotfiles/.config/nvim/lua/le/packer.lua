@@ -33,7 +33,6 @@ packer.startup({
         use("folke/which-key.nvim")
         use("voldikss/vim-floaterm")
         use("echasnovski/mini.nvim")
-        use("TimUntersberger/neogit")
         use("sindrets/winshift.nvim")
 
         use({

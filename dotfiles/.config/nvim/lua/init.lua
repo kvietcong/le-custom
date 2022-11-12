@@ -212,7 +212,6 @@ local utility_modules = {
     "le.lsp",
     "le.misc",
     "le.leap",
-    "le.neogit",
     "le.luapad",
     "le.luasnip",
     "le.conjure",
