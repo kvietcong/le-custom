@@ -19,7 +19,7 @@ cmp.setup({
     mapping = cmp.mapping.preset.insert({
         ["<C-k>"] = cmp.mapping.scroll_docs(-4),
         ["<C-j>"] = cmp.mapping.scroll_docs(4),
-        ["<C-Space>"] = cmp.mapping.complete(),
+        ["<C-Space>"] = cmp.mapping.complete(nil),
         ["<C-e>"] = cmp.mapping({
             i = cmp.mapping.close(),
             c = cmp.mapping.close(),
@@ -122,7 +122,6 @@ cmp.setup.filetype("markdown", {
     }, {
         { name = "omni" },
         { name = "spell" },
-        { name = "fuzzy_buffer", keyword_length = 5 },
         { name = "buffer" },
         { name = "latex_symbols" },
     }),

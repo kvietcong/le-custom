@@ -179,7 +179,12 @@
 ;; and I finally found %V was what I was looking for.
 (λ get-date [?format]
   (type-check! [:string|nil ?format])
-  (let [datetime os.date]
+  (let [datetime os.date
+        my-date (datetime "%Y-%m-%dT%H:%M:%S")
+        offset (datetime "%z")
+        offset-hr (string.sub offset 1 3)
+        offset-min (string.sub offset 4)
+        my-date (.. my-date offset-hr ":" offset-min)]
     (if (falsy? ?format) {:year (tonumber (datetime "%Y"))
                           :month (tonumber (datetime "%m"))
                           :week (tonumber (datetime "%V"))
@@ -187,8 +192,8 @@
                           :hour (tonumber (datetime "%H"))
                           :minute (tonumber (datetime "%M"))
                           :second (tonumber (datetime "%S"))
-                          :my-date (datetime "%Y-%m-%dT%H:%M:%S")
-                          :my_date (datetime "%Y-%m-%dT%H:%M:%S")
+                          : my-date
+                          :my_date my-date
                           :format datetime}
         (datetime ?format))))
 

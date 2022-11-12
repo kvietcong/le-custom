@@ -31,8 +31,8 @@ aliases:<% if get_is_falsy(aliases) then %> ~<% end %>
 <% for _, alias in pairs(aliases) do -%>
 - <%- alias %>
 <% end -%>
-created: <%- now:fmt('%Y-%m-%dT%H:%M:%S') %>
-edited: <%- now:fmt('%Y-%m-%dT%H:%M:%S') %>
+created: <%- now:fmt('${le}') %>
+edited: <%- now:fmt('${le}') %>
 tags:
 - Journal/Weekly
 ---

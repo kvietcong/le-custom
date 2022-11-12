@@ -20,8 +20,11 @@ local c = luasnip.choice_node
 -- local m = require("luasnip.extras").m
 -- local lambda = require("luasnip.extras").l
 
-vim.keymap.set("i", "<C-n>", "<Plug>luasnip-next-choice", {})
 vim.keymap.set("i", "<C-u>", require("luasnip.extras.select_choice"), {})
+
+-- TODO: Make these expressions so that they default to
+-- the original keystroke when not in choice node
+vim.keymap.set("i", "<C-n>", "<Plug>luasnip-next-choice", {})
 vim.keymap.set("s", "<C-n>", "<Plug>luasnip-next-choice", {})
 vim.keymap.set("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
 vim.keymap.set("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
@@ -58,14 +61,14 @@ luasnip.add_snippets("markdown", {
         t("---"),
         t({ "", "aliases: " }),
         c(1, { t("~"), { t({ "", "- " }), i(1) } }),
-        -- TODO: Weird how I can't store function node in a local variable and reuse
         t({ "", "created: " }),
+        -- TODO: Weird how I can't store function node in a local variable and reuse
         f(function()
-            return lf.get_date()["my-date"]
+            return date():fmt("${le}")
         end),
         t({ "", "edited: " }),
         f(function()
-            return lf.get_date()["my-date"]
+            return date():fmt("${le}")
         end),
         t({ "", "tags: " }),
         c(2, { t("~"), { t({ "", "- " }), i(1) } }),

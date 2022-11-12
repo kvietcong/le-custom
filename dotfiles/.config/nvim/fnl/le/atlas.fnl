@@ -186,8 +186,8 @@
                                               {:my-date date} (get-date)
                                               cursor-position (vapi.nvim_win_get_cursor 0)]
                                           (if is-modified
-                                              (vapi.nvim_command (.. "%s/edited: \\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d/"
-                                                                     (f= "edited: ${date}/ge"))))
+                                              (vapi.nvim_command (.. "%s/edited: \\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d[+-]\\d\\d:\\d\\d"
+                                                                     (f= "/edited: ${date}/ge"))))
                                           (vapi.nvim_command "%s/\\(^.\\+\\n\\)\\(^#\\+ .*\\n\\)/\\1\\r\\2/gec")
                                           (vapi.nvim_win_set_cursor 0
                                                                     cursor-position))}))
