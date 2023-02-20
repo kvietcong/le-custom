@@ -5,6 +5,7 @@
 ;; My custom note-taking setup
 
 (local {: notify-error
+        : notify-info
         : get-date
         : fd-async
         : not-falsy?
@@ -100,36 +101,31 @@
   (let [job (filename->filepath-async filename)]
     (job:sync)))
 
-(λ get-year []
-  (let [date (get-date)]
-    (tonumber date.year)))
-
-(λ get-week-# []
-  (let [date (get-date)]
-    (tonumber (date.format "%V"))))
-
-;; TODO: Fix for single digit weeks
 (λ get-weekly-note-name []
-  (let [week-# (get-week-#)
-        year (get-year)]
-    (f= "${year}-W${week-#}")))
+  (let [date (get-date)
+        week (date.format "%V")]
+    (f= "${date.year}-W${week}")))
 
 (λ get-monthly-note-name []
   ((. (get-date) :format) "%Y-%m"))
 
-(λ open-first-filepath-async [filepaths ?will-split]
+(λ open-first-filepath-async [filepaths ?will-split ?on-error]
+  ; (type-check! [:function|nil ?on-error])
   ((vim.schedule_wrap #(let [file (head filepaths)]
                          (if file
                              (let [file (vfn.fnameescape file)]
                                (if ?will-split
                                    (vim.cmd (f= "vsplit ${file}"))
                                    (vim.cmd (f= "e ${file}"))))
-                             (notify-error "Couldn't Find File"))))))
+                             (if ?on-error
+                                 (?on-error file)
+                                 (notify-error "Couldn't Find File")))))))
 
-(λ open-filename-async [filename ?will-split]
+(λ open-filename-async [filename ?will-split ?on-error]
   (filename->filepath-async filename
                             (λ [filepaths]
-                              (open-first-filepath-async filepaths ?will-split))))
+                              (open-first-filepath-async filepaths ?will-split
+                                                         ?on-error))))
 
 (λ open-wikilink-under-cursor [?will-split]
   (type-check! [:boolean|nil ?will-split])
@@ -137,9 +133,14 @@
              filename (open-filename-async filename ?will-split)
              (catch nil (notify-error "Invalid Wikilink Under Cursor"))))
 
+;; TODO: Scuffed AF. Gotta make this whole chain cleaner. Rely on external tools?
 (λ open-weekly-note [?will-split]
   (type-check! [:boolean|nil ?will-split])
-  (open-filename-async (get-weekly-note-name) ?will-split))
+  (let [weekly-note-name (get-weekly-note-name)]
+    (open-filename-async weekly-note-name ?will-split
+                         #((do
+                             (notify-info "Creating new weekly note buffer")
+                             (vim.cmd (f= "e Journal/Weekly\\ Reviews/${weekly-note-name}.md")))))))
 
 (λ open-monthly-note [?will-split]
   (type-check! [:boolean|nil ?will-split])
@@ -231,4 +232,8 @@
  : open-weekly-note
  :open_weekly_note open-weekly-note
  : open-monthly-note
- :open_monthly_note open-monthly-note}
+ :open_monthly_note open-monthly-note
+ :get_possible_paths_async get-possible-paths-async
+ : get-possible-paths-async
+ :path_to_filename path->filename
+ : path->filename}

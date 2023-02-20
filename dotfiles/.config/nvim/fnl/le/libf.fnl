@@ -247,6 +247,17 @@
 (λ clean [right-hand-side]
   (vapi.nvim_replace_termcodes right-hand-side true true true))
 
+(λ KiB->B [KiB]
+  (* KiB 1024))
+
+(λ thicc-buffer? [?buf-number]
+  (let [buf-number (or ?buf-number 0)
+        buf-name (vapi.nvim_buf_get_name buf-number)
+        buf-size (vim.fn.getfsize buf-name)
+        line-amount (vim.api.nvim_buf_line_count buf-number)]
+    (or (> buf-size (KiB->B 100))
+        (> line-amount 10_000))))
+
 ; Module Export
 (t.extend :keep {: !
                  : fold
@@ -291,4 +302,6 @@
                  :get_is_not_falsy not-falsy?
                  : get-locals
                  :get_locals get-locals
-                 : clean} M)
+                 : clean
+                 :get_is_thicc_buffer thicc-buffer?
+                 : thicc-buffer?} M)

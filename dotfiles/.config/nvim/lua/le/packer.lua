@@ -1,161 +1,145 @@
--- Install packer if needed
-local packer_bootstrap
-local packer_path = data_path .. "/site/pack/packer/start/packer.nvim"
-if vfn.empty(vfn.glob(packer_path, nil, nil)) > 0 then
-    packer_bootstrap = vfn.system({
+local plugins_path = data_path .. "/lazy"
+
+-- Bootstrap lazy.nvim
+local lazypath = plugins_path .. "/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({
         "git",
         "clone",
-        "--depth",
-        "1",
-        "https://github.com/wbthomason/packer.nvim",
-        packer_path,
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable",
+        lazypath,
     })
-    vapi.nvim_command("packadd packer.nvim")
 end
+vim.opt.rtp:prepend(lazypath)
 
--- Install all the plugins
-local packer = require("packer")
-packer.startup({
-    function(use)
-        use("wbthomason/packer.nvim")
-        use("dstein64/vim-startuptime") -- Run :StartupTime
-        use("lewis6991/impatient.nvim") -- Cache Lua Plugins
+-- Bootstrap hotpot.nvim
+local hotpot_path = plugins_path .. "/hotpot.nvim"
+if not vim.loop.fs_stat(hotpot_path) then
+    vim.notify("Bootstrapping hotpot.nvim...", vim.log.levels.INFO)
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "--single-branch",
+        "https://github.com/rktjmp/hotpot.nvim.git",
+        hotpot_path,
+    })
+end
+vim.opt.runtimepath:prepend(hotpot_path)
 
-        -- Common Dependencies
-        use("nvim-lua/popup.nvim")
-        use("nvim-lua/plenary.nvim")
-        use("kyazdani42/nvim-web-devicons")
+-- TODO: Make things lazy load?
+local lazy = require("lazy")
+lazy.setup({
+    "dstein64/vim-startuptime", -- Run :StartupTime
 
-        -- Quality of Life
-        use("tpope/vim-eunuch")
-        use("tpope/vim-repeat")
-        use("ggandor/leap.nvim")
-        use("folke/which-key.nvim")
-        use("voldikss/vim-floaterm")
-        use("echasnovski/mini.nvim")
-        use("sindrets/winshift.nvim")
+    -- Common Dependencies
+    "nvim-lua/popup.nvim",
+    "nvim-lua/plenary.nvim",
+    "kyazdani42/nvim-web-devicons",
 
-        use({
-            "nanotee/zoxide.vim",
-            cmd = { "Z" },
-        })
-        use({
-            "glacambre/firenvim",
-            run = function()
-                vim.fn["firenvim#install"](0)
-            end,
-        })
+    -- Quality of Life
+    "tpope/vim-eunuch",
+    "tpope/vim-repeat",
+    "godlygeek/tabular",
+    "ggandor/leap.nvim",
+    "folke/which-key.nvim",
+    "voldikss/vim-floaterm",
+    "anuvyklack/hydra.nvim",
+    "echasnovski/mini.nvim",
+    "sindrets/winshift.nvim",
+    "mrjones2014/smart-splits.nvim",
 
-        -- Neovim Development
-        use("Olical/conjure")
-        use("folke/neodev.nvim")
-        use("rktjmp/hotpot.nvim")
-        use("bakpakin/fennel.vim")
-        use("nanotee/luv-vimdocs")
-        use("milisims/nvim-luaref")
-        use("rafcamlet/nvim-luapad")
-        use("wlangstroth/vim-racket")
-        use({ "eraserhd/parinfer-rust", run = "cargo build --release" })
-
-        -- Pretty Things
-        use("folke/zen-mode.nvim")
-        use("rcarriga/nvim-notify")
-        use("shaunsingh/nord.nvim")
-        use("p00f/nvim-ts-rainbow")
-        use("stevearc/dressing.nvim")
-        use("lewis6991/gitsigns.nvim")
-        use("sainnhe/gruvbox-material")
-        use("mrjones2014/legendary.nvim")
-        use("norcalli/nvim-colorizer.lua")
-        use("akinsho/nvim-bufferline.lua")
-
-        use({
-            "neovimhaskell/haskell-vim",
-            ft = { "haskell" },
-        })
-
-        -- Writing
-        use("crispgm/telescope-heading.nvim")
-
-        use({
-            "lervag/wiki.vim",
-            ft = { "markdown", "wiki" },
-        })
-        use({
-            "godlygeek/tabular",
-            ft = { "markdown", "wiki" },
-        })
-        use({
-            "jbyuki/carrot.nvim",
-            ft = { "markdown", "wiki" },
-        })
-        use({
-            "preservim/vim-markdown",
-            ft = { "markdown", "wiki" },
-        })
-
-        -- Pickers/Finders
-        use("tversteeg/registers.nvim")
-        use("nvim-telescope/telescope.nvim")
-        use("olacin/telescope-gitmoji.nvim")
-        use("kvietcong/telescope-emoji.nvim")
-        use("nvim-telescope/telescope-packer.nvim")
-        use("nvim-telescope/telescope-symbols.nvim")
-        use("nvim-telescope/telescope-ui-select.nvim")
-        use("nvim-telescope/telescope-file-browser.nvim")
-        use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
-
-        -- Treesitter
-        use("SmiteshP/nvim-gps")
-        use("nvim-treesitter/nvim-treesitter")
-        use("nvim-treesitter/nvim-treesitter-refactor")
-        use("nvim-treesitter/nvim-treesitter-textobjects")
-        use("JoosepAlviste/nvim-ts-context-commentstring")
-
-        -- LSP
-        use("neovim/nvim-lspconfig")
-        use("ray-x/lsp_signature.nvim")
-        use("jose-elias-alvarez/null-ls.nvim")
-        use("williamboman/nvim-lsp-installer")
-
-        -- Completion
-        use("hrsh7th/cmp-omni")
-        use("hrsh7th/cmp-calc")
-        use("L3MON4D3/LuaSnip")
-        use("hrsh7th/nvim-cmp")
-        use("hrsh7th/cmp-path")
-        use("f3fora/cmp-spell")
-        use("hrsh7th/cmp-emoji")
-        use("tzachar/fuzzy.nvim")
-        use("hrsh7th/cmp-buffer")
-        use("ray-x/cmp-treesitter")
-        use("onsails/lspkind.nvim")
-        use("hrsh7th/cmp-nvim-lsp")
-        use("PaterJason/cmp-conjure")
-        use("tzachar/cmp-fuzzy-buffer")
-        use("saadparwaiz1/cmp_luasnip")
-        use("kdheepak/cmp-latex-symbols")
-        use("hrsh7th/cmp-nvim-lsp-signature-help")
-        use("hrsh7th/cmp-nvim-lsp-document-symbol")
-
-        packer.clean()
-        packer.install()
-
-        if packer_bootstrap then
-            packer.sync()
-        end
-    end,
-    config = {
-        display = {
-            open_fn = function()
-                return require("packer.util").float({ border = "single" })
-            end,
-        },
-        profile = {
-            enable = true,
-            threshold = 0.01,
-        },
+    {
+        "nanotee/zoxide.vim",
+        cmd = { "Z" },
     },
-})
+    {
+        "glacambre/firenvim",
+        build = function()
+            vim.fn["firenvim#install"](0)
+        end,
+    },
 
-return packer
+    -- Neovim Development
+    "Olical/conjure",
+    "folke/neodev.nvim",
+    { "rktjmp/hotpot.nvim", lazy = false, priority = 10000 },
+    "bakpakin/fennel.vim",
+    "nanotee/luv-vimdocs",
+    "milisims/nvim-luaref",
+    "rafcamlet/nvim-luapad",
+    "wlangstroth/vim-racket",
+    { "eraserhd/parinfer-rust", build = "cargo build --release" },
+
+    -- Pretty Things
+    "folke/zen-mode.nvim",
+    "rcarriga/nvim-notify",
+    "shaunsingh/nord.nvim",
+    "p00f/nvim-ts-rainbow",
+    "stevearc/dressing.nvim",
+    "lewis6991/gitsigns.nvim",
+    "sainnhe/gruvbox-material",
+    "mrjones2014/legendary.nvim",
+    "norcalli/nvim-colorizer.lua",
+    "akinsho/nvim-bufferline.lua",
+    {
+        "neovimhaskell/haskell-vim",
+        ft = { "haskell" },
+    },
+
+    -- Writing
+    -- use("jakewvincent/mkdnflow.nvim") -- For later when I move from Wikilinks
+    {
+        "preservim/vim-markdown",
+        ft = { "markdown", "wiki" },
+    },
+
+    -- Pickers/Finders
+    "tversteeg/registers.nvim",
+    "debugloop/telescope-undo.nvim",
+    "nvim-telescope/telescope.nvim",
+    "olacin/telescope-gitmoji.nvim",
+    "kvietcong/telescope-emoji.nvim",
+    "crispgm/telescope-heading.nvim",
+    "nvim-telescope/telescope-packer.nvim",
+    "nvim-telescope/telescope-symbols.nvim",
+    "nvim-telescope/telescope-ui-select.nvim",
+    "nvim-telescope/telescope-file-browser.nvim",
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+
+    -- Treesitter
+    "SmiteshP/nvim-gps",
+    "nvim-treesitter/nvim-treesitter",
+    "nvim-treesitter/nvim-treesitter-refactor",
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    "JoosepAlviste/nvim-ts-context-commentstring",
+
+    -- LSP
+    "neovim/nvim-lspconfig",
+    "williamboman/mason.nvim",
+    "ray-x/lsp_signature.nvim",
+    "jose-elias-alvarez/null-ls.nvim",
+    "williamboman/mason-lspconfig.nvim",
+
+    -- Completion
+    "hrsh7th/cmp-omni",
+    "hrsh7th/cmp-calc",
+    "L3MON4D3/LuaSnip",
+    "hrsh7th/nvim-cmp",
+    "hrsh7th/cmp-path",
+    "f3fora/cmp-spell",
+    "hrsh7th/cmp-emoji",
+    "hrsh7th/cmp-buffer",
+    "ray-x/cmp-treesitter",
+    "onsails/lspkind.nvim",
+    "hrsh7th/cmp-nvim-lsp",
+    "PaterJason/cmp-conjure",
+    "saadparwaiz1/cmp_luasnip",
+    "kdheepak/cmp-latex-symbols",
+    "hrsh7th/cmp-nvim-lsp-signature-help",
+    "hrsh7th/cmp-nvim-lsp-document-symbol",
+}, {})
+
+return lazy

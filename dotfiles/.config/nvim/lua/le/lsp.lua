@@ -8,7 +8,7 @@ local whichkey = require("le.which-key")
 
 local lsp_servers = {
     "rust_analyzer",
-    "sumneko_lua",
+    "lua_ls",
     "pyright",
     "tsserver",
     "cssls",
@@ -19,21 +19,11 @@ local lsp_servers = {
     "cmake",
     "yamlls",
     "vimls",
-    -- Make this an ARM specific ban later
-    -- rather than an all "not Windows" ban
-    is_win and "clangd" or nil,
 }
 
-require("nvim-lsp-installer").setup({
+require("mason").setup()
+require("mason-lspconfig").setup({
     ensure_installed = lsp_servers,
-    automatic_installation = true,
-    ui = {
-        icons = {
-            server_installed = "✓",
-            server_pending = "➜",
-            server_uninstalled = "✗",
-        },
-    },
 })
 
 -- Null-ls Hook Setup
@@ -48,7 +38,6 @@ null_ls.setup({
         null_ls.builtins.formatting.fnlfmt,
         null_ls.builtins.formatting.rustfmt,
         null_ls.builtins.formatting.fourmolu,
-        null_ls.builtins.formatting.clang_format,
         null_ls.builtins.formatting.trim_newlines,
 
         -- Code Actions
@@ -60,6 +49,11 @@ null_ls.setup({
         null_ls.builtins.diagnostics.flake8,
     },
 })
+
+-- Format Command
+vapi.nvim_create_user_command("Format", function()
+    vim.lsp.buf.format({ async = true })
+end, {})
 
 local on_attach = function(_, bufnr)
     -- TODO: Replace vim.lsp with telescope pickers when possible
@@ -74,6 +68,9 @@ local on_attach = function(_, bufnr)
         ["<Leader>"] = {
             c = {
                 name = "(c)ode",
+                a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
+                f = { ":Format<Enter>", "(c)ode (f)ormatting" },
+                h = { vim.lsp.buf.hover, "(c)ode (h)over" },
                 s = { vim.lsp.buf.signature_help, "(c)ode (s)ignature" },
                 t = { vim.lsp.buf.type_definition, "(c)ode (t)ype" },
             },
@@ -98,7 +95,7 @@ local luadev = require("neodev").setup({
 })
 
 local lsp_settings = {
-    sumneko_lua = {
+    lua_ls = {
         settings = {
             Lua = {
                 runtime = { version = "LuaJIT", path = runtime_path },
@@ -125,7 +122,7 @@ local lsp_settings = {
                 workspace = { library = vapi.nvim_get_runtime_file("", true) },
             },
         },
-    }
+    },
 }
 
 if is_startup then -- Only load LSPs on startup

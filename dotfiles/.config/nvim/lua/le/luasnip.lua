@@ -6,7 +6,7 @@ local get_weekly = require("templates/weekly")
 local get_monthly = require("templates/monthly")
 
 local s = luasnip.snippet
--- local sn = luasnip.snippet_node
+local sn = luasnip.snippet_node
 -- local isn = luasnip.indent_snippet_node
 local t = luasnip.text_node
 local i = luasnip.insert_node
@@ -22,12 +22,19 @@ local c = luasnip.choice_node
 
 vim.keymap.set("i", "<C-u>", require("luasnip.extras.select_choice"), {})
 
--- TODO: Make these expressions so that they default to
--- the original keystroke when not in choice node
-vim.keymap.set("i", "<C-n>", "<Plug>luasnip-next-choice", {})
-vim.keymap.set("s", "<C-n>", "<Plug>luasnip-next-choice", {})
-vim.keymap.set("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
-vim.keymap.set("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
+local choice_or_nothing = function(keystroke, is_reverse)
+    local choice_expression = is_reverse and "<Plug>luasnip-prev-choice"
+        or "<Plug>luasnip-next-choice"
+    return function()
+        return luasnip.choice_active() and choice_expression or keystroke
+    end
+end
+vim.keymap.set({ "i", "s" }, "<C-n>", choice_or_nothing("<C-n>"), { expr = true })
+vim.keymap.set({ "i", "s" }, "<C-p>", choice_or_nothing("<C-p>", true), { expr = true })
+
+luasnip.config.setup({
+    enable_autosnippets = true,
+})
 
 luasnip.add_snippets("all", {
     s("@@", {
@@ -112,6 +119,70 @@ luasnip.add_snippets("markdown", {
                 return vfn.split(get_monthly(date():addmonths(1)), "\n")
             end),
         }),
+    }),
+    s("@NoMa", {
+        t({
+            "I found an interesting #Seed!",
+            "- ",
+        }),
+        i(1, "<New Seed>"),
+
+        t({
+            "",
+            "- This reminded me of ",
+        }),
+        i(2, "..."),
+        t({
+            "",
+            "    - ",
+        }),
+        i(3, "<Similarity>"),
+        t({
+            "",
+            "    - ",
+        }),
+        i(4, "<Difference>"),
+
+        t({
+            "",
+            "- I thought this was important because ",
+        }),
+        i(5, "..."),
+    }),
+    s({
+        trig = "[{",
+        name = "Quick Content",
+        snippetType = "autosnippet",
+    }, {
+        t("[["),
+        i(1, "Title"),
+        t(" ~ "),
+        i(2, "Originators"),
+        t("]]"),
+    }),
+    s({
+        trig = "[[",
+        name = "Wikilink",
+        snippetType = "autosnippet",
+    }, {
+        t("[["),
+        c(1, {
+            i(1, "File"),
+            {
+                i(1, "File"),
+                t("|"),
+                i(2, "Alias"),
+            },
+            {
+                i(1, "File"),
+                t("|"),
+                i(2, "Alias"),
+                t("#"),
+                i(3, "Section"),
+            },
+        }),
+        t("]]"),
+        i(0),
     }),
 }, {
     key = "note-taking",

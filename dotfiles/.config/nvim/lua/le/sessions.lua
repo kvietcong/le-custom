@@ -100,7 +100,6 @@ whichkey.register({
                 current_session = vfn.fnamemodify(vim.v.this_session, ":t:r")
             end
             if current_session then
-                print("HI")
                 vim.ui.select({ "Yes Save", "No Just Leave" }, {
                     prompt = 'Save Session "' .. current_session .. '" Before Leaving?',
                 }, function(_, index_selection)

@@ -58,8 +58,8 @@ require("telescope-emoji").setup({
 })
 
 telescope.load_extension("fzf")
+telescope.load_extension("undo")
 telescope.load_extension("emoji")
-telescope.load_extension("packer")
 telescope.load_extension("gitmoji")
 telescope.load_extension("heading")
 telescope.load_extension("ui-select")
@@ -97,7 +97,6 @@ whichkey.register({
             k = { require("legendary").find, "(f)ind (k)eymaps" },
             m = { ":Telescope marks<Enter>", "(f)ind (m)arks" },
             M = { ":Telescope man_pages<Enter>", "(f)ind (M)an pages" },
-            p = { ":Telescope packer<Enter>", "(f)ind (p)acker/(p)lugins" },
             r = { ":Telescope oldfiles<Enter>", "(f)ind (r)ecent files" },
             t = { ":Telescope treesitter<Enter>", "(f)ind (t)reesitter symbols" },
         },

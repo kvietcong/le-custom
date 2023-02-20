@@ -2,6 +2,8 @@
 -- Treesitter Setup 🌳 --
 -------------------------
 
+local lf = require("le.libf")
+
 local ft_to_parser = require("nvim-treesitter.parsers").filetype_to_parsername
 ft_to_parser.racket = "scheme"
 
@@ -28,19 +30,29 @@ require("nvim-treesitter.configs").setup({
         },
     },
     refactor = {
+        -- THESE PLUGINS DESTROY PERFORMANCE ON LARGE FILES
         -- highlight_current_scope = { enable = true },
         highlight_definitions = {
             enable = true,
+            disable = function(_ --[[ filetype ]], buf_number)
+                return lf.get_is_thicc_buffer(buf_number)
+            end,
             clear_on_cursor_move = true,
         },
         smart_rename = {
             enable = true,
+            disable = function(_ --[[ filetype ]], buf_number)
+                return lf.get_is_thicc_buffer(buf_number)
+            end,
             keymaps = {
                 smart_rename = "<Leader>rn",
             },
         },
         navigation = {
             enable = true,
+            disable = function(_ --[[ filetype ]], buf_number)
+                return lf.get_is_thicc_buffer(buf_number)
+            end,
             keymaps = {
                 goto_definition_lsp_fallback = "gd",
                 goto_next_usage = "g>",

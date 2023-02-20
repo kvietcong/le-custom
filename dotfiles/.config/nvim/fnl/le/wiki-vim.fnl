@@ -1,5 +1,14 @@
 ;; Wiki Vim
 (local which-key (require :which-key))
+; (local mkdnflow (require :mkdnflow))
+
+; (mkdnflow.setup {:wrap true
+;                  :perspective {:priority :current :fallback :root}
+;                  :links {:style :wiki
+;                          :conceal true
+;                          :implicit_extension :md
+;                          :transform_explicit (λ [x]
+;                                                (.. "<" x :.md>))}})
 
 (set vim.g.wiki_index_name "- Index -")
 (set vim.g.wiki_mappings_use_defaults :none)
@@ -14,15 +23,8 @@
 
 (λ register-note-keys [event]
   (which-key.register {:<Leader>n {:name "(n)otes"
-                                   :i ["<Plug>(wiki-index)" "(n)ote (i)ndex"]
-                                   :b ["<Plug>(wiki-graph-find-backlinks)"
-                                       "(n)ote (b)acklinks"]
                                    :t [":Telescope heading<Enter>"
-                                       "(n)ote (t)able of contents"]}
-                       :<Leader>el [":CarrotEval<Enter>"
-                                    "(e)valuate (l)ua code block"]
-                       :<Leader><Leader><Enter> ["<Plug>(wiki-link-toggle)"
-                                                 "Create or Toggle Link"]}
+                                       "(n)ote (t)able of contents"]}}
                       {:buffer event.buf}))
 
 (vapi.nvim_create_autocmd :BufEnter

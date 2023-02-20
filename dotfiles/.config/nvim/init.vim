@@ -19,18 +19,16 @@ set undofile
 set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
+set nottimeout
 set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set history=500
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
 set updatetime=250
 set signcolumn=yes
-set conceallevel=2
 set timeoutlen=300 " Delay for things to happen with multi key bindings
+set listchars=eol:↴
 set viminfo='100,f1 " Save marks and stuff
-" set list listchars=eol:↴
-syntax sync minlines=250
-syntax sync maxlines=250
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set lazyredraw noswapfile " Performance
@@ -39,20 +37,24 @@ set splitbelow splitright " Splits occur below or to the right of the current wi
 set relativenumber number " Show relative number lines with regular number line on current line
 filetype plugin indent on " Enable filetype detection and indentation
 set backspace=indent,eol,start " More robust backspacing
-set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
 set smartindent cindent autoindent " Better indenting
+set conceallevel=2 concealcursor=nc
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set completeopt=menuone,noselect,preview
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 set foldenable foldmethod=indent foldlevel=60 " Dang I wish I could do both syntax and indent folding
+set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
+
+let mapleader = "\<Space>"
+let g:netrw_banner = 0
 
 " Make Powershell work :)
 if has("win32")
-    let &shell = "pwsh"
-    let &shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
-    let &shellredir = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
-    let &shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+    let &shell = executable('pwsh') ? 'pwsh' : 'powershell'
+    let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
+    let &shellredir = '-RedirectStandardOutput %s -NoNewWindow -Wait'
+    let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
     set shellquote= shellxquote=
 endif
 
@@ -76,11 +78,9 @@ else
     autocmd TerminalOpen * setlocal nornu
     autocmd TerminalOpen * setlocal nospell
 endif
+
 tnoremap <Escape><Escape><Escape> <C-\><C-n>
 tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
-
-let mapleader = "\<Space>"
-let g:netrw_banner = 0
 
 " Make capital quitting quit all
 :cabbrev WQ wqa
@@ -135,14 +135,18 @@ nnoremap <C-d> <C-d>zz
 nnoremap <C-u> <C-u>zz
 vnoremap <C-d> <C-d>zz
 vnoremap <C-u> <C-u>zz
+nnoremap <C-j> <C-d>zz
+nnoremap <C-k> <C-u>zz
+vnoremap <C-j> <C-d>zz
+vnoremap <C-k> <C-u>zz
+nnoremap <C-Down> <C-d>zz
+nnoremap <C-Up> <C-u>zz
+vnoremap <C-Down> <C-d>zz
+vnoremap <C-Up> <C-u>zz
 nnoremap <Leader>H g^
 nnoremap <Leader>L g$
 vnoremap <Leader>H g^
 vnoremap <Leader>L g$
-nnoremap N Nzzzv
-nnoremap n nzzzv
-vnoremap N Nzzzv
-vnoremap n nzzzv
 nnoremap gm gM
 nnoremap gM gm
 vnoremap gm gM
@@ -155,10 +159,6 @@ nnoremap <M-O> O<Escape>j
 
 " Easier Window Commanding
 nnoremap <Leader>w <C-w>
-nnoremap <C-S-Up> <C-w>+
-nnoremap <C-S-Down> <C-w>-
-nnoremap <C-Up> <C-w>>
-nnoremap <C-Down> <C-w><
 
 " Keep pasted value on replace
 vnoremap p "_dP
@@ -166,10 +166,19 @@ vnoremap p "_dP
 " Text Movement
 nnoremap <M-j> :m .+1<CR>==
 nnoremap <M-k> :m .-2<CR>==
+nnoremap <M-Down> :m .+1<CR>==
+nnoremap <M-Up> :m .-2<CR>==
 inoremap <M-j> <Esc>:m .+1<CR>==gi
 inoremap <M-k> <Esc>:m .-2<CR>==gi
+inoremap <M-Down> <Esc>:m .+1<CR>==gi
+inoremap <M-Up> <Esc>:m .-2<CR>==gi
 vnoremap <M-j> :m '>+1<CR>gv=gv
 vnoremap <M-k> :m '<-2<CR>gv=gv
+vnoremap <M-Up> :m '>+1<CR>gv=gv
+vnoremap <M-Down> :m '<-2<CR>gv=gv
+
+" Fold Manipulation
+nnoremap <Leader><Leader>ff zA
 
 " Finer Undoing
 inoremap , ,<C-g>u
@@ -203,6 +212,11 @@ nnoremap <Leader><Leader>sl ]s
 nnoremap <Leader><Leader>sh [s
 " Under last dictionary task (Spelling Undo)
 nnoremap <Leader><Leader>su zug
+
+" Some insert mode mappings (Terminal input sucks. IDK how the two noremaps even work)
+inoremap <C-BS> <C-W>
+noremap! <C-BS> <C-w>
+noremap! <C-h> <C-w>
 
 " Jump to the last known cursor position.
 autocmd! BufReadPost *

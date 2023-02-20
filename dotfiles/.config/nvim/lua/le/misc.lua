@@ -13,11 +13,6 @@ vapi.nvim_create_user_command("FD", function(command)
     })
 end, { nargs = "?" })
 
--- Formatting
-vapi.nvim_create_user_command("Format", function()
-    vim.lsp.buf.format({ async = true })
-end, {})
-
 -- Misc Mappings
 whichkey.register({
     s = {
@@ -36,14 +31,7 @@ whichkey.register({
         ["-"] = "Comment Banner (--)",
         ["="] = "Comment Banner (==)",
         ["/"] = "Comment Banner (//)",
-        f = {
-            function()
-                vim.lsp.buf.format({ async = true })
-            end,
-            "(c)ode (f)ormatting",
-        },
-        a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
-        h = { vim.lsp.buf.hover, "(c)ode (h)over" },
+        f = { ":Format<Enter>", "(c)ode (f)ormatting" },
     },
     ["<Leader>"] = {
         q = "(q)uit all",
@@ -56,6 +44,11 @@ whichkey.register({
         },
     },
 }, { prefix = "<Leader>" })
+
+whichkey.register(
+    { gf = { ":Tabularize /", "format using tabular", silent = false } },
+    { mode = "v" }
+)
 
 vapi.nvim_create_autocmd("TextYankPost", {
     group = le_group,

@@ -43,6 +43,12 @@
                        :<M-l> [":BufferLineCycleNext<Enter>" "buffer next"]
                        :<M-h> [":BufferLineCyclePrev<Enter>" "buffer prev"]
                        :<M-L> [":BufferLineMoveNext<Enter>" "buffer move next"]
-                       :<M-H> [":BufferLineMovePrev<Enter>" "buffer move prev"]}))
+                       :<M-H> [":BufferLineMovePrev<Enter>" "buffer move prev"]
+                       :<M-Right> [":BufferLineCycleNext<Enter>" "buffer next"]
+                       :<M-Left> [":BufferLineCyclePrev<Enter>" "buffer prev"]
+                       :<M-S-Right> [":BufferLineMoveNext<Enter>"
+                                     "buffer move next"]
+                       :<M-S-Left> [":BufferLineMovePrev<Enter>"
+                                    "buffer move prev"]}))
 
 bufferline

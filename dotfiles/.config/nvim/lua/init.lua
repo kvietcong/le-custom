@@ -133,9 +133,6 @@ require("le.packer")
 -- Allow Fennel to be used
 require("hotpot")
 
--- Load cached plugins for speed
-require("impatient").enable_profile()
-
 local plenary = require("plenary")
 
 require("le.hotpot")
@@ -159,18 +156,18 @@ __      __          _                                              _  __  __   _
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']]
 
-local safely_load_module = function(module, will_hard_reload)
+local safely_load_module = function(module_name, will_lazy_load)
     local callback
-    if lf.get_is_list(module) then
-        callback = module[2]
-        module = module[1]
+    if lf.get_is_list(module_name) then
+        callback = module_name[2]
+        module_name = module_name[1]
     end
-    if will_hard_reload then
-        plenary.reload.reload_module(module)
+    if not will_lazy_load then
+        plenary.reload.reload_module(module_name)
     end
-    local is_loading_ok, return_value = pcall(require, module)
+    local is_loading_ok, return_value = pcall(require, module_name)
     if not is_loading_ok then
-        lf.notify_error("Failed to load module: " .. module)
+        lf.notify_error("Failed to load module: " .. module_name)
         lf.notify_error(return_value)
     else
         if callback then
@@ -179,9 +176,9 @@ local safely_load_module = function(module, will_hard_reload)
     end
 end
 
-local safely_load_modules = function(modules, will_hard_reload)
+local safely_load_modules = function(modules, will_lazy_load)
     for _, module in pairs(modules) do
-        safely_load_module(module, will_hard_reload)
+        safely_load_module(module, will_lazy_load)
     end
 end
 
@@ -202,7 +199,7 @@ local pretty_modules = {
     "le.indentscope",
 }
 
-safely_load_modules(pretty_modules, not is_startup)
+safely_load_modules(pretty_modules)
 
 ------------------------------
 -- Useful Utilities Setup ⚙️ --
@@ -212,12 +209,12 @@ local utility_modules = {
     "le.lsp",
     "le.misc",
     "le.leap",
+    "le.hydra",
     "le.luapad",
     "le.luasnip",
     "le.conjure",
     "le.comment",
     "le.zen-mode",
-    "le.winshift",
     "le.gitsigns",
     "le.terminal",
     "le.fnl-init",
@@ -231,7 +228,7 @@ local utility_modules = {
     "le.completion",
 }
 
-safely_load_modules(utility_modules, not is_startup)
+safely_load_modules(utility_modules)
 
 ----------------------
 -- Writing Setup ✍️  --
@@ -248,7 +245,7 @@ local writing_modules = {
     },
 }
 
-safely_load_modules(writing_modules, not is_startup)
+safely_load_modules(writing_modules)
 
 -- For REPL or Debug Purposes
 _G.cfg_env = lf.get_locals()

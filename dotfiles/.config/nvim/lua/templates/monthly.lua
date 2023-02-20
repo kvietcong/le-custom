@@ -1,8 +1,8 @@
 local date = require("date")
 local etlua = require("etlua")
 
-local libf = require("le.libf")
-local get_is_falsy = libf.get_is_falsy
+local lf = require("le.libf")
+local get_is_falsy = lf.get_is_falsy
 
 local template = etlua.compile([==[
 ---
