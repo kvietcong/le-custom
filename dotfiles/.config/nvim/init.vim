@@ -29,6 +29,7 @@ set signcolumn=yes
 set timeoutlen=300 " Delay for things to happen with multi key bindings
 set listchars=eol:↴
 set viminfo='100,f1 " Save marks and stuff
+set formatoptions-=cro " Disable auto commenting
 set incsearch nohlsearch " Don't highlight searches and auto update while searching
 set ignorecase smartcase " Ignore case unless you have casing in your searches
 set lazyredraw noswapfile " Performance
@@ -97,8 +98,11 @@ tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 " Saving :)
 nnoremap <C-s> :w<Enter>
 
-" Redo stuff
+" Re/Undo stuff
 nnoremap U <C-r>
+noremap <C-z> u
+noremap <C-S-z> u
+noremap <C-y> <C-r>
 
 " Reload config
 nnoremap <silent> <Leader><Leader>r :source $MYVIMRC<Enter>
@@ -174,8 +178,8 @@ inoremap <M-Down> <Esc>:m .+1<CR>==gi
 inoremap <M-Up> <Esc>:m .-2<CR>==gi
 vnoremap <M-j> :m '>+1<CR>gv=gv
 vnoremap <M-k> :m '<-2<CR>gv=gv
-vnoremap <M-Up> :m '>+1<CR>gv=gv
-vnoremap <M-Down> :m '<-2<CR>gv=gv
+vnoremap <M-Down> :m '>+1<CR>gv=gv
+vnoremap <M-Up> :m '<-2<CR>gv=gv
 
 " Fold Manipulation
 nnoremap <Leader><Leader>ff zA
