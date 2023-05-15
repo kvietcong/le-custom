@@ -27,6 +27,7 @@ set termguicolors " Enable 24bit RBG color in the terminal UI
 set updatetime=250
 set signcolumn=yes
 set timeoutlen=300 " Delay for things to happen with multi key bindings
+set conceallevel=2
 set listchars=eol:↴
 set viminfo='100,f1 " Save marks and stuff
 set formatoptions-=cro " Disable auto commenting
@@ -39,7 +40,6 @@ set relativenumber number " Show relative number lines with regular number line 
 filetype plugin indent on " Enable filetype detection and indentation
 set backspace=indent,eol,start " More robust backspacing
 set smartindent cindent autoindent " Better indenting
-set conceallevel=2 concealcursor=nc
 set omnifunc=syntaxcomplete#Complete
 set breakindent breakindentopt=shift:0
 set completeopt=menuone,noselect,preview
