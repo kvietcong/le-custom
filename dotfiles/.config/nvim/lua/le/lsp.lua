@@ -123,6 +123,13 @@ local lsp_settings = {
             },
         },
     },
+    yamlls = {
+        settings = {
+            yaml = {
+                keyOrdering = false,
+            },
+        },
+    },
 }
 
 if is_startup then -- Only load LSPs on startup
