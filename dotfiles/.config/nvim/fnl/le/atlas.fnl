@@ -16,6 +16,9 @@
 
 (local {: -- : ++} (require :le.math))
 
+(local get-weekly (require :templates/weekly))
+(local get-monthly (require :templates/monthly))
+
 (import-macros {:fstring f=} :le.macros)
 
 (local vfn vim.fn)
@@ -26,6 +29,7 @@
   (type-check! [:string path])
   (vfn.fnamemodify path ":t:r"))
 
+;; Wait, what the frick is this disgusting monstrosity?
 (λ raw-wikilink-under-cursor []
   (let [[row column] (vapi.nvim_win_get_cursor 0)
         column (+ column 1) ; Change to 1 Indexed Column
@@ -82,24 +86,20 @@
 ;; (local temp vim.g.minisurround_disable)
 ;; (set vim.g.minisurround_disable true)
 
-(λ get-possible-paths-async [?callback]
+(λ get-possible-paths [?callback]
   (type-check! [:function|nil ?callback])
-  (fd-async {:callback ?callback :cwd vim.g.wiki_root :args [:-g "--" :*.md]}))
+  (if ?callback
+      (fd-async {:callback ?callback
+                 :cwd vim.g.wiki_root
+                 :args [:-g "--" :*.md]})
+      (let [job (get-possible-paths)]
+        (job:sync))))
 
-(λ get-possible-paths []
-  (let [job (get-possible-paths-async)]
-    (job:sync)))
-
-(λ filename->filepath-async [filename ?callback]
+(λ filename->filepath [filename ?callback]
   (type-check! [:string filename :function|nil ?callback])
-  (fd-async {:callback ?callback
+  (fd-async {:callback (vim.schedule_wrap ?callback)
              :cwd vim.g.wiki_root
              :args [:-g "--" (f= "${filename}.md")]}))
-
-(λ filename->filepath [filename]
-  (type-check! [:string filename])
-  (let [job (filename->filepath-async filename)]
-    (job:sync)))
 
 (λ get-weekly-note-name []
   (let [date (get-date)
@@ -109,42 +109,57 @@
 (λ get-monthly-note-name []
   ((. (get-date) :format) "%Y-%m"))
 
-(λ open-first-filepath-async [filepaths ?will-split ?on-error]
-  ; (type-check! [:function|nil ?on-error])
-  ((vim.schedule_wrap #(let [file (head filepaths)]
-                         (if file
-                             (let [file (vfn.fnameescape file)]
-                               (if ?will-split
-                                   (vim.cmd (f= "vsplit ${file}"))
-                                   (vim.cmd (f= "e ${file}"))))
-                             (if ?on-error
-                                 (?on-error file)
-                                 (notify-error "Couldn't Find File")))))))
+(λ open-first-filepath [filepaths ?will-split ?on-error]
+  (type-check! [:function|nil ?on-error])
+  (let [file (head filepaths)]
+    (if file
+        (let [file (vfn.fnameescape file)]
+          (if ?will-split
+              (vim.cmd (f= "vsplit ${file}"))
+              (vim.cmd (f= "e ${file}"))))
+        (if ?on-error
+            (?on-error file)
+            (notify-error "Couldn't Find File")))))
 
-(λ open-filename-async [filename ?will-split ?on-error]
-  (filename->filepath-async filename
-                            (λ [filepaths]
-                              (open-first-filepath-async filepaths ?will-split
-                                                         ?on-error))))
+(λ open-filename [filename ?will-split ?on-error]
+  (filename->filepath filename
+                      (λ [filepaths]
+                        (open-first-filepath filepaths ?will-split ?on-error))))
 
 (λ open-wikilink-under-cursor [?will-split]
   (type-check! [:boolean|nil ?will-split])
   (match-try (wikilink-info-under-cursor) wikilink-info wikilink-info.filename
-             filename (open-filename-async filename ?will-split)
+             filename (open-filename filename ?will-split)
              (catch nil (notify-error "Invalid Wikilink Under Cursor"))))
 
 ;; TODO: Scuffed AF. Gotta make this whole chain cleaner. Rely on external tools?
 (λ open-weekly-note [?will-split]
   (type-check! [:boolean|nil ?will-split])
   (let [weekly-note-name (get-weekly-note-name)]
-    (open-filename-async weekly-note-name ?will-split
-                         #((do
-                             (notify-info "Creating new weekly note buffer")
-                             (vim.cmd (f= "e Journal/Weekly\\ Reviews/${weekly-note-name}.md")))))))
+    (open-filename weekly-note-name ?will-split #(do
+                                                   (notify-info "Creating new weekly note buffer")
+                                                   (vim.cmd (f= "e Journal/Weekly\\ Reviews/${weekly-note-name}.md"))
+                                                   (vim.api.nvim_buf_set_lines 0
+                                                                               0
+                                                                               0
+                                                                               true
+                                                                               (vfn.split (get-weekly)
+                                                                                          "
+"))))))
 
 (λ open-monthly-note [?will-split]
   (type-check! [:boolean|nil ?will-split])
-  (open-filename-async (get-monthly-note-name) ?will-split))
+  (let [monthly-note-name (get-monthly-note-name)]
+    (open-filename monthly-note-name ?will-split #(do
+                                                    (notify-info "Creating new monthly note buffer")
+                                                    (vim.cmd (f= "e Journal/Weekly\\ Reviews/${monthly-note-name}.md"))
+                                                    (vim.api.nvim_buf_set_lines 0
+                                                                                0
+                                                                                0
+                                                                                true
+                                                                                (vfn.split (get-monthly)
+                                                                                           "
+"))))))
 
 (λ choose-wikilink [callback]
   (type-check! [:function callback])
@@ -233,7 +248,7 @@
  :open_weekly_note open-weekly-note
  : open-monthly-note
  :open_monthly_note open-monthly-note
- :get_possible_paths_async get-possible-paths-async
- : get-possible-paths-async
+ :get_possible_paths get-possible-paths
+ : get-possible-paths
  :path_to_filename path->filename
  : path->filename}

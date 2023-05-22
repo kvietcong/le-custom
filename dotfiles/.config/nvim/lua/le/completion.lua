@@ -17,15 +17,16 @@ wikilinks_source.get_debug_name = function()
     return "wikilinks"
 end
 wikilinks_source.complete = function(_, _, callback)
-    atlas.get_possible_paths_async(function(filepaths)
+    atlas.get_possible_paths(function(filepaths)
         local items = {}
         for _, filepath in ipairs(filepaths) do
             vim.schedule(function()
                 local filename = atlas.path_to_filename(filepath)
                 local insert_text = filename
-                if not (
+                if
+                    not (
                     luasnip.choice_active()
-                        and luasnip.get_active_snip().name == "Wikilink"
+                    and luasnip.get_active_snip().name == "Wikilink"
                     )
                 then
                     insert_text = "[[" .. insert_text .. "]]"
@@ -94,7 +95,7 @@ cmp.setup({
         { name = "nvim_lua" },
         { name = "nvim_lsp" },
         { name = "nvim_lsp_signature_help" },
-        { name = "emoji", option = { insert = true } },
+        { name = "emoji",                  option = { insert = true } },
         { name = "conjure" },
         { name = "path" },
         {
@@ -104,8 +105,8 @@ cmp.setup({
             },
         },
         { name = "calc" },
-        { name = "spell", keyword_length = 5 },
-        { name = "treesitter", keyword_length = 5 },
+        { name = "spell",        keyword_length = 5 },
+        { name = "treesitter",   keyword_length = 5 },
         { name = "omni" },
         { name = "latex_symbols" },
     },
@@ -157,15 +158,15 @@ cmp.setup({
 
 cmp.setup.filetype("markdown", {
     sources = {
-        { name = "wikilinks", keyword_length = 2 },
+        { name = "wikilinks",    keyword_length = 2 },
         { name = "luasnip" },
-        { name = "emoji", option = { insert = true } },
+        { name = "emoji",        option = { insert = true } },
         { name = "calc" },
         { name = "path" },
         { name = "latex_symbols" },
         { name = "nvim_lsp" },
-        { name = "spell", keyword_length = 4 },
-        { name = "treesitter", keyword_length = 4 },
+        { name = "spell",        keyword_length = 4 },
+        { name = "treesitter",   keyword_length = 4 },
         { name = "omni" },
     },
 })
@@ -177,36 +178,28 @@ local highlights = {
     CmpItemAbbrMatch = { fg = "#82AAFF", bg = "NONE" },
     CmpItemAbbrMatchFuzzy = { fg = "#82AAFF", bg = "NONE" },
     CmpItemMenu = { fg = "#C792EA", bg = "NONE" },
-
     CmpItemKindField = { fg = "#EED8DA", bg = "#B5585F" },
     CmpItemKindProperty = { fg = "#EED8DA", bg = "#B5585F" },
     CmpItemKindEvent = { fg = "#EED8DA", bg = "#B5585F" },
-
     CmpItemKindFile = { fg = "#C3E88D", bg = "#9FBD73" },
     CmpItemKindText = { fg = "#C3E88D", bg = "#9FBD73" },
     CmpItemKindEnum = { fg = "#C3E88D", bg = "#9FBD73" },
     CmpItemKindKeyword = { fg = "#C3E88D", bg = "#9FBD73" },
-
     CmpItemKindConstant = { fg = "#FFE082", bg = "#D4BB6C" },
     CmpItemKindConstructor = { fg = "#FFE082", bg = "#D4BB6C" },
     CmpItemKindReference = { fg = "#FFE082", bg = "#D4BB6C" },
-
     CmpItemKindFunction = { fg = "#EADFF0", bg = "#A377BF" },
     CmpItemKindStruct = { fg = "#EADFF0", bg = "#A377BF" },
     CmpItemKindClass = { fg = "#EADFF0", bg = "#A377BF" },
     CmpItemKindModule = { fg = "#EADFF0", bg = "#A377BF" },
     CmpItemKindOperator = { fg = "#EADFF0", bg = "#A377BF" },
-
     CmpItemKindVariable = { fg = "#C5CDD9", bg = "#7E8294" },
-
     CmpItemKindUnit = { fg = "#F5EBD9", bg = "#D4A959" },
     CmpItemKindSnippet = { fg = "#F5EBD9", bg = "#D4A959" },
     CmpItemKindFolder = { fg = "#F5EBD9", bg = "#D4A959" },
-
     CmpItemKindMethod = { fg = "#DDE5F5", bg = "#6C8ED4" },
     CmpItemKindValue = { fg = "#DDE5F5", bg = "#6C8ED4" },
     CmpItemKindEnumMember = { fg = "#DDE5F5", bg = "#6C8ED4" },
-
     CmpItemKindInterface = { fg = "#D8EEEB", bg = "#58B5A8" },
     CmpItemKindColor = { fg = "#D8EEEB", bg = "#58B5A8" },
     CmpItemKindTypeParameter = { fg = "#D8EEEB", bg = "#58B5A8" },

@@ -255,8 +255,7 @@
         buf-name (vapi.nvim_buf_get_name buf-number)
         buf-size (vim.fn.getfsize buf-name)
         line-amount (vim.api.nvim_buf_line_count buf-number)]
-    (or (> buf-size (KiB->B 100))
-        (> line-amount 10_000))))
+    (or (> buf-size (KiB->B 100)) (> line-amount 10000))))
 
 ; Module Export
 (t.extend :keep {: !
