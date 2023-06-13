@@ -10,6 +10,8 @@
 (set vim.g.conjure#log#hud#width 0.4)
 (set vim.g.conjure#log#hud#height 0.5)
 (set vim.g.conjure#log#hud#passive_close_delay 0)
+(set vim.g.conjure#extract#tree_sitter#enabled true)
+(set vim.g.conjure#filetypes [:fennel :lua :python :racket :janet :clojure])
 ; (set vim.g.conjure#filetype#fennel :conjure.client.fennel.stdio)
 ; (set vim.g.conjure#client#fennel#stdio#command :fennel.bat)
 

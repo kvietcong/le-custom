@@ -8,16 +8,12 @@
 - Find out why Windows emoji selector doesn't work with Neovide
 - See if I can bring most of my Obsidian Workflow into Vim
 - Check out :help ins-completion
-- Sort out nvim-cmp sources!
-- Find a way to make it not lag on LARGE files (look at init.lua for telescope-emoji)
 - Learn how tabs work in Vim
 - Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
-- Remove the need for wiki.vim. It also seems to have stopped working for me :(
 - PDF makes telescope crash
 - Move to LuaDate for all date stuff
 ]]
-
 --------------------------
 -- Setting Things Up 🔧 --
 --------------------------
@@ -30,7 +26,6 @@ vim.api.nvim_set_keymap("n", "<F1>", "", {
     callback = function()
         vim.cmd("e $MYVIMRC")
         vim.cmd("cd %:p:h")
-        vim.cmd("e ./fnl/le/libf.fnl")
         vim.cmd("e ./lua/init.lua")
     end,
 })
@@ -72,7 +67,7 @@ end
 
 -- Globally helpful things
 _G.P = function(...)
-    vim.pretty_print(...)
+    vim.print(...)
 end
 _G.PR = function(...)
     P(...)
@@ -94,8 +89,7 @@ _G.is_neovide = vim.g.neovide ~= nil
 _G.is_nvui = vim.g.nvui ~= nil
 _G.is_fvim = vim.g.fvim_loaded
 _G.is_goneovim = vim.g.goneovim
-_G.is_firenvim = vim.g.started_by_firenvim or false
-_G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim or is_firenvim
+_G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim
 _G.is_mac = vfn.has("mac") == 1
 _G.is_wsl = vfn.has("wsl") == 1
 _G.is_win = vfn.has("win32") == 1
@@ -104,13 +98,6 @@ _G.is_win = vfn.has("win32") == 1
 _G.is_dev_mode = false
 _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
-_G.is_going_hard = is_gui
-
--- Trigger autoread manually every second
--- This is so Vim auto-updates files on external change
-AutoReadTimer = vfn.timer_start(1000, function()
-    vim.cmd([[silent! checktime]])
-end, { ["repeat"] = -1 })
 
 -- This is for sourcing on configuration change
 vapi.nvim_create_autocmd({ "BufWritePost" }, {
@@ -119,16 +106,13 @@ vapi.nvim_create_autocmd({ "BufWritePost" }, {
     desc = "Auto re-source configuration files.",
     callback = function()
         if is_dev_mode then
-            vim.cmd("source $MYVIMRC | PackerCompile")
+            vim.cmd("source $MYVIMRC")
             vim.notify("Configuration Reloaded", nil, { title = "Info" })
         end
     end,
 })
 
-if not is_startup then
-    package.loaded["le.packer"] = nil
-end
-require("le.packer")
+require("le.plugins")
 
 -- Allow Fennel to be used
 require("hotpot")
@@ -193,8 +177,7 @@ local pretty_modules = {
     "le.starter",
     "le.dressing",
     "le.colorizer",
-    "le.statusline",
-    "le.bufferline",
+    "le.status",
     "le.colorscheme",
     "le.indentscope",
 }
@@ -206,22 +189,19 @@ safely_load_modules(pretty_modules)
 ------------------------------
 
 local utility_modules = {
+    "le.git",
     "le.lsp",
     "le.misc",
     "le.leap",
     "le.hydra",
-    "le.luapad",
     "le.luasnip",
     "le.conjure",
-    "le.comment",
     "le.zen-mode",
-    "le.gitsigns",
     "le.terminal",
     "le.fnl-init",
     "le.sessions",
     "le.surround",
     "le.telescope",
-    "le.bufremove",
     "le.cursorword",
     "le.trailspace",
     "le.treesitter",

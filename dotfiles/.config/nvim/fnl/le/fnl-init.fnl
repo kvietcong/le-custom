@@ -3,6 +3,7 @@
 ;; It allows you to have fennel configuration files that
 ;; are auto-run when you enter a directory.
 ;; The file searched for is `.lnvim.fnl`
+(local {: notify-info} (require :le.libf))
 
 (λ parent [dir]
   "Parent of a directory or nil."
@@ -39,7 +40,7 @@
 ;; Iterate over all directories from the root to the cwd.
 ;; For every .lnvim.fnl, compile it to .lvim.lua (if required) and execute it.
 ;; If a .lua is found without a .fnl, delete the .lua to clean up.
-(vapi.nvim_create_autocmd :DirChanged
+(vapi.nvim_create_autocmd [:VimEnter :DirChanged]
                           {:callback #(let [cwd (vapi.nvim_exec :pwd true)
                                             cwd (cwd:gsub "\\" "/")
                                             dirs (parents cwd)]
@@ -51,8 +52,10 @@
                                                 (do
                                                   (when (file-newer? src dest)
                                                     (compile-file-to src dest))
-                                                  (vim.cmd (.. "luafile " dest)))
+                                                  (vim.cmd (.. "luafile " dest))
+                                                  (notify-info (.. "Compiled "
+                                                                   src)))
                                                 (when (file-readable? dest)
                                                   (vfn.delete dest))))))})
 
-(values true)
+true

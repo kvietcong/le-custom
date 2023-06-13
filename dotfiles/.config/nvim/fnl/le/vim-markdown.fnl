@@ -6,4 +6,4 @@
 (set vim.g.vim_markdown_new_list_item_indent 0)
 (set vim.g.vim_markdown_fenced_languages [:dataviewjs=javascript :dataview=sql])
 
-(values true)
+true

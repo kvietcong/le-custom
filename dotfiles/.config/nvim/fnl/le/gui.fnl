@@ -44,5 +44,3 @@
   (vim.cmd "NvuiCmdBigFontScaleFactor 1.25")
   (vim.cmd "NvuiSnapshotLimit 10")
   (vim.cmd "NvuiScrollAnimationDuration 0.5"))
-
-(set vim.g.firenvim_config {:localSettings {:.* {:takeover :never}}})

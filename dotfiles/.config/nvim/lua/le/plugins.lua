@@ -1,18 +1,18 @@
 local plugins_path = data_path .. "/lazy"
 
 -- Bootstrap lazy.nvim
-local lazypath = plugins_path .. "/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+local lazy_path = plugins_path .. "/lazy.nvim"
+if not vim.loop.fs_stat(lazy_path) then
     vim.fn.system({
         "git",
         "clone",
         "--filter=blob:none",
         "https://github.com/folke/lazy.nvim.git",
         "--branch=stable",
-        lazypath,
+        lazy_path,
     })
 end
-vim.opt.rtp:prepend(lazypath)
+vim.opt.rtp:prepend(lazy_path)
 
 -- Bootstrap hotpot.nvim
 local hotpot_path = plugins_path .. "/hotpot.nvim"
@@ -26,12 +26,14 @@ if not vim.loop.fs_stat(hotpot_path) then
         "https://github.com/rktjmp/hotpot.nvim.git",
         hotpot_path,
     })
+    vim.cmd("helptags " .. hotpot_path .. "/doc")
 end
 vim.opt.runtimepath:prepend(hotpot_path)
 
 -- TODO: Make things lazy load?
 local lazy = require("lazy")
 lazy.setup({
+    "rktjmp/hotpot.nvim",
     "dstein64/vim-startuptime", -- Run :StartupTime
 
     -- Common Dependencies
@@ -42,6 +44,7 @@ lazy.setup({
     -- Quality of Life
     "tpope/vim-eunuch",
     "tpope/vim-repeat",
+    "stevearc/oil.nvim",
     "godlygeek/tabular",
     "ggandor/leap.nvim",
     "folke/which-key.nvim",
@@ -51,27 +54,11 @@ lazy.setup({
     "sindrets/winshift.nvim",
     "mrjones2014/smart-splits.nvim",
 
-    {
-        "nanotee/zoxide.vim",
-        cmd = { "Z" },
-    },
-    {
-        "glacambre/firenvim",
-        build = function()
-            vim.fn["firenvim#install"](0)
-        end,
-    },
-
     -- Neovim Development
     "Olical/conjure",
     "folke/neodev.nvim",
-    { "rktjmp/hotpot.nvim", lazy = false, priority = 10000 },
     "bakpakin/fennel.vim",
-    "nanotee/luv-vimdocs",
-    "milisims/nvim-luaref",
-    "rafcamlet/nvim-luapad",
-    "wlangstroth/vim-racket",
-    { "eraserhd/parinfer-rust", build = "cargo build --release" },
+    { "eraserhd/parinfer-rust",                   build = "cargo build --release" },
 
     -- Pretty Things
     "folke/zen-mode.nvim",
@@ -83,11 +70,6 @@ lazy.setup({
     "sainnhe/gruvbox-material",
     "mrjones2014/legendary.nvim",
     "norcalli/nvim-colorizer.lua",
-    "akinsho/nvim-bufferline.lua",
-    {
-        "neovimhaskell/haskell-vim",
-        ft = { "haskell" },
-    },
 
     -- Writing
     -- use("jakewvincent/mkdnflow.nvim") -- For later when I move from Wikilinks
@@ -98,19 +80,16 @@ lazy.setup({
 
     -- Pickers/Finders
     "tversteeg/registers.nvim",
-    "debugloop/telescope-undo.nvim",
     "nvim-telescope/telescope.nvim",
-    "olacin/telescope-gitmoji.nvim",
     "kvietcong/telescope-emoji.nvim",
     "crispgm/telescope-heading.nvim",
-    "nvim-telescope/telescope-packer.nvim",
-    "nvim-telescope/telescope-symbols.nvim",
+    "keyvchan/telescope-find-pickers.nvim",
     "nvim-telescope/telescope-ui-select.nvim",
     "nvim-telescope/telescope-file-browser.nvim",
     { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 
     -- Treesitter
-    "SmiteshP/nvim-gps",
+    "SmiteshP/nvim-navic",
     "nvim-treesitter/nvim-treesitter",
     "nvim-treesitter/nvim-treesitter-refactor",
     "nvim-treesitter/nvim-treesitter-textobjects",
@@ -125,21 +104,18 @@ lazy.setup({
 
     -- Completion
     "hrsh7th/cmp-omni",
-    "hrsh7th/cmp-calc",
     "L3MON4D3/LuaSnip",
     "hrsh7th/nvim-cmp",
     "hrsh7th/cmp-path",
-    "f3fora/cmp-spell",
     "hrsh7th/cmp-emoji",
     "hrsh7th/cmp-buffer",
+    "hrsh7th/cmp-cmdline",
     "ray-x/cmp-treesitter",
     "onsails/lspkind.nvim",
     "hrsh7th/cmp-nvim-lsp",
     "PaterJason/cmp-conjure",
     "saadparwaiz1/cmp_luasnip",
     "kdheepak/cmp-latex-symbols",
-    "hrsh7th/cmp-nvim-lsp-signature-help",
-    "hrsh7th/cmp-nvim-lsp-document-symbol",
 }, {})
 
 return lazy

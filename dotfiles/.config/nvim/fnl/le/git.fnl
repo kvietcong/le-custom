@@ -11,13 +11,11 @@
                                         "(g)it (b)lame line"]
                                     :B [":Gitsigns toggle_current_line_blame<Enter>"
                                         "toggle (g)it (B)lame line"]
-                                    :d [":Gitsigns diffthis<Enter>"
-                                        "(g)it (d)iff"]
-                                    :D [":Gitsigns toggle_deleted<Enter>"
+                                    :d [":Gitsigns toggle_deleted<Enter>"
                                         "(g)it toggle (D)eleted"]
                                     :p [":Gitsigns preview_hunk<Enter>"
                                         "(g)it (p)review hunk"]
-                                    :RRR [":Gitsigns reset_hunk<Enter>"
-                                          "(g)it (R)eset hunk (DANGER!!!)"]}}})
+                                    :r [":Gitsigns reset_hunk<Enter>"
+                                        "(g)it (R)eset hunk (DANGER!!!)"]}}})
 
 gitsigns

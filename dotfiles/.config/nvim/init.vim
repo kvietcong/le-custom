@@ -20,6 +20,7 @@ set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
 set nottimeout
+set cursorline
 set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set history=500
 set noerrorbells " Disable annoying sounds :)
@@ -89,6 +90,7 @@ tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 
 :command! M messages
 :command! MC messages clear
+:command! CD cd %:p:h " cd into directory of current buffer
 :command! BO %bd | e# | bd# " (Buffer Only) Close all buffers but the current one
 
 " ==============
@@ -188,13 +190,8 @@ nnoremap <Leader><Leader>ff zA
 inoremap , ,<C-g>u
 inoremap . .<C-g>u
 inoremap = =<C-g>u
-inoremap ] ]<C-g>u
-inoremap } }<C-g>u
 inoremap ! !<C-g>u
 inoremap ? ?<C-g>u
-
-" cd into directory of current buffer
-nnoremap <silent> <Leader>cd :cd %:p:h<CR>
 
 " Better Marks?
 nnoremap ' `

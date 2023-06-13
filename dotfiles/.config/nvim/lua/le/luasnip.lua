@@ -77,6 +77,7 @@ luasnip.add_snippets("markdown", {
         f(function()
             return date():fmt("${le}")
         end),
+        t({ "", "public: false" }),
         t({ "", "tags: " }),
         c(2, { t("~"), { t({ "", "- " }), i(1) } }),
         t({ "", "---" }),

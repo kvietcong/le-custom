@@ -1,6 +1,7 @@
 ;; Floating Terminal Configuration
 (local which-key (require :le.which-key))
 (local {: clean} (require :le.libf))
+(local {: term-hydra} (require :le.hydra))
 
 (set vim.g.floaterm_width 0.9)
 (set vim.g.floaterm_height 0.9)
@@ -14,16 +15,14 @@
                              "Go To Next Terminal"]
                      :<A-h> [(clean "<C-\\><C-n>:FloatermPrev<Enter>")
                              "Go To Previous Terminal"]
-                     :<A-t> [(clean "<C-\\><C-n>:FloatermToggle<Enter>")
-                             "Close Terminal"]
-                     :<C-q> [(clean "<C-\\><C-n>:FloatermKill<Enter>")
+                     :<A-q> [(clean "<C-\\><C-n>:FloatermKill<Enter>:FloatermToggle<Enter>")
                              "Quit/Kill The Current Terminal"]
-                     :<C-t><C-n> [(clean "<C-\\><C-n>:FloatermNew<Enter>")
-                                  "Create New Terminal"]}
+                     :<A-n> [(clean "<C-\\><C-n>:FloatermNew<Enter>")
+                             "Create New Terminal"]}
                     {:mode :t})
 
-(which-key.register {:<C-t> [":FloatTermSend<Enter>" "Send Lines to Terminal"]}
+(which-key.register {:<C-t> [":FloatermSend<Enter>:FloatermShow<Enter>"
+                             "Send Lines to Terminal"]}
                     {:mode :v})
 
-;; Fennel Format doesn't allow dangling booleans as returns
-(values true)
+true

@@ -16,8 +16,8 @@ local lsp_servers = {
     "emmet_ls",
     "hls",
     "bashls",
-    "cmake",
     "yamlls",
+    "wgsl_analyzer",
     "vimls",
 }
 
@@ -36,6 +36,7 @@ null_ls.setup({
         null_ls.builtins.formatting.gofmt,
         null_ls.builtins.formatting.stylua,
         null_ls.builtins.formatting.fnlfmt,
+        -- null_ls.builtins.formatting.eslint,
         null_ls.builtins.formatting.rustfmt,
         null_ls.builtins.formatting.fourmolu,
         null_ls.builtins.formatting.trim_newlines,
@@ -50,13 +51,19 @@ null_ls.setup({
     },
 })
 
+-- Delete word on backspace in normal mode
+vim.keymap.set("n", "<Backspace>", "diw")
+
 -- Format Command
 vapi.nvim_create_user_command("Format", function()
     vim.lsp.buf.format({ async = true })
 end, {})
 
-local on_attach = function(_, bufnr)
-    -- TODO: Replace vim.lsp with telescope pickers when possible
+local on_attach = function(client, buffer)
+    local navic = require("nvim-navic")
+    if client.server_capabilities.documentSymbolProvider then
+        navic.attach(client, buffer)
+    end
     whichkey.register({
         g = {
             name = "(g)o to",
@@ -69,6 +76,7 @@ local on_attach = function(_, bufnr)
             c = {
                 name = "(c)ode",
                 a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
+                d = { vim.diagnostic.open_float, "(c)ode (d)iagnostic" },
                 f = { ":Format<Enter>", "(c)ode (f)ormatting" },
                 h = { vim.lsp.buf.hover, "(c)ode (h)over" },
                 s = { vim.lsp.buf.signature_help, "(c)ode (s)ignature" },
@@ -77,7 +85,7 @@ local on_attach = function(_, bufnr)
             fs = { ":Telescope lsp_document_symbols<Enter>", "(s)ymbols" },
             rn = { vim.lsp.buf.rename, "(r)e(n)ame symbol" },
         },
-    }, { buffer = bufnr })
+    }, { buffer = buffer })
 end
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()

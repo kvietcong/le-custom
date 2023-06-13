@@ -1,15 +1,19 @@
 ;; Setup Status Line
 (local mini-statusline (require :mini.statusline))
+(local navic (require :nvim-navic))
+(local which-key (require :le.which-key))
+(local mini-bufremove (require :mini.bufremove))
+(local mini-tabline (require :mini.tabline))
 
-(set vim.go.laststatus (if is_firenvim 0 3))
+(set vim.o.laststatus 3)
+(set vim.o.winbar "%#MiniStatuslineFilename#%=%f%=")
 
 (λ get-statusline []
   (let [os-symbols {:unix "" :dos "" :mac ""}
         os-symbol (. os-symbols (if is_win :dos
                                     is_mac :mac
                                     :unix))
-        gps (require :nvim-gps)
-        gps-string (or (and (gps.is_available) (gps.get_location)) nil)
+        nav-string (or (and (navic.is_available) (navic.get_location)) nil)
         (mode mode-hl) (mini-statusline.section_mode {})
         mode (mode:upper)
         git (mini-statusline.section_git {})
@@ -26,7 +30,7 @@
                                      {:hl :MiniStatuslineFilename
                                       :strings [diagnostics]}
                                      {:hl :MiniStatuslineDevinfo
-                                      :strings [gps-string]}
+                                      :strings [nav-string]}
                                      "%="
                                      {:hl :MiniStatuslineDevinfo
                                       :strings [os-symbol]}
@@ -37,5 +41,29 @@
 
 (mini-statusline.setup {:set_vim_settings false
                         :content {:active get-statusline}})
+
+(mini-bufremove.setup {})
+(mini-tabline.setup {:tabpage_section :right})
+(local next ":bn<Enter>")
+(local prev ":bp<Enter>")
+(which-key.register {:<Leader>b {:name "(b)uffers"
+                                 :b [":Telescope buffers<Enter>"
+                                     "find (b)uffer"]
+                                 :f [":Telescope buffers<Enter>"
+                                     "(b)uffer (f)ind"]
+                                 :q [mini-bufremove.unshow_in_window
+                                     "(b)uffer (q)uit [unshows buffer]"]
+                                 :d [(λ []
+                                       (mini-bufremove.delete 0 true))
+                                     "(b)uffer (d)elete"]
+                                 :c [":bd<Enter>" "(b)uffer (c)lose"]
+                                 :l [next "(b)uffer next"]
+                                 :h [prev "(b)uffer prev"]
+                                 :o [":BO<Enter>"
+                                     "(b)uffer (o)nly (Close all but this)"]}
+                     :<M-l> [next "buffer next"]
+                     :<M-h> [prev "buffer prev"]
+                     :<M-Right> [next "buffer next"]
+                     :<M-Left> [prev "buffer prev"]})
 
 mini-statusline

@@ -33,4 +33,4 @@
                            :pattern [:*.md :*.mdx :*.txt :*.wiki]
                            :callback register-note-keys})
 
-(values true)
+true

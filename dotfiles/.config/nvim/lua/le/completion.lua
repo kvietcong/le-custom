@@ -3,7 +3,7 @@
 -------------------------
 
 -- nvim-cmp setup
-local lspkind = require("le.lspkind")
+local lspkind = require("lspkind")
 local luasnip = require("le.luasnip")
 local atlas = require("le.atlas")
 local cmp = require("cmp")
@@ -52,6 +52,7 @@ end
 cmp.register_source("wikilinks", wikilinks_source.new())
 
 cmp.setup({
+    preselect = cmp.PreselectMode.None,
     experimental = {
         ghost_text = true,
     },
@@ -64,18 +65,51 @@ cmp.setup({
         ["<C-k>"] = cmp.mapping.scroll_docs(-4),
         ["<C-j>"] = cmp.mapping.scroll_docs(4),
         ["<C-Space>"] = cmp.mapping.complete(nil),
-        ["<Up>"] = cmp.mapping.select_prev_item(),
-        ["<Down>"] = cmp.mapping.select_next_item(),
-        ["<C-e>"] = cmp.mapping({
-            i = cmp.mapping.close(),
-            c = cmp.mapping.close(),
+        ["<Down>"] = {
+            i = function()
+                if cmp.visible() then
+                    cmp.select_next_item({ behavior = cmp.SelectBehavior.Insert })
+                else
+                    cmp.complete()
+                end
+            end,
+        },
+        ["<Escape>"] = {
+            i = function(fallback)
+                if cmp.visible() then
+                    cmp.abort()
+                    vapi.nvim_feedkeys(require("le.libf").clean("<Esc>"), "n", false)
+                else
+                    fallback()
+                end
+            end,
+        },
+        ["<Up>"] = {
+            i = function()
+                if cmp.visible() then
+                    cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
+                else
+                    cmp.complete()
+                end
+            end,
+        },
+        ["<Enter>"] = cmp.mapping({
+            i = function(fallback)
+                if cmp.visible() and cmp.get_active_entry() then
+                    cmp.confirm({
+                        behavior = cmp.ConfirmBehavior.Replace,
+                        select = false,
+                    })
+                else
+                    fallback()
+                end
+            end,
+            s = cmp.mapping.confirm({ select = true }),
+            c = cmp.mapping.confirm({
+                behavior = cmp.ConfirmBehavior.Replace,
+                select = false,
+            }),
         }),
-        -- Enter Auto Confirm
-        ["<CR>"] = cmp.mapping.confirm({
-            behavior = cmp.ConfirmBehavior.Replace,
-            select = false,
-        }),
-        -- Only use Tab for snippets
         ["<Tab>"] = cmp.mapping(function(fallback)
             if luasnip.expand_or_jumpable() then
                 luasnip.expand_or_jump()
@@ -104,8 +138,6 @@ cmp.setup({
                 show_autosnippets = false,
             },
         },
-        { name = "calc" },
-        { name = "spell",        keyword_length = 5 },
         { name = "treesitter",   keyword_length = 5 },
         { name = "omni" },
         { name = "latex_symbols" },
@@ -113,13 +145,16 @@ cmp.setup({
     window = {
         completion = {
             side_padding = 0,
+            col_offset = -3,
+            winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
         },
     },
     formatting = {
         fields = { "kind", "abbr", "menu" },
         format = function(entry, vim_item)
-            local kind = lspkind.cmp_format({
+            local new_entry = lspkind.cmp_format({
                 mode = "symbol_text",
+                maxwidth = 50,
                 menu = {
                     omni = "[Omni]",
                     buffer = "[Buffer]",
@@ -128,30 +163,27 @@ cmp.setup({
                     luasnip = "[LuaSnip]",
                     nvim_lua = "[Lua]",
                     treesitter = "[TS]",
-                    nvim_lsp_signature_help = "[LSP]",
                     path = "[Path]",
                     emoji = "[Emoji]",
-                    calc = "[Calc]",
-                    spell = "[Spell]",
                     latex_symbols = "[LaTeX]",
                 },
                 before = function(entry_inner, vim_item_inner)
                     pcall(function()
                         vim_item_inner.menu = (vim_item_inner.menu or "")
                             .. " "
-                            .. entry_inner:get_completion_item().detail
+                            .. (entry_inner:get_completion_item().detail or "")
                     end)
                     return vim_item_inner
                 end,
             })(entry, vim_item)
 
-            local strings = vim.split(kind.kind, "%s", { trimempty = true })
-            kind.kind = " " .. strings[1] .. " "
-            kind.menu = "    ("
-                .. strings[2]
+            local strings = vim.split(new_entry.kind, "%s", { trimempty = true })
+            new_entry.kind = " " .. (strings[1] or "") .. " "
+            new_entry.menu = "    ("
+                .. (strings[2] or "")
                 .. ")"
-                .. (kind.menu and (" " .. kind.menu) or "")
-            return kind
+                .. (new_entry.menu and (" " .. new_entry.menu) or "")
+            return new_entry
         end,
     },
 })
@@ -161,11 +193,9 @@ cmp.setup.filetype("markdown", {
         { name = "wikilinks",    keyword_length = 2 },
         { name = "luasnip" },
         { name = "emoji",        option = { insert = true } },
-        { name = "calc" },
         { name = "path" },
         { name = "latex_symbols" },
         { name = "nvim_lsp" },
-        { name = "spell",        keyword_length = 4 },
         { name = "treesitter",   keyword_length = 4 },
         { name = "omni" },
     },
@@ -209,31 +239,20 @@ for name, values in pairs(highlights) do
     vim.api.nvim_set_hl(0, name, values)
 end
 
-for _, command_type in pairs({
-    -- For some reason tab completion breaks when I enable in cmd line :(
-    -- It also happened after I switched to lazy.nvim. No idea why tho.
-    -- TODO: Gotta figure this out
-    -- ":",
-    "@",
-}) do
-    require("cmp").setup.cmdline(command_type, {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-            { name = "calc" },
-            { name = "path" },
-        },
-    })
-end
+cmp.setup.cmdline(":", {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+        { name = "path" },
+        { name = "cmdline" },
+    },
+})
 
-for _, command_type in pairs({ "/", "?" }) do
-    require("cmp").setup.cmdline(command_type, {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-            { name = "nvim_lsp_document_symbol" },
-            { name = "buffer" },
-            { name = "fuzzy_buffer" },
-        },
-    })
-end
+cmp.setup.cmdline({ "/", "?" }, {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+        { name = "buffer" },
+        { name = "fuzzy_buffer" },
+    },
+})
 
 return cmp

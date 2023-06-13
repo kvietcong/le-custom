@@ -4,8 +4,8 @@
 
 local lf = require("le.libf")
 
-local ft_to_parser = require("nvim-treesitter.parsers").filetype_to_parsername
-ft_to_parser.racket = "scheme"
+vim.treesitter.language.register("racket", "scheme")
+vim.filetype.add({ extension = { wgsl = "wgsl" } })
 
 require("nvim-treesitter.configs").setup({
     highlight = {
@@ -22,26 +22,39 @@ require("nvim-treesitter.configs").setup({
     },
     incremental_selection = {
         enable = true,
-        keymaps = { -- TODO: Look more at these
-            init_selection = [[\\ti]],
-            node_incremental = [[\\tk]],
-            scope_incremental = [[\\tK]],
-            node_decremental = [[\\tj]],
+        keymaps = {
+            init_selection = "<Enter>",
+            node_incremental = "<Enter>",
+            node_decremental = "<Backspace>",
         },
     },
     refactor = {
         -- THESE PLUGINS DESTROY PERFORMANCE ON LARGE FILES
-        -- highlight_current_scope = { enable = true },
+        highlight_current_scope = {
+            enable = false,
+            disable = function(
+                _, --[[ filetype ]]
+                buf_number
+            )
+                return lf.get_is_thicc_buffer(buf_number)
+            end,
+        },
         highlight_definitions = {
             enable = true,
-            disable = function(_ --[[ filetype ]], buf_number)
+            disable = function(
+                _, --[[ filetype ]]
+                buf_number
+            )
                 return lf.get_is_thicc_buffer(buf_number)
             end,
             clear_on_cursor_move = true,
         },
         smart_rename = {
             enable = true,
-            disable = function(_ --[[ filetype ]], buf_number)
+            disable = function(
+                _, --[[ filetype ]]
+                buf_number
+            )
                 return lf.get_is_thicc_buffer(buf_number)
             end,
             keymaps = {
@@ -50,7 +63,10 @@ require("nvim-treesitter.configs").setup({
         },
         navigation = {
             enable = true,
-            disable = function(_ --[[ filetype ]], buf_number)
+            disable = function(
+                _, --[[ filetype ]]
+                buf_number
+            )
                 return lf.get_is_thicc_buffer(buf_number)
             end,
             keymaps = {
@@ -115,11 +131,5 @@ require("nvim-treesitter.configs").setup({
         },
     },
 })
-
-if is_going_hard then
-    require("nvim-gps").setup({
-        separator = " ▶ ",
-    })
-end
 
 return true

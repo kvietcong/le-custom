@@ -20,7 +20,7 @@
   ^^              👇 _j_        ^^
   ^^                ^ ^         ^^  Select Other Window _w_
   ^^              👆 _K_        ^^
-  [Move]   👈 _H_ ➕ _m_ 👉 _L_     Close Other Windows _o_
+  [Move]   👈 _H_ ✨ _m_ 👉 _L_     Close Other Windows _o_
   ^^              👇 _J_        ^^  Close This Window  _c_ _q_  ^
 
                      ❌ _<Esc>_ ❌
