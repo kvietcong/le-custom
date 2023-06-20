@@ -51,9 +51,6 @@ null_ls.setup({
     },
 })
 
--- Delete word on backspace in normal mode
-vim.keymap.set("n", "<Backspace>", "diw")
-
 -- Format Command
 vapi.nvim_create_user_command("Format", function()
     vim.lsp.buf.format({ async = true })

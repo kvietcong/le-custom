@@ -99,6 +99,7 @@ tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 
 " Saving :)
 nnoremap <C-s> :w<Enter>
+inoremap <C-s> <C-o>:w<Enter>
 
 " Re/Undo stuff
 nnoremap U <C-r>
@@ -196,6 +197,9 @@ inoremap ? ?<C-g>u
 " Better Marks?
 nnoremap ' `
 nnoremap ` '
+
+" Miscellaneous
+nnoremap <Backspace> diw
 
 " Banner comments
 nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
