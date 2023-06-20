@@ -65,6 +65,28 @@ vim.keymap.set("n", "-", oil.open_float, { desc = "Open oil" })
 vim.keymap.set("n", "<C-f>", oil.toggle_float, { desc = "Toggle oil" })
 vim.keymap.set("n", "+", oil.close, { desc = "Close oil" })
 
+local get_visual_selection = function()
+    local a_orig = vfn.getreg("a")
+    local mode = vim.fn.mode()
+    if mode ~= "v" and mode ~= "V" then
+        vim.cmd([[normal! gv]])
+    end
+    vim.cmd([[silent! normal! "ay]])
+    local text = vfn.getreg("a")
+    vim.fn.setreg("a", a_orig)
+    return text
+end
+
+vim.keymap.set("v", "<Leader>s", function()
+    local link = "https://google.com/search?q=" .. get_visual_selection():trim():urlencode()
+    if is_win then
+        os.execute("start " .. link)
+    else
+        os.execute("xdg-open " .. link)
+    end
+    vapi.nvim_feedkeys(require("le.libf").clean("<Escape>"), "n", true)
+end, { desc = "Search in browser" })
+
 local parinfer_filetypes = {
     "clojure",
     "scheme",
@@ -82,7 +104,7 @@ vim.api.nvim_create_autocmd("FileType", {
     pattern = parinfer_filetypes,
     group = le_group,
     callback = function()
-            vim.b.minipairs_disable = true
+        vim.b.minipairs_disable = true
     end,
 })
 local mini_pairs = require("mini.pairs")

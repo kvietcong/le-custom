@@ -65,6 +65,29 @@ function String.__index:char_at(i)
     return self:sub(i, i)
 end
 
+function String.__index.trim(self)
+    return self:gsub("^%s*(.-)%s*$", "%1")
+end
+
+function String.__index.urlencode(self)
+    local char_to_hex = function(c)
+        return string.format("%%%02X", string.byte(c))
+    end
+    local url = self:gsub("\n", "\r\n")
+    url = url:gsub("([^%w ])", char_to_hex)
+    url = url:gsub(" ", "+")
+    return url
+end
+
+function String.__index.urldecode(self)
+    local hex_to_char = function(x)
+        return string.char(tonumber(x, 16))
+    end
+    local url = self:gsub("+", " ")
+    url = url:gsub("%%(%x%x)", hex_to_char)
+    return url
+end
+
 -- Globally helpful things
 _G.P = function(...)
     vim.print(...)
