@@ -41,4 +41,10 @@ Set-PSReadlineKeyHandler -Chord Ctrl+p -Function TabCompletePrevious
 Import-Module $HOME\Documents\PowerShell\_fd.ps1
 Import-Module $HOME\Documents\PowerShell\_rg.ps1
 
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+
+$env:FZF_DEFAULT_COMMAND='fd -H -L -E .git -t f'
+$env:FZF_CTRL_T_COMMAND=$env:FZF_DEFAULT_COMMAND
+$env:FZF_CTRL_T_OPTS='--preview "bat --color=always --line-range=:500 {}"'
+
 Clear-Host # Make sure everything is cleared

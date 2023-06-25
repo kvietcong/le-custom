@@ -7,6 +7,8 @@ $nodejs$rust$haskell$lua$java\
 $time
 [ λ ](fg:#ECEFF4 bg:#4C566A)[](fg:#4C566A bg:#ECEFF4)[ ](fg:#ECEFF4)"""
 
+command_timeout = 250
+
 [fill]
 symbol = " "
 
