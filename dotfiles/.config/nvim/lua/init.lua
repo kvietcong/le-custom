@@ -215,7 +215,6 @@ local utility_modules = {
     "le.git",
     "le.lsp",
     "le.misc",
-    "le.leap",
     "le.hydra",
     "le.luasnip",
     "le.conjure",

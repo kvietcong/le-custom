@@ -46,7 +46,7 @@ lazy.setup({
     "tpope/vim-repeat",
     "stevearc/oil.nvim",
     "godlygeek/tabular",
-    "ggandor/leap.nvim",
+    "folke/flash.nvim",
     "folke/which-key.nvim",
     "voldikss/vim-floaterm",
     "anuvyklack/hydra.nvim",

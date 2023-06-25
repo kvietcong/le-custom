@@ -74,7 +74,7 @@ cmp.setup({
                 end
             end,
         },
-        ["<Escape>"] = {
+        ["<C-c>"] = {
             i = function(fallback)
                 if cmp.visible() then
                     cmp.abort()

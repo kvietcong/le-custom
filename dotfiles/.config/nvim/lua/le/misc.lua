@@ -78,7 +78,8 @@ local get_visual_selection = function()
 end
 
 vim.keymap.set("v", "<Leader>s", function()
-    local link = "https://google.com/search?q=" .. get_visual_selection():trim():urlencode()
+    local link = "https://google.com/search?q="
+        .. get_visual_selection():trim():urlencode()
     if is_win then
         os.execute("start " .. link)
     else
@@ -109,10 +110,22 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 local mini_pairs = require("mini.pairs")
 mini_pairs.setup({})
--- TODO: why isn't the closing of anything but parens working?
 
 local mini_comment = require("mini.comment")
 mini_comment.setup()
+
+local flash = require("flash")
+flash.setup({
+    modes = {
+        char = { highlight = { backdrop = false } },
+    },
+})
+vim.keymap.set({ "n", "x", "o" }, "s", function()
+    flash.jump()
+end, { desc = "Flash mode" })
+vim.keymap.set({ "x", "o" }, "S", function()
+    flash.treesitter()
+end, { desc = "Flash mode (Treesitter)" })
 
 -- Misc Mappings
 whichkey.register({
