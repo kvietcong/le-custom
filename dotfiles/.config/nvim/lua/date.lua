@@ -1110,7 +1110,7 @@ local tvspec = {
     end,
     -- My format
     ["${le}"] = function(self)
-        return self:fmt0("%Y-%m-%dT%T%:z")
+        return self:fmt0("%Y-%m-%dT%T")
     end,
     -- http format, same as "%a, %d %b %Y %T GMT"
     ["${http}"] = function(self)
