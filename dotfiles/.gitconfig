@@ -2,7 +2,6 @@
 	editor = nvim
 	fsmonitor = true
     pager = delta
-
 [user]
 	email = 32186663+kvietcong@users.noreply.github.com
 	name = KV Le
@@ -37,3 +36,10 @@
 
 [diff]
     colorMoved = default
+
+[alias]
+    s = status
+    d = diff --ignore-space-at-eol
+    pushit = push --force-with-lease
+    fixit = commit -a --amend --no-edit
+    revise = commit --amend

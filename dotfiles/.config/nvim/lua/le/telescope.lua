@@ -5,8 +5,8 @@
 -- local actions = require("telescope.actions")
 local telescope = require("telescope")
 local whichkey = require("le.which-key")
-local lf = require("le.libf")
 local themes = require("telescope.themes")
+local oil = require("oil")
 
 telescope.setup({
     defaults = {
@@ -18,6 +18,9 @@ telescope.setup({
         layout_config = {
             prompt_position = "top",
         },
+        -- preview = {
+        --     treesitter = false,
+        -- },
         layout_strategy = "flex",
         sorting_strategy = "ascending",
         file_ignore_patterns = { "node_modules" },
@@ -32,23 +35,10 @@ telescope.setup({
                 },
             }),
         },
-        heading = {
-            treesitter = true,
-        },
     },
 })
 
-require("telescope-emoji").setup({
-    action = function(emoji)
-        lf.set_register_and_notify(emoji.value)
-    end,
-})
-
 telescope.load_extension("fzf")
-telescope.load_extension("emoji")
-telescope.load_extension("heading")
-telescope.load_extension("ui-select")
-telescope.load_extension("file_browser")
 telescope.load_extension("find_pickers")
 
 vapi.nvim_create_autocmd("User", {
@@ -76,14 +66,13 @@ whichkey.register({
                         },
                     }))
                 end,
-                "(f)ind (a)ll built in pickers",
+                "(f)ind (a)ll built pickers",
             },
             b = { ":Telescope buffers<Enter>", "(f)ind (b)uffers" },
-            B = { ":Lexplore 30<Enter>", "(f)ile (B)rowser" },
+            B = { oil.open_float, "(f)ile (B)rowser" },
             c = { ":Telescope commands<Enter>", "(f)ind (c)ommands" },
-            e = { ":Telescope emoji<Enter>", "(f)ind (e)mojis! 😎" },
             f = { ":Telescope find_files<Enter>", "(f)ind (f)iles" },
-            g = { ":Telescope live_grep<Enter>", "(g)rep project" },
+            g = { ":Telescope live_grep preview={timeout=1000}<Enter>", "(g)rep project" },
             h = { ":Telescope help_tags<Enter>", "(f)ind (h)elp" },
             k = { require("legendary").find, "(f)ind (k)eymaps" },
             m = { ":Telescope marks<Enter>", "(f)ind (m)arks" },

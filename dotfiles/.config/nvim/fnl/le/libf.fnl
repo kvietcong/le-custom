@@ -180,11 +180,7 @@
 (λ get-date [?format]
   (type-check! [:string|nil ?format])
   (let [datetime os.date
-        my-date (datetime "%Y-%m-%dT%H:%M:%S")
-        offset (datetime "%z")
-        offset-hr (string.sub offset 1 3)
-        offset-min (string.sub offset 4)
-        my-date (.. my-date offset-hr ":" offset-min)]
+        my-date (datetime "%Y-%m-%dT%H:%M:%S")]
     (if (falsy? ?format) {:year (tonumber (datetime "%Y"))
                           :month (tonumber (datetime "%m"))
                           :week (tonumber (datetime "%V"))

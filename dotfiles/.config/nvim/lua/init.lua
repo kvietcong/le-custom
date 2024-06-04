@@ -34,9 +34,6 @@ vim.api.nvim_set_keymap("n", "<F1>", "", {
 _G.vfn = vim.fn
 _G.vapi = vim.api
 
--- Add luafun to the global scope
-require("fun")()
-
 -- Shortcuts to Table Functions
 _G.t = {
     filter = vim.tbl_filter,
@@ -231,23 +228,6 @@ local utility_modules = {
 }
 
 safely_load_modules(utility_modules)
-
-----------------------
--- Writing Setup ✍️  --
-------------------- --
-
-local writing_modules = {
-    "le.wiki-vim",
-    "le.vim-markdown",
-    {
-        "le.atlas",
-        function(atlas)
-            atlas.setup()
-        end,
-    },
-}
-
-safely_load_modules(writing_modules)
 
 -- For REPL or Debug Purposes
 _G.cfg_env = lf.get_locals()

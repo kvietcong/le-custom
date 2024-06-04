@@ -101,23 +101,22 @@ local parinfer_filetypes = {
     "yuck",
     "dune",
 }
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = parinfer_filetypes,
-    group = le_group,
-    callback = function()
-        vim.b.minipairs_disable = true
-    end,
-})
-local mini_pairs = require("mini.pairs")
-mini_pairs.setup({})
 
 local mini_comment = require("mini.comment")
-mini_comment.setup()
+mini_comment.setup({
+    options = {
+        custom_commentstring = function()
+            local contextual_commentstring = require("ts_context_commentstring").calculate_commentstring()
+            return contextual_commentstring or vim.bo.commentstring
+        end,
+    },
+})
 
 local flash = require("flash")
 flash.setup({
     modes = {
         char = { highlight = { backdrop = false } },
+        search = { enabled = false },
     },
 })
 vim.keymap.set({ "n", "x", "o" }, "s", function()

@@ -3,22 +3,23 @@
 -------------------------
 
 local lf = require("le.libf")
+local get_is_disabled =
+    function(
+        _, --[[ filetype ]]
+        buf_number
+    )
+        return lf.get_is_thicc_buffer(buf_number)
+    end
 
 vim.treesitter.language.register("racket", "scheme")
 vim.filetype.add({ extension = { wgsl = "wgsl" } })
 
 require("nvim-treesitter.configs").setup({
+    -- ensure_installed = "all", -- "all" makes startup times much worse. Only uncomment for bootstrapping
+    ignore_install = { "phpdoc" },
     highlight = {
         enable = true,
-        disable = { "markdown" },
-        additional_vim_regex_highlighting = { "markdown" },
-    },
-    context_commentstring = { enable = true },
-    ensure_installed = "all",
-    ignore_install = { "phpdoc" },
-    rainbow = {
-        enable = true,
-        extended_mode = true,
+        disable = get_is_disabled,
     },
     incremental_selection = {
         enable = true,
@@ -27,48 +28,24 @@ require("nvim-treesitter.configs").setup({
             node_incremental = "<Enter>",
             node_decremental = "<Backspace>",
         },
+        disable = get_is_disabled,
     },
     refactor = {
         -- THESE PLUGINS DESTROY PERFORMANCE ON LARGE FILES
-        highlight_current_scope = {
-            enable = false,
-            disable = function(
-                _, --[[ filetype ]]
-                buf_number
-            )
-                return lf.get_is_thicc_buffer(buf_number)
-            end,
-        },
         highlight_definitions = {
             enable = true,
-            disable = function(
-                _, --[[ filetype ]]
-                buf_number
-            )
-                return lf.get_is_thicc_buffer(buf_number)
-            end,
-            clear_on_cursor_move = true,
+            disable = get_is_disabled,
         },
         smart_rename = {
             enable = true,
-            disable = function(
-                _, --[[ filetype ]]
-                buf_number
-            )
-                return lf.get_is_thicc_buffer(buf_number)
-            end,
+            disable = get_is_disabled,
             keymaps = {
                 smart_rename = "<Leader>rn",
             },
         },
         navigation = {
             enable = true,
-            disable = function(
-                _, --[[ filetype ]]
-                buf_number
-            )
-                return lf.get_is_thicc_buffer(buf_number)
-            end,
+            disable = get_is_disabled,
             keymaps = {
                 goto_definition_lsp_fallback = "gd",
                 goto_next_usage = "g>",
@@ -78,6 +55,7 @@ require("nvim-treesitter.configs").setup({
     },
     textobjects = {
         lsp_interop = { enable = true },
+        disable = get_is_disabled,
         select = {
             enable = true,
             lookahead = true,
@@ -86,49 +64,40 @@ require("nvim-treesitter.configs").setup({
                 ["il"] = "@loop.inner",
                 ["ab"] = "@block.outer",
                 ["ib"] = "@block.inner",
-                ["ac"] = "@class.outer",
-                ["ic"] = "@class.inner",
-                ["a?"] = "@conditional.outer",
-                ["i?"] = "@conditional.inner",
-                ["aC"] = "@call.outer",
-                ["iC"] = "@call.inner",
+                ["aC"] = "@class.outer",
+                ["iC"] = "@class.inner",
+                ["ac"] = "@call.outer",
+                ["ic"] = "@call.inner",
                 ["af"] = "@function.outer",
                 ["if"] = "@function.inner",
-                ["aP"] = "@parameter.outer",
-                ["iP"] = "@parameter.inner",
                 ["ak"] = "@comment.outer",
-                ["as"] = "@statement.outer",
             },
         },
         swap = {
             enable = true,
             swap_next = {
-                ["<Leader>csn"] = "@parameter.inner",
+                ["<Leader>>>"] = "@parameter.inner",
             },
             swap_previous = {
-                ["<Leader>csp"] = "@parameter.inner",
+                ["<Leader><<"] = "@parameter.inner",
             },
         },
-        move = {
-            enable = true,
-            set_jumps = true, -- whether to set jumps in the jumplist
-            goto_next_start = {
-                ["]m"] = "@function.outer",
-                ["]c"] = "@class.outer",
-            },
-            goto_next_end = {
-                ["]M"] = "@function.outer",
-                ["]C"] = "@class.outer",
-            },
-            goto_previous_start = {
-                ["[m"] = "@function.outer",
-                ["[c"] = "@class.outer",
-            },
-            goto_previous_end = {
-                ["[M"] = "@function.outer",
-                ["[C"] = "@class.outer",
-            },
-        },
+    },
+})
+
+vim.g.skip_ts_context_commentstring_module = true
+require("ts_context_commentstring").setup({
+    enable_autocmd = false,
+})
+
+require("rainbow-delimiters.setup").setup({
+    highlight = {
+        "RainbowDelimiterRed",
+        "RainbowDelimiterYellow",
+        "RainbowDelimiterBlue",
+        "RainbowDelimiterOrange",
+        "RainbowDelimiterGreen",
+        "RainbowDelimiterViolet",
     },
 })
 

@@ -7,6 +7,8 @@
                  :current_line_blame_formatter "<author>, <author_time:%Y-%m-%d> - <summary> "})
 
 (which-key.register {:<Leader> {:g {:name "(g)it"
+                                    :s [":Telescope git_status<Enter>"
+                                        "(g)it (s)tatus"]
                                     :b [":Gitsigns blame_line<Enter>"
                                         "(g)it (b)lame line"]
                                     :B [":Gitsigns toggle_current_line_blame<Enter>"

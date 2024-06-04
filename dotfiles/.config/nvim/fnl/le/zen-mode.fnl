@@ -2,7 +2,7 @@
 (local zen-mode (require :zen-mode))
 (local which-key (require :le.which-key))
 
-(zen-mode.setup {:window {:width 90 :backdrop 0.6}
+(zen-mode.setup {:window {:width 120 :backdrop 0.6}
                  :plugins {:options {:showcmd true}}
                  :on_open (λ []
                             (pcall #(vapi.nvim_set_keymap :n

@@ -2,8 +2,6 @@
 local date = require("date")
 local lf = require("le/libf")
 local luasnip = require("luasnip")
-local get_weekly = require("templates/weekly")
-local get_monthly = require("templates/monthly")
 
 local s = luasnip.snippet
 local sn = luasnip.snippet_node
@@ -94,61 +92,6 @@ luasnip.add_snippets("markdown", {
         t(" ~ "),
         i(2, "Originators"),
         t("]]"),
-    }),
-    s("@weekly", {
-        c(1, {
-            f(function()
-                return vfn.split(get_weekly(), "\n")
-            end),
-            f(function()
-                return vfn.split(get_weekly(date():adddays(-7)), "\n")
-            end),
-            f(function()
-                return vfn.split(get_weekly(date():adddays(7)), "\n")
-            end),
-        }),
-    }),
-    s("@monthly", {
-        c(1, {
-            f(function()
-                return vfn.split(get_monthly(), "\n")
-            end),
-            f(function()
-                return vfn.split(get_monthly(date():addmonths(-1)), "\n")
-            end),
-            f(function()
-                return vfn.split(get_monthly(date():addmonths(1)), "\n")
-            end),
-        }),
-    }),
-    s("@NoMa", {
-        t({
-            "I found an interesting #Seed!",
-            "- ",
-        }),
-        i(1, "<New Seed>"),
-
-        t({
-            "",
-            "- This reminded me of ",
-        }),
-        i(2, "..."),
-        t({
-            "",
-            "    - ",
-        }),
-        i(3, "<Similarity>"),
-        t({
-            "",
-            "    - ",
-        }),
-        i(4, "<Difference>"),
-
-        t({
-            "",
-            "- I thought this was important because ",
-        }),
-        i(5, "..."),
     }),
     s({
         trig = "[{",

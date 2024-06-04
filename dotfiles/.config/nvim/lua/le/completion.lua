@@ -5,51 +5,7 @@
 -- nvim-cmp setup
 local lspkind = require("lspkind")
 local luasnip = require("le.luasnip")
-local atlas = require("le.atlas")
 local cmp = require("cmp")
-
-local wikilinks_source = {}
-wikilinks_source.new = function()
-    local self = setmetatable({ cache = false }, { __index = wikilinks_source })
-    return self
-end
-wikilinks_source.get_debug_name = function()
-    return "wikilinks"
-end
-wikilinks_source.complete = function(_, _, callback)
-    atlas.get_possible_paths(function(filepaths)
-        local items = {}
-        for _, filepath in ipairs(filepaths) do
-            vim.schedule(function()
-                local filename = atlas.path_to_filename(filepath)
-                local insert_text = filename
-                if
-                    not (
-                    luasnip.choice_active()
-                    and luasnip.get_active_snip().name == "Wikilink"
-                    )
-                then
-                    insert_text = "[[" .. insert_text .. "]]"
-                    table.insert(items, {
-                        label = filename .. "|",
-                        kind = cmp.lsp.CompletionItemKind.File,
-                        insertText = "[[" .. filename .. "|",
-                    })
-                end
-                table.insert(items, {
-                    label = filename,
-                    kind = cmp.lsp.CompletionItemKind.File,
-                    insertText = insert_text,
-                })
-            end)
-        end
-        callback(items)
-    end)
-end
-wikilinks_source.is_available = function()
-    return vim.bo.filetype == "markdown"
-end
-cmp.register_source("wikilinks", wikilinks_source.new())
 
 cmp.setup({
     preselect = cmp.PreselectMode.None,
@@ -139,8 +95,6 @@ cmp.setup({
             },
         },
         { name = "treesitter",   keyword_length = 5 },
-        { name = "omni" },
-        { name = "latex_symbols" },
     },
     window = {
         completion = {
@@ -156,7 +110,6 @@ cmp.setup({
                 mode = "symbol_text",
                 maxwidth = 50,
                 menu = {
-                    omni = "[Omni]",
                     buffer = "[Buffer]",
                     conjure = "[Conjure]",
                     nvim_lsp = "[LSP]",
@@ -165,7 +118,6 @@ cmp.setup({
                     treesitter = "[TS]",
                     path = "[Path]",
                     emoji = "[Emoji]",
-                    latex_symbols = "[LaTeX]",
                 },
                 before = function(entry_inner, vim_item_inner)
                     pcall(function()
@@ -185,19 +137,6 @@ cmp.setup({
                 .. (new_entry.menu and (" " .. new_entry.menu) or "")
             return new_entry
         end,
-    },
-})
-
-cmp.setup.filetype("markdown", {
-    sources = {
-        { name = "wikilinks",    keyword_length = 2 },
-        { name = "luasnip" },
-        { name = "emoji",        option = { insert = true } },
-        { name = "path" },
-        { name = "latex_symbols" },
-        { name = "nvim_lsp" },
-        { name = "treesitter",   keyword_length = 4 },
-        { name = "omni" },
     },
 })
 

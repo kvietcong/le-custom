@@ -7,6 +7,7 @@
 local whichkey = require("le.which-key")
 
 local lsp_servers = {
+    "lua_ls",
     "rust_analyzer",
     "lua_ls",
     "pyright",
@@ -19,6 +20,7 @@ local lsp_servers = {
     "yamlls",
     "wgsl_analyzer",
     "vimls",
+    "fennel_language_server",
 }
 
 require("mason").setup()
@@ -32,22 +34,20 @@ null_ls.setup({
     autostart = true,
     sources = {
         -- Formatting
-        null_ls.builtins.formatting.jq,
         null_ls.builtins.formatting.gofmt,
         null_ls.builtins.formatting.stylua,
         null_ls.builtins.formatting.fnlfmt,
-        -- null_ls.builtins.formatting.eslint,
-        null_ls.builtins.formatting.rustfmt,
-        null_ls.builtins.formatting.fourmolu,
-        null_ls.builtins.formatting.trim_newlines,
+        null_ls.builtins.formatting.prettier,
+        require("none-ls.formatting.rustfmt"),
+        require("none-ls.formatting.trim_newlines"),
 
         -- Code Actions
-        null_ls.builtins.code_actions.eslint,
+        require("none-ls.code_actions.eslint"),
         null_ls.builtins.code_actions.gitsigns,
 
         -- Diagnostics
-        null_ls.builtins.diagnostics.eslint,
-        null_ls.builtins.diagnostics.flake8,
+        require("none-ls.diagnostics.eslint"),
+        require("none-ls.diagnostics.flake8"),
     },
 })
 
@@ -93,11 +93,6 @@ t.insert(runtime_path, "lua/?.lua")
 t.insert(runtime_path, "lua/?/init.lua")
 
 local lspconfig = require("lspconfig")
-local luadev = require("neodev").setup({
-    library = {
-        plugins = { "nvim-treesitter", "plenary.nvim", "telescope.nvim" },
-    },
-})
 
 local lsp_settings = {
     lua_ls = {
@@ -154,4 +149,4 @@ require("lsp_signature").setup({
     hint_prefix = "✅ ",
 })
 
-return { null_ls = null_ls, lspconfig = lspconfig, luadev = luadev }
+return { null_ls = null_ls, lspconfig = lspconfig }
