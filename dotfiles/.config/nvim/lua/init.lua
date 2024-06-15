@@ -113,8 +113,8 @@ _G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim
 _G.is_mac = vfn.has("mac") == 1
 _G.is_wsl = vfn.has("wsl") == 1
 _G.is_win = vfn.has("win32") == 1
--- local is_unix = fn.has("unix") == 1
--- local is_linux = fn.has("linux") == 1
+_G.is_unix = vfn.has("unix") == 1
+_G.is_linux = vfn.has("linux") == 1
 _G.is_dev_mode = false
 _G.data_path = vfn.stdpath("data"):gsub("\\", "/")
 _G.config_path = vfn.stdpath("config"):gsub("\\", "/")
@@ -151,25 +151,7 @@ _G.lsp_servers = {
 _G["lsp-servers"] = _G.lsp_servers
 
 require("le.bootstrap")
-
--- This is to regen fnl plugin spec cache. I should really move off either hotpot or lazy
--- The likely issue is that lazy caches it and can't detect fnl/hotpot changes
-for _, file in
-    ipairs(
-        vim.fn.readdir(
-            vim.fn.stdpath("config") .. "/fnl/le/plugin_specs",
-            [[v:val =~ '\.fnl$']]
-        )
-    )
-do
-    require("le.plugin_specs." .. file:gsub("%.fnl$", ""))
-end
-
-require("lazy").setup(
-    -- Bug w/ Lazy or Hotpot: It doesn't support same name for lua and fnl folders for imports :(
-    { { import = "le.plugin_specs_lua" }, { import = "le.plugin_specs" } },
-    {}
-)
+require("lazy").setup("le.plugin_specs", {})
 
 local plenary = require("plenary")
 

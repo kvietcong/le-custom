@@ -42,7 +42,7 @@ end
 
 vim.keymap.set("v", "<Leader>s", function()
     local link = "https://google.com/search?q="
-        .. get_visual_selection():trim():urlencode()
+        .. get_visual_selection():trim():gsub("\n", " "):urlencode()
     if is_win then
         os.execute("start " .. link)
     else
@@ -51,25 +51,12 @@ vim.keymap.set("v", "<Leader>s", function()
     vapi.nvim_feedkeys(require("le.libf").clean("<Escape>"), "n", true)
 end, { desc = "Search in browser" })
 
-local parinfer_filetypes = {
-    "clojure",
-    "scheme",
-    "lisp",
-    "racket",
-    "hy",
-    "fennel",
-    "janet",
-    "carp",
-    "wast",
-    "yuck",
-    "dune",
-}
-
 local mini_comment = require("mini.comment")
 mini_comment.setup({
     options = {
         custom_commentstring = function()
-            local contextual_commentstring = require("ts_context_commentstring").calculate_commentstring()
+            local contextual_commentstring =
+                require("ts_context_commentstring").calculate_commentstring()
             return contextual_commentstring or vim.bo.commentstring
         end,
     },
