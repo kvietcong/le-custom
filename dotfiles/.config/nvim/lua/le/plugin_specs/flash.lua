@@ -2,7 +2,6 @@ local config = function()
     local flash = require("flash")
     flash.setup({
         modes = {
-            char = { highlight = { backdrop = false } },
             search = { enabled = false },
         },
     })

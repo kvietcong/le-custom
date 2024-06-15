@@ -11,21 +11,18 @@ local update_colorscheme = function(bg_override)
 end
 
 local config = function()
-    local catppuccin = require("catppuccin")
-    catppuccin.setup({ background = { dark = "frappe", light = "latte" } })
-    vim.cmd.colorscheme("catppuccin")
-    _G.ColorschemeTimer = vfn.timer_start(
-        100 * 60 * 15,
-        function() return update_colorscheme() end,
-        { ["repeat"] = -1 }
-    )
+    vim.g.gruvbox_material_background = "soft"
+    vim.g.gruvbox_material_enable_italic = true
+    vim.cmd.colorscheme("gruvbox-material")
+    _G.ColorschemeTimer = vfn.timer_start(100 * 60 * 15, function()
+        return update_colorscheme()
+    end, { ["repeat"] = -1 })
     update_colorscheme()
 end
 
 local lazy_spec = {
     {
-        "catppuccin/nvim",
-        name = "catppuccin",
+        "sainnhe/gruvbox-material",
         config = config,
         lazy = false,
         priority = 999,
