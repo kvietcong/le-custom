@@ -2,16 +2,8 @@
 -- Miscellaneous --
 -------------------
 
-local whichkey = require("le.which-key")
+local whichkey = require("which-key")
 local lf = require("le.libf")
-
--- Random FD command XD
-vapi.nvim_create_user_command("FD", function(command)
-    lf.fd_async({
-        args = { command.args },
-        callback = P,
-    })
-end, { nargs = "?" })
 
 -- Create directory on write if it doesn't exist
 vapi.nvim_create_autocmd("BufWritePre", {
@@ -35,35 +27,6 @@ vapi.nvim_create_autocmd("BufWritePre", {
 AutoReadTimer = vfn.timer_start(5000, function()
     vim.cmd([[silent! checktime]])
 end, { ["repeat"] = -1 })
-
--- TODO: move this into it's own file
-local oil = require("oil")
-oil.setup({
-    keymaps = {
-        ["g?"] = "actions.show_help",
-        ["<Enter>"] = "actions.select",
-        ["<C-s>"] = "actions.select_vsplit",
-        ["<C-h>"] = "actions.select_split",
-        ["<C-p>"] = "actions.preview",
-        ["<C-t>"] = "actions.close",
-        ["<C-c>"] = "actions.close",
-        ["<C-l>"] = "actions.refresh",
-        ["-"] = "actions.parent",
-        ["<C-o>"] = "actions.parent",
-        ["_"] = "actions.open_cwd",
-        ["<C-i>"] = "actions.open_cwd",
-        ["`"] = "actions.cd",
-        ["~"] = "actions.tcd",
-        ["g."] = "actions.toggle_hidden",
-    },
-    view_options = {
-        show_hidden = true,
-    },
-})
--- TODO: make better keymaps
-vim.keymap.set("n", "-", oil.open_float, { desc = "Open oil" })
-vim.keymap.set("n", "<C-f>", oil.toggle_float, { desc = "Toggle oil" })
-vim.keymap.set("n", "+", oil.close, { desc = "Close oil" })
 
 local get_visual_selection = function()
     local a_orig = vfn.getreg("a")
@@ -111,20 +74,6 @@ mini_comment.setup({
         end,
     },
 })
-
-local flash = require("flash")
-flash.setup({
-    modes = {
-        char = { highlight = { backdrop = false } },
-        search = { enabled = false },
-    },
-})
-vim.keymap.set({ "n", "x", "o" }, "s", function()
-    flash.jump()
-end, { desc = "Flash mode" })
-vim.keymap.set({ "x", "o" }, "S", function()
-    flash.treesitter()
-end, { desc = "Flash mode (Treesitter)" })
 
 -- Misc Mappings
 whichkey.register({

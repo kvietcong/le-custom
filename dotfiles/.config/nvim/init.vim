@@ -20,7 +20,6 @@ set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
 set nottimeout
-set cursorline
 set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set history=500
 set noerrorbells " Disable annoying sounds :)
@@ -46,7 +45,7 @@ set breakindent breakindentopt=shift:0
 set completeopt=menuone,noselect,preview
 set expandtab tabstop=4 shiftwidth=4 smarttab " Replace tabs with spaces
 set foldenable foldmethod=indent foldlevel=60 " Dang I wish I could do both syntax and indent folding
-set guifont=CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
+set guifont=Maple\ Mono\ NF,CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
 
 let mapleader = "\<Space>"
 let g:netrw_banner = 0
@@ -201,11 +200,6 @@ nnoremap ` '
 " Miscellaneous
 nnoremap <Backspace> diw
 
-" Banner comments
-nnoremap <Leader>c- I-- <Esc>A --<Esc>yyp0llv$hhhr-yykPjj<Esc>
-nnoremap <Leader>c= I== <Esc>A ==<Esc>yyp0llv$hhhr=yykPjj<Esc>
-nnoremap <Leader>c/ I// <Esc>A //<Esc>yyp0llv$hhhr=yykPjj<Esc>
-
 " Spell check (wtf are the defaults lol)
 " Add word to dictionary (Spelling Add)
 nnoremap <Leader><Leader>sa zg
@@ -231,4 +225,3 @@ autocmd! BufReadPost *
 
 " Make configuration files indent based on indent
 autocmd! BufNewFile,BufRead *.json,*.toml,*.yml,*.yaml set foldmethod=indent
-

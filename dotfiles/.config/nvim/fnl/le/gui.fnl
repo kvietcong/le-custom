@@ -1,5 +1,5 @@
 ;; GUI Settings
-(local which-key (require :le.which-key))
+(local which-key (require :which-key))
 
 (set vim.g.neovide_no_idle false)
 (set vim.g.neovide_refresh_rate 165)

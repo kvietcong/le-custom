@@ -7,7 +7,6 @@
 
 (local vfn vim.fn)
 (local vapi vim.api)
-(local Job (require :plenary.job))
 (local {: view} (require :fennel))
 
 ;; Helper table to keep track of dynamically generated things
@@ -222,24 +221,6 @@
         (set j (+ j 1)))))
   locals)
 
-(λ fd-async [options]
-  (type-check! [:table options])
-  (when options.cwd ; WHY YOU SO WACK WINDOWS
-    (if is_win (set options.cwd (options.cwd:gsub "~" :$HOME)))
-    (set options.cwd (vfn.expand options.cwd)))
-  (let [callback options.callback
-        callback-table (if callback
-                           {:on_exit (λ [job]
-                                       (let [result (job:result)
-                                             result (icollect [_ item (ipairs result)]
-                                                      (item:gsub "\\\\" "/"))]
-                                         (callback result)))}
-                           {})
-        job-options (t.extend :keep {:command :fd} options callback-table)
-        job (Job:new job-options)]
-    (job:start)
-    job))
-
 (λ clean [right-hand-side]
   (vapi.nvim_replace_termcodes right-hand-side true true true))
 
@@ -283,8 +264,6 @@
                  :notify_level notify-level
                  : set-register-and-notify
                  :set_register_and_notify set-register-and-notify
-                 : fd-async
-                 :fd_async fd-async
                  : get-date
                  :get_date get-date
                  : day?

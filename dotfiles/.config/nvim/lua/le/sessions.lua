@@ -1,6 +1,6 @@
 -- Session Management
 local mini_sessions = require("mini.sessions")
-local whichkey = require("le.which-key")
+local whichkey = require("which-key")
 local lf = require("le.libf") -- My Helper module (Fennel)
 
 local session_path = data_path .. "/session/"

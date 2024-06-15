@@ -4,14 +4,14 @@
 --=================================--
 -------------------------------------
 
---[[ TODO: General Configuration Things
-- Find out why Windows emoji selector doesn't work with Neovide
+--[[ TODO List
+- Contemplate moving to pure Lua b/c Lazy.nvim support for Fennel is sub-par
+    - Also simpler in general. I would really miss working w/ Fennel tho
+- Convert which-key.register calls to vim.keymap.set calls
 - See if I can bring most of my Obsidian Workflow into Vim
-- Check out :help ins-completion
 - Learn how tabs work in Vim
-- Find out why I get a weird once in a while fold bug
 - Check if every required executable is installed w/ vfn.executable
-- PDF makes telescope crash
+- Report issue that PDF makes telescope crash
 - Move to LuaDate for all date stuff
 ]]
 --------------------------
@@ -132,16 +132,46 @@ vapi.nvim_create_autocmd({ "BufWritePost" }, {
     end,
 })
 
-require("le.plugins")
+_G.lsp_servers = {
+    "lua_ls",
+    "rust_analyzer",
+    "lua_ls",
+    "pyright",
+    "tsserver",
+    "cssls",
+    "html",
+    "emmet_ls",
+    "hls",
+    "bashls",
+    "yamlls",
+    "wgsl_analyzer",
+    "vimls",
+    "fennel_language_server",
+}
+_G["lsp-servers"] = _G.lsp_servers
 
--- Allow Fennel to be used
-require("hotpot")
+require("le.bootstrap")
+
+-- This is to regen fnl plugin spec cache. I should really move off either hotpot or lazy
+-- The likely issue is that lazy caches it and can't detect fnl/hotpot changes
+for _, file in
+    ipairs(
+        vim.fn.readdir(
+            vim.fn.stdpath("config") .. "/fnl/le/plugin_specs",
+            [[v:val =~ '\.fnl$']]
+        )
+    )
+do
+    require("le.plugin_specs." .. file:gsub("%.fnl$", ""))
+end
+
+require("lazy").setup(
+    -- Bug w/ Lazy or Hotpot: It doesn't support same name for lua and fnl folders for imports :(
+    { { import = "le.plugin_specs_lua" }, { import = "le.plugin_specs" } },
+    {}
+)
 
 local plenary = require("plenary")
-
-require("le.hotpot")
-require("le.legendary")
-require("le.which-key")
 
 -- Force reload specific modules for faster development
 if not is_startup then
@@ -152,13 +182,14 @@ end
 local lf = require("le.libf") -- My Helper module (Fennel)
 
 -- Escaped Strings are Pain in Fennel
-DashboardArt = [[
+_G.DashboardArt = [[
 __      __          _                                              _  __  __   __
 \ \    / / ___     | |     __      ___    _ __     ___      o O O | |/ /  \ \ / /
  \ \/\/ / / -_)    | |    / _|    / _ \  | '  \   / -_)    o      | ' <    \ V /
   \_/\_/  \___|   _|_|_   \__|_   \___/  |_|_|_|  \___|   TS__[O] |_|\_\   _\_/_
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| {======|_|"""""|_| """"|
-"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-']]
+"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'./o--000'"`-0-0-'"`-0-0-'
+]]
 
 local safely_load_module = function(module_name, will_lazy_load)
     local callback
@@ -193,12 +224,10 @@ end
 local pretty_modules = {
     "le.gui",
     "le.notify",
-    "le.haskell",
     "le.starter",
     "le.dressing",
     "le.colorizer",
     "le.status",
-    "le.colorscheme",
     "le.indentscope",
 }
 
@@ -209,22 +238,12 @@ safely_load_modules(pretty_modules)
 ------------------------------
 
 local utility_modules = {
-    "le.git",
-    "le.lsp",
     "le.misc",
-    "le.hydra",
-    "le.luasnip",
-    "le.conjure",
-    "le.zen-mode",
-    "le.terminal",
     "le.fnl-init",
     "le.sessions",
     "le.surround",
-    "le.telescope",
     "le.cursorword",
     "le.trailspace",
-    "le.treesitter",
-    "le.completion",
 }
 
 safely_load_modules(utility_modules)

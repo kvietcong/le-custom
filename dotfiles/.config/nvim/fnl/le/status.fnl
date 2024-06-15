@@ -1,7 +1,7 @@
 ;; Setup Status Line
 (local mini-statusline (require :mini.statusline))
 (local navic (require :nvim-navic))
-(local which-key (require :le.which-key))
+(local which-key (require :which-key))
 (local mini-bufremove (require :mini.bufremove))
 (local mini-tabline (require :mini.tabline))
 
