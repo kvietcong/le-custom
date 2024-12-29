@@ -7,6 +7,7 @@ local lazy_spec = {
     "tpope/vim-eunuch",
     {
         "Exafunction/codeium.nvim",
+        event = "VeryLazy",
         dependencies = {
             "nvim-lua/plenary.nvim",
             "hrsh7th/nvim-cmp",
@@ -15,12 +16,14 @@ local lazy_spec = {
             require("codeium").setup({})
         end,
     },
+    {
+        "Goose97/timber.nvim",
+        event = "VeryLazy",
+        opts = {},
+    },
 
     -- Pretty Things
-    {
-        "stevearc/dressing.nvim",
-        config = true,
-    },
+    { "stevearc/dressing.nvim", config = true },
     {
         "folke/tokyonight.nvim",
         config = function()
@@ -50,9 +53,7 @@ local lazy_spec = {
         config = function()
             require("tiny-inline-diagnostic").setup({
                 preset = "classic",
-                hi = {
-                    background = "None",
-                },
+                hi = { background = "None" },
             })
             vim.diagnostic.config({ virtual_text = false })
         end,
