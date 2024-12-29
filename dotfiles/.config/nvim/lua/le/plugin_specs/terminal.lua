@@ -13,6 +13,10 @@ local kill_all_terminals = function()
     end
 end
 
+local get_is_split_type = function()
+    return vim.g.floaterm_wintype == "split"
+end
+
 local toggle_term_type = function()
     if vim.g.floaterm_wintype == "split" then
         vim.g.floaterm_wintype = "float"
@@ -35,6 +39,9 @@ local config = function()
 
     local term = function(cmd_list)
         local result = [[<C-\><C-n>]]
+        if cmd_list == nil then
+            return result
+        end
         if type(cmd_list) == "string" then
             cmd_list = { cmd_list }
         end
