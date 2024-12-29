@@ -6,7 +6,7 @@ local config = function()
             char = {
                 char_actions = function()
                     return { [";"] = "next", [","] = "prev" }
-                end
+                end,
             },
         },
     })
