@@ -30,7 +30,11 @@ local config = function()
                 i = function(fallback)
                     if cmp.visible() then
                         cmp.abort()
-                        vapi.nvim_feedkeys(require("le.libf").clean("<Esc>"), "n", false)
+                        vim.api.nvim_feedkeys(
+                            require("le.libf").clean("<Esc>"),
+                            "n",
+                            false
+                        )
                     else
                         fallback()
                     end
@@ -78,11 +82,9 @@ local config = function()
             end, { "i", "s" }),
         }),
         sources = {
-            { name = "nvim_lua" },
             { name = "nvim_lsp" },
-            { name = "nvim_lsp_signature_help" },
+            { name = "codeium" },
             { name = "emoji", option = { insert = true } },
-            { name = "conjure" },
             { name = "path" },
             {
                 name = "luasnip",
@@ -101,38 +103,20 @@ local config = function()
         },
         formatting = {
             fields = { "kind", "abbr", "menu" },
-            format = function(entry, vim_item)
-                local new_entry = lspkind.cmp_format({
-                    mode = "symbol_text",
-                    maxwidth = 50,
-                    menu = {
-                        buffer = "[Buffer]",
-                        conjure = "[Conjure]",
-                        nvim_lsp = "[LSP]",
-                        luasnip = "[LuaSnip]",
-                        nvim_lua = "[Lua]",
-                        treesitter = "[TS]",
-                        path = "[Path]",
-                        emoji = "[Emoji]",
-                    },
-                    before = function(entry_inner, vim_item_inner)
-                        pcall(function()
-                            vim_item_inner.menu = (vim_item_inner.menu or "")
-                                .. " "
-                                .. (entry_inner:get_completion_item().detail or "")
-                        end)
-                        return vim_item_inner
-                    end,
-                })(entry, vim_item)
-
-                local strings = vim.split(new_entry.kind, "%s", { trimempty = true })
-                new_entry.kind = " " .. (strings[1] or "") .. " "
-                new_entry.menu = "    ("
-                    .. (strings[2] or "")
-                    .. ")"
-                    .. (new_entry.menu and (" " .. new_entry.menu) or "")
-                return new_entry
-            end,
+            format = lspkind.cmp_format({
+                mode = "symbol",
+                menu = {
+                    buffer = "[Buffer]",
+                    nvim_lsp = "[LSP]",
+                    luasnip = "[LuaSnip]",
+                    nvim_lua = "[Lua]",
+                    treesitter = "[TS]",
+                    path = "[Path]",
+                    emoji = "[Emoji]",
+                    codeium = "[AI]",
+                },
+                symbol_map = { Codeium = "" },
+            }),
         },
     })
 
@@ -165,7 +149,7 @@ local lazy_spec = {
                     region_check_events = {
                         "CursorMoved",
                         "CursorHold",
-                        "InsertEnteer",
+                        "InsertEnter",
                     },
                 },
             },
@@ -176,7 +160,6 @@ local lazy_spec = {
             "hrsh7th/cmp-nvim-lsp",
             "ray-x/cmp-treesitter",
             "onsails/lspkind.nvim",
-            "PaterJason/cmp-conjure",
             "saadparwaiz1/cmp_luasnip",
         },
     },
