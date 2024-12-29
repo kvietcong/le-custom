@@ -81,6 +81,7 @@ else
     autocmd TerminalOpen * setlocal nospell
 endif
 
+tnoremap <M-;> <C-\><C-n>
 tnoremap <Escape><Escape><Escape> <C-\><C-n>
 tnoremap <M-Escape><M-Escape><M-Escape> <C-\><C-n>
 
