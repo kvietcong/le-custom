@@ -3,71 +3,45 @@
 ---------------------------------------------
 
 local config = function()
-    local whichkey = require("which-key")
-
-    -- Format Command
-    vapi.nvim_create_user_command("Format", function()
-        vim.lsp.buf.format()
-    end, {})
+    local wk = require("which-key")
 
     local on_attach = function(client, buffer)
-        local navic = require("nvim-navic")
         if client.server_capabilities.documentSymbolProvider then
+            local navic = require("nvim-navic")
             navic.attach(client, buffer)
         end
-        whichkey.register({
-            g = {
-                name = "(g)o to",
-                d = { ":Telescope lsp_definitions<Enter>", "(g)o to (d)efinition" },
-                D = { vim.lsp.buf.declaration, "(g)o to (D)eclaration" },
-                i = {
-                    ":Telescope lsp_implementations<Enter>",
-                    "(g)o to (i)mplementation",
-                },
-                r = { ":Telescope lsp_references<Enter>", "(g)o to (r)eferences" },
+        wk.add({
+            { "gd", ":Telescope lsp_definitions<Enter>", desc = "see definitions" },
+            { "gD", vim.lsp.buf.declaration, desc = "see declaration" },
+            {
+                "gi",
+                ":Telescope lsp_implementations<Enter>",
+                desc = "see implementations",
             },
-            ["<Leader>"] = {
-                c = {
-                    name = "(c)ode",
-                    a = { vim.lsp.buf.code_action, "(c)ode (a)ction" },
-                    d = { vim.diagnostic.open_float, "(c)ode (d)iagnostic" },
-                    f = { ":Format<Enter>", "(c)ode (f)ormatting" },
-                    h = { vim.lsp.buf.hover, "(c)ode (h)over" },
-                    s = { vim.lsp.buf.signature_help, "(c)ode (s)ignature" },
-                    t = { vim.lsp.buf.type_definition, "(c)ode (t)ype" },
-                },
-                fs = { ":Telescope lsp_document_symbols<Enter>", "(s)ymbols" },
-                rn = { vim.lsp.buf.rename, "(r)e(n)ame symbol" },
-            },
-        }, { buffer = buffer })
+            { "gr", ":Telescope lsp_references<Enter>", desc = "see references" },
+        })
+        wk.add({
+            { "<Leader>c", group = "code" },
+            { "<Leader>ca", vim.lsp.buf.code_action, desc = "actions" },
+            { "<Leader>cd", vim.diagnostic.open_float, desc = "diagnostics" },
+            { "<Leader>cf", vim.lsp.buf.format, desc = "format (lsp)" },
+            { "<Leader>ch", vim.lsp.buf.hover, desc = "hover" },
+            { "<Leader>cs", vim.lsp.buf.signature_help, desc = "signature" },
+            { "<Leader>ct", vim.lsp.buf.type_definition, desc = "type" },
+        })
+        wk.add({
+            { "<Leader>fs", ":Telescope lsp_document_symbols<Enter>", desc = "symbols" },
+            { "<Leader>rn", vim.lsp.buf.rename, desc = "rename" },
+            { "<F2>", vim.lsp.buf.rename, desc = "rename" },
+        })
     end
 
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
     local runtime_path = vim.split(package.path, ";", nil)
-    t.insert(runtime_path, "lua/?.lua")
-    t.insert(runtime_path, "lua/?/init.lua")
-
-    local lspconfig = require("lspconfig")
-    require("lspconfig.configs").fennel_language_server = {
-        default_config = {
-            cmd = { "fennel-language-server" },
-            filetypes = { "fennel" },
-            single_file_support = true,
-            root_dir = lspconfig.util.root_pattern("fnl"),
-            settings = {
-                fennel = {
-                    workspace = {
-                        library = vim.api.nvim_list_runtime_paths(),
-                    },
-                    diagnostics = {
-                        globals = { "vim" },
-                    },
-                },
-            },
-        },
-    }
+    table.insert(runtime_path, "lua/?.lua")
+    table.insert(runtime_path, "lua/?/init.lua")
 
     local lsp_settings = {
         lua_ls = {
@@ -79,6 +53,7 @@ local config = function()
                             -- Neovim Stuff
                             "vim",
                             "P",
+                            "PR",
                             "MiniSessions",
                             "MiniStatusline",
                             "MiniTrailspace",
@@ -94,7 +69,7 @@ local config = function()
                         },
                     },
                     -- Make the server aware of Neovim runtime files
-                    workspace = { library = vapi.nvim_get_runtime_file("", true) },
+                    workspace = { library = vim.api.nvim_get_runtime_file("", true) },
                 },
             },
         },
@@ -107,22 +82,16 @@ local config = function()
         },
     }
 
-    if is_startup then -- Only load LSPs on startup
-        for _, server in ipairs(lsp_servers) do
-            local setup = {}
-            if lsp_settings[server] ~= nil then
-                setup = lsp_settings[server]
-            end
-            setup.on_attach = on_attach
-            setup.capabilities = capabilities
-            lspconfig[server].setup(setup)
+    local lspconfig = require("lspconfig")
+    for _, server in ipairs(lsp_servers) do
+        local setup = {}
+        if lsp_settings[server] ~= nil then
+            setup = lsp_settings[server]
         end
+        setup.on_attach = on_attach
+        setup.capabilities = capabilities
+        lspconfig[server].setup(setup)
     end
-
-    require("lsp_signature").setup({
-        hint_enable = true,
-        hint_prefix = "✅ ",
-    })
 end
 
 local lazy_spec = {
@@ -131,8 +100,14 @@ local lazy_spec = {
         event = { "BufReadPre", "BufNewFile" },
         config = config,
         dependencies = {
-            { "SmiteshP/nvim-navic", lazy = false },
-            "ray-x/lsp_signature.nvim",
+            "SmiteshP/nvim-navic",
+            {
+                "ray-x/lsp_signature.nvim",
+                opts = {
+                    hint_enable = true,
+                    transparency = 10,
+                },
+            },
         },
     },
 }

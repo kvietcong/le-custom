@@ -1,6 +1,6 @@
 local config = function()
     local null_ls = require("null-ls")
-    return null_ls.setup({
+    null_ls.setup({
         autostart = true,
         sources = {
             null_ls.builtins.formatting.gofmt,
@@ -15,12 +15,16 @@ local config = function()
             require("none-ls.diagnostics.flake8"),
         },
     })
+
+    local wk = require("which-key")
+    wk.add({ "<Leader>cf", vim.lsp.buf.format, desc = "formatting" })
 end
 
 local lazy_spec = {
     {
         "nvimtools/none-ls.nvim",
         config = config,
+        keymap = { { "<Leader>cf", "m'ggVG=''", desc = "format" } },
         dependencies = { "nvimtools/none-ls-extras.nvim" },
         event = { "BufReadPre", "BufNewFile" },
     },
