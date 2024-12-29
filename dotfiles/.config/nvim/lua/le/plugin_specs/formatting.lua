@@ -17,14 +17,13 @@ local config = function()
     })
 
     local wk = require("which-key")
-    wk.add({ "<Leader>cf", vim.lsp.buf.format, desc = "formatting" })
+    wk.add({ "<Leader>cf", "m'ggVG=''", desc = "format (no lsp)" })
 end
 
 local lazy_spec = {
     {
         "nvimtools/none-ls.nvim",
         config = config,
-        keymap = { { "<Leader>cf", "m'ggVG=''", desc = "format" } },
         dependencies = { "nvimtools/none-ls-extras.nvim" },
         event = { "BufReadPre", "BufNewFile" },
     },
