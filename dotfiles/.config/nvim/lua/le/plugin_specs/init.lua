@@ -5,7 +5,6 @@ local lazy_spec = {
 
     -- Quality of Life
     "tpope/vim-eunuch",
-    "godlygeek/tabular",
     {
         "Exafunction/codeium.nvim",
         dependencies = {
