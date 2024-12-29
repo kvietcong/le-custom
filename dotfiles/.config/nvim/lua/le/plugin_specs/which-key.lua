@@ -105,7 +105,7 @@ local setup_window_manipulation = function()
         end
     end
     local c = function(cmd)
-        return ":"..cmd.."<Enter>"
+        return ":" .. cmd .. "<Enter>"
     end
     local wk = require("which-key")
     wk.add({

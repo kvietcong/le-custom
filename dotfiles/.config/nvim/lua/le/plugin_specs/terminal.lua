@@ -1,39 +1,90 @@
+local kill_all_terminals = function()
+    local i = 0
+    while true do
+        local output = vim.api.nvim_cmd({ cmd = "FloatermKill" }, { output = true })
+        if output:match("No floaterms with the bufnr or name") then
+            break
+        end
+        i = i + 1
+    end
+    local ending = i == 1 and "" or "s"
+    if i > 0 then
+        require("le.lib").notify_info("Killed " .. tostring(i) .. " terminal" .. ending)
+    end
+end
+
+local toggle_term_type = function()
+    if vim.g.floaterm_wintype == "split" then
+        vim.g.floaterm_wintype = "float"
+        vim.g.floaterm_height = 0.9
+    else
+        vim.g.floaterm_wintype = "split"
+        vim.g.floaterm_height = 0.4
+    end
+    kill_all_terminals()
+    require("le.lib").notify_info(
+        "Switched to " .. vim.g.floaterm_wintype .. " terminals"
+    )
+end
+
 local config = function()
-    -- [TODO]: Make an option to toggle between float and split
-    --      Kill all terms then set vim.g options
     local wk = require("which-key")
-    local clean = require("le.lib").clean
     vim.g.floaterm_width = 0.9
     vim.g.floaterm_height = 0.9
     vim.g.autoclose = 1
-    wk.register({
-        ["<C-t>"] = { ":FloatermToggle<Enter>", "Open Terminal" },
+
+    local term = function(cmd_list)
+        local result = [[<C-\><C-n>]]
+        if type(cmd_list) == "string" then
+            cmd_list = { cmd_list }
+        end
+        for _, cmd in ipairs(cmd_list) do
+            result = result .. ":" .. cmd .. "<Enter>"
+        end
+        return result
+    end
+
+    wk.add({
+        { "<C-t>", ":FloatermToggle<Enter>", desc = "open terminal" },
+        { "<C-q>", toggle_term_type, desc = "toggle term type" },
     })
-    wk.register({
-        ["<C-t>"] = { clean("<C-\\><C-n>:FloatermToggle<Enter>"), "Close Terminal" },
-        ["<A-l>"] = {
-            clean("<C-\\><C-n>:FloatermNext<Enter>"),
-            "Go To Next Terminal",
+    wk.add({
+        mode = "t",
+        {
+            "<C-t>",
+            term("FloatermToggle"),
+            desc = "close terminal",
         },
-        ["<A-h>"] = {
-            clean("<C-\\><C-n>:FloatermPrev<Enter>"),
-            "Go To Previous Terminal",
+        { "<A-l>", term("FloatermNext"), desc = "Next Terminal" },
+        {
+            "<A-h>",
+            term("FloatermPrev"),
+            desc = "previous terminal",
         },
-        ["<A-q>"] = {
-            clean("<C-\\><C-n>:FloatermKill<Enter>:FloatermToggle<Enter>"),
-            "Quit/Kill The Current Terminal",
+        {
+            "<A-q>",
+            term({ "FloatermKill", "FloatermToggle" }),
+            desc = "quit/kill the current terminal",
         },
-        ["<A-n>"] = {
-            clean("<C-\\><C-n>:FloatermNew<Enter>"),
-            "Create New Terminal",
+        {
+            "<A-Q>",
+            term("FloatermKill"),
+            desc = "quit/kill the current terminal",
         },
-    }, { mode = "t" })
-    wk.register({
-        ["<C-t>"] = {
+        {
+            "<A-n>",
+            term("FloatermNew"),
+            desc = "create new terminal",
+        },
+    })
+    wk.add({
+        mode = "v",
+        {
+            "<C-t>",
             ":FloatermSend<Enter>:FloatermShow<Enter>",
-            "Send Lines to Terminal",
+            desc = "send lines to terminal",
         },
-    }, { mode = "v" })
+    })
 end
 
 local lazy_spec = { { "voldikss/vim-floaterm", config = config } }
