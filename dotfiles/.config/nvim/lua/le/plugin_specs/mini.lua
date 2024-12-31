@@ -269,42 +269,6 @@ local setup_statusline = function()
     })
 end
 
-local setup_tabline = function()
-    local bufremove = require("mini.bufremove")
-    local tabline = require("mini.tabline")
-    local wk = require("which-key")
-
-    bufremove.setup({})
-    tabline.setup({
-        tabpage_section = "right",
-    })
-    wk.add({
-        { "<Leader>b", group = "buffers" },
-        { "<Leader>bf", ":Telescope buffers<Enter>", desc = "find" },
-        { "<Leader>bl", ":bn<Enter>", desc = "next" },
-        { "<Leader>bh", ":bp<Enter>", desc = "prev" },
-        { "<M-l>", ":bn<Enter>", desc = "next" },
-        { "<M-h>", ":bp<Enter>", desc = "prev" },
-        { "<M-Right>", ":bn<Enter>", desc = "next" },
-        { "<M-Left>", ":bp<Enter>", desc = "prev" },
-        { "<Leader>bo", ":BO<Enter>", desc = "only this" },
-        {
-            "<Leader>bq",
-            function()
-                bufremove.unshow_in_window()
-            end,
-            desc = "quit (unshow)",
-        },
-        {
-            "<Leader>bd",
-            function()
-                bufremove.delete(0, true)
-            end,
-            desc = "delete",
-        },
-    })
-end
-
 local setup_indentscope = function()
     local indentscope = require("mini.indentscope")
     indentscope.setup({
@@ -377,12 +341,47 @@ local setup_files = function()
     })
 end
 
+local setup_buffers = function()
+    local bufremove = require("mini.bufremove")
+    bufremove.setup({})
+
+    local tabline = require("mini.tabline")
+    tabline.setup({
+        tabpage_section = "right",
+    })
+
+    local wk = require("which-key")
+    wk.add({
+        { "<Leader>b", group = "buffers" },
+        { "<Leader>bf", ":Telescope buffers<Enter>", desc = "find" },
+        { "<M-l>", ":bn<Enter>", desc = "next" },
+        { "<M-h>", ":bp<Enter>", desc = "prev" },
+        { "<M-Right>", ":bn<Enter>", desc = "next" },
+        { "<M-Left>", ":bp<Enter>", desc = "prev" },
+        { "<Leader>bo", ":BO<Enter>", desc = "only this" },
+        {
+            "<Leader>bq",
+            function()
+                bufremove.unshow_in_window()
+            end,
+            desc = "quit (unshow)",
+        },
+        {
+            "<Leader>bd",
+            function()
+                bufremove.delete(0, true)
+            end,
+            desc = "delete",
+        },
+    })
+end
+
 local config = function()
     setup_dashboard()
     setup_sessions()
     setup_surround()
     setup_statusline()
-    setup_tabline()
+    setup_buffers()
     setup_indentscope()
     setup_trailspace()
     setup_highlights()
@@ -396,7 +395,8 @@ local lazy_spec = {
         "echasnovski/mini.nvim",
         config = config,
         dependencies = {
-            { "SmiteshP/nvim-navic" },
+            "folke/which-key.nvim",
+            "SmiteshP/nvim-navic",
         },
     },
 }

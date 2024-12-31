@@ -1,4 +1,4 @@
-local module = {}
+local M = {}
 
 ---@param tbl table Table to search
 ---@param target_value any Value to search
@@ -31,13 +31,13 @@ for level, level_number in pairs(vim.log.levels) do
     local notifier = function(message, custom_title)
         notify_level(message, level_number, custom_title)
     end
-    module["notify_" .. level] = notifier
-    module["notify_" .. level:lower()] = notifier
+    M["notify_" .. level] = notifier
+    M["notify_" .. level:lower()] = notifier
 end
 
 ---@param x any
 ---@return boolean is_falsy
-module.get_is_falsy = function(x)
+M.get_is_falsy = function(x)
     return (not x) or (x == "") or (x == 0) or (x == vim.NIL)
 end
 
@@ -45,14 +45,14 @@ end
 ---See vim.api.nvim_replace_termcodes
 ---@param rhs string Action String (Right Hand Side)
 ---@return string rhs Action string w/ correct termcode values
-module.clean = function(rhs)
+M.clean = function(rhs)
     return vim.api.nvim_replace_termcodes(rhs, true, true, true)
 end
 
 ---Return whether or not the file is large (many lines or literally large)
 ---@param buf_number number Buffer ID
 ---@return boolean is_thicc
-module.get_is_thicc_buffer = function(buf_number)
+M.get_is_thicc_buffer = function(buf_number)
     buf_number = buf_number or 0
     local buf_name = vim.api.nvim_buf_get_name(buf_number)
     local buf_size = vim.fn.getfsize(buf_name)
@@ -61,7 +61,7 @@ module.get_is_thicc_buffer = function(buf_number)
 end
 
 ---@return string text What's selected in visual mode
-module.get_visual_selection = function()
+M.get_visual_selection = function()
     local a_orig = vim.fn.getreg("a")
     local mode = vim.fn.mode()
     if mode ~= "v" and mode ~= "V" then
@@ -73,4 +73,25 @@ module.get_visual_selection = function()
     return text
 end
 
-return module
+---Get if buffer w/ buffer id is a file
+---@param buf_id integer
+---@return boolean
+M.get_is_file_buffer = function(buf_id)
+    -- Not sure if it's 100% accurate but is the best "simple" way
+    return vim.tbl_contains({ "", nil }, vim.api.nvim_buf_get_option(buf_id, "buftype"))
+end
+
+---Remove buffers not in a window
+M.close_inactive_buffers = function()
+    local active_buffers = vim.fn.tabpagebuflist()
+    for _, buf_id in ipairs(vim.api.nvim_list_bufs()) do
+        if
+            M.get_is_file_buffer(buf_id)
+            and not vim.tbl_contains(active_buffers, buf_id)
+        then
+            vim.api.nvim_buf_delete(buf_id, {})
+        end
+    end
+end
+
+return M
