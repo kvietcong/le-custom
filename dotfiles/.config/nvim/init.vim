@@ -19,11 +19,11 @@ set undofile
 set autoread
 set linebreak " Wrap text that is too long but without inserting EOL
 set noshowmode " Disable native mode indicator (No need for two)
-set nottimeout
 set scrolloff=2 " Ensure at least some number of lines is above/below the cursor
 set history=500
 set noerrorbells " Disable annoying sounds :)
 set termguicolors " Enable 24bit RBG color in the terminal UI
+set ttimeoutlen=10
 set updatetime=250
 set signcolumn=yes
 set timeoutlen=300 " Delay for things to happen with multi key bindings

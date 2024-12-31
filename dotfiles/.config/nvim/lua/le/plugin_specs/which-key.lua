@@ -218,12 +218,12 @@ local config = function()
         { "<Leader><Leader>q", desc = "quit all" },
         {
             group = "sessions",
-            { "<Leader>s" },
-            { "<Leader>sa", desc = "add to dictionary" },
-            { "<Leader>sr", desc = "remove from dictionary" },
-            { "<Leader>su", desc = "undo dictionary action" },
-            { "<Leader>sl", desc = "next spelling error" },
-            { "<Leader>sh", desc = "prev spelling error" },
+            { "<Leader><Leader>s" },
+            { "<Leader><Leader>sa", desc = "add to dictionary" },
+            { "<Leader><Leader>sr", desc = "remove from dictionary" },
+            { "<Leader><Leader>su", desc = "undo dictionary action" },
+            { "<Leader><Leader>sl", desc = "next spelling error" },
+            { "<Leader><Leader>sh", desc = "prev spelling error" },
         },
     })
 
@@ -237,7 +237,10 @@ local lazy_spec = {
         config = config,
         priority = 1000,
         lazy = false,
-        dependencies = { "sindrets/winshift.nvim", "mrjones2014/smart-splits.nvim" },
+        dependencies = {
+            "sindrets/winshift.nvim",
+            "mrjones2014/smart-splits.nvim",
+        },
     },
 }
 

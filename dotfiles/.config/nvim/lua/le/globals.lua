@@ -20,21 +20,13 @@ _G.lsp_servers = {
     "cssls",
     "html",
     "emmet_ls",
-    -- "hls",
     "bashls",
     "yamlls",
     "wgsl_analyzer",
     "vimls",
+    "gopls",
+    -- "hls",
 }
-
--- Globally helpful things
-_G.P = function(...)
-    vim.print(...)
-end
-_G.PR = function(...)
-    P(...)
-    return ...
-end
 
 -- Metatable shenanigans
 local String = getmetatable("")
