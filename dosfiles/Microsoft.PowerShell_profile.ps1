@@ -1,8 +1,8 @@
 Set-Alias -Name vim -Value nvim
 Set-Alias -Name cd -Value z -Option AllScope
+Set-Alias -Name lg -Value lazygit
 $env:NEOVIDE_MULTIGRID="true"
 function quit { exit }
-Set-PoshPrompt -Theme ~/.mytheme.omp.json
 
 # Vi Mode
 $PSReadLineOptions = @{
@@ -37,14 +37,9 @@ Set-PSReadlineKeyHandler -Chord Ctrl+n -Function MenuComplete
 Set-PSReadlineKeyHandler -Chord Ctrl+n -Function TabCompleteNext
 Set-PSReadlineKeyHandler -Chord Ctrl+p -Function TabCompletePrevious
 
-# Autocomplete for fd and rg
-Import-Module $HOME\Documents\PowerShell\_fd.ps1
-Import-Module $HOME\Documents\PowerShell\_rg.ps1
-
+# Install: `Install-Module -Name PSFzf`
 Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
 
 $env:FZF_DEFAULT_COMMAND='fd -H -L -E .git -t f'
 $env:FZF_CTRL_T_COMMAND=$env:FZF_DEFAULT_COMMAND
 $env:FZF_CTRL_T_OPTS='--preview "bat --color=always --line-range=:500 {}"'
-
-Clear-Host # Make sure everything is cleared
