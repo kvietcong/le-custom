@@ -83,7 +83,7 @@ local config = function()
     }
 
     local lspconfig = require("lspconfig")
-    for _, server in ipairs(lsp_servers) do
+    for _, server in ipairs(LSP_SERVERS) do
         local setup = {}
         if lsp_settings[server] ~= nil then
             setup = lsp_settings[server]
