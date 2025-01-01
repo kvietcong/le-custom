@@ -1,6 +1,6 @@
 -- Highlight yanks
 vim.api.nvim_create_autocmd("TextYankPost", {
-    group = le_group,
+    group = LE_GROUP,
     desc = "Highlight Yanked Text",
     callback = function()
         vim.highlight.on_yank({ higroup = "IncSearch", timeout = 500 })
@@ -10,7 +10,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- Create directory on write if it doesn't exist
 vim.api.nvim_create_autocmd("BufWritePre", {
     pattern = "*",
-    group = le_group,
+    group = LE_GROUP,
     callback = function()
         local filepath = vim.fn.expand("<afile>")
         if filepath:match("://") then
@@ -35,7 +35,7 @@ local lib = require("le.lib")
 vim.keymap.set("v", "<Leader>s", function()
     local link = "https://google.com/search?q="
         .. lib.get_visual_selection():trim():gsub("\n", " "):urlencode()
-    if is_win then
+    if IS_WIN then
         os.execute("start " .. link)
     else
         os.execute("xdg-open " .. link)

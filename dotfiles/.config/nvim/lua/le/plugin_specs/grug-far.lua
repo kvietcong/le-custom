@@ -16,7 +16,7 @@ local config = function()
         bufremove.delete(0, true)
     end
     vim.api.nvim_create_autocmd("FileType", {
-        group = le_group,
+        group = LE_GROUP,
         pattern = { "grug-far" },
         callback = function()
             wk.add({

@@ -30,7 +30,7 @@ local config = function()
     })
 
     vim.api.nvim_create_autocmd("User", {
-        group = le_group,
+        group = LE_GROUP,
         pattern = "TelescopePreviewerLoaded",
         callback = function()
             vim.opt_local.wrap = true
@@ -47,6 +47,7 @@ local config = function()
             desc = "telescope pickers",
         },
         { "<Leader>fb", ":Telescope buffers<Enter>", desc = "buffers" },
+        { "<Leader>fc", ":Telescope commands<Enter>", desc = "commands" },
         { "<Leader>ff", ":Telescope find_files<Enter>", desc = "files" },
         {
             "<Leader>fF",

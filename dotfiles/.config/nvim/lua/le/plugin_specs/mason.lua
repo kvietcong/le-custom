@@ -2,7 +2,7 @@ local config = function()
     local mason = require("mason")
     local mason_lspconfig = require("mason-lspconfig")
     mason.setup({})
-    return mason_lspconfig.setup({ ensure_installed = lsp_servers })
+    return mason_lspconfig.setup({ ensure_installed = LSP_SERVERS })
 end
 
 local lazy_spec = {

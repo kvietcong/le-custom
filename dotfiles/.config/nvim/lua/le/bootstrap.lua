@@ -26,7 +26,7 @@ if #missing_executables > 0 then
 end
 
 -- Bootstrap lazy.nvim
-local plugins_path = data_path .. "/lazy"
+local plugins_path = DATA_PATH .. "/lazy"
 local lazy_path = plugins_path .. "/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazy_path) then
     vim.fn.system({

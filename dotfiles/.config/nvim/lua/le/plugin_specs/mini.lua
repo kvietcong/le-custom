@@ -12,7 +12,7 @@ local setup_sessions = function()
     local lib = require("le.lib")
     local wk = require("which-key")
 
-    local session_path = data_path .. "/session/"
+    local session_path = DATA_PATH .. "/session/"
     if vim.fn.empty(vim.fn.glob(session_path, nil, nil)) > 0 then
         vim.cmd("!mkdir " .. session_path)
     end
@@ -46,7 +46,7 @@ local setup_sessions = function()
     })
 
     vim.api.nvim_create_autocmd("VimLeavePre", {
-        group = le_group,
+        group = LE_GROUP,
         desc = "Save current session for restoration.",
         callback = function()
             sessions.write("Last Session.vim", {})
@@ -276,14 +276,14 @@ local setup_indentscope = function()
     })
 
     vim.api.nvim_create_autocmd("TermOpen", {
-        group = le_group,
+        group = LE_GROUP,
         callback = function()
             vim.b.miniindentscope_disable = true
         end,
     })
 
     vim.api.nvim_create_autocmd("BufEnter", {
-        group = le_group,
+        group = LE_GROUP,
         callback = function(event)
             local lib = require("le.lib")
             if lib.get_is_thicc_buffer(event.buf) then
@@ -299,7 +299,7 @@ local setup_trailspace = function()
     local trailspace = require("mini.trailspace")
     trailspace.setup({})
     vim.api.nvim_create_autocmd("BufWritePre", {
-        group = le_group,
+        group = LE_GROUP,
         desc = "Trim trailing spaces on save",
         callback = trailspace.trim,
     })

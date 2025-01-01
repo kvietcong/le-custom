@@ -235,7 +235,7 @@ local lazy_spec = {
     {
         "folke/which-key.nvim",
         config = config,
-        priority = 1000,
+        priority = PRIORITY.HIGH,
         lazy = false,
         dependencies = {
             "sindrets/winshift.nvim",

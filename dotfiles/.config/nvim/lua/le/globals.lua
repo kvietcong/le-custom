@@ -1,32 +1,61 @@
-_G.le_group = vim.api.nvim_create_augroup("LeConfiguration", { clear = true })
-_G.is_neovide = vim.g.neovide ~= nil
-_G.is_nvui = vim.g.nvui ~= nil
-_G.is_fvim = vim.g.fvim_loaded
-_G.is_goneovim = vim.g.goneovim
-_G.is_gui = is_neovide or is_nvui or is_fvim or is_goneovim
-_G.is_mac = vim.fn.has("mac") == 1
-_G.is_wsl = vim.fn.has("wsl") == 1
-_G.is_win = vim.fn.has("win32") == 1
-_G.is_unix = vim.fn.has("unix") == 1
-_G.is_linux = vim.fn.has("linux") == 1
-_G.data_path = vim.fn.stdpath("data"):gsub("\\", "/")
-_G.config_path = vim.fn.stdpath("config"):gsub("\\", "/")
-_G.lsp_servers = {
-    "lua_ls",
-    "rust_analyzer",
-    "lua_ls",
-    "pyright",
-    "ts_ls",
-    "cssls",
-    "html",
-    "emmet_ls",
-    "bashls",
-    "yamlls",
-    "wgsl_analyzer",
-    "vimls",
-    "gopls",
-    -- "hls",
+_G.LE_GROUP = vim.api.nvim_create_augroup("LeConfiguration", { clear = true })
+_G.IS_NEOVIDE = vim.g.neovide ~= nil
+_G.IS_NVUI = vim.g.nvui ~= nil
+_G.IS_FVIM = vim.g.fvim_loaded
+_G.IS_GONEOVIM = vim.g.goneovim
+_G.IS_GUI = IS_NEOVIDE or IS_NVUI or IS_FVIM or IS_GONEOVIM
+_G.IS_MAC = vim.fn.has("mac") == 1
+_G.IS_WSL = vim.fn.has("wsl") == 1
+_G.IS_WIN = vim.fn.has("win32") == 1
+_G.IS_UNIX = vim.fn.has("unix") == 1
+_G.IS_LINUX = vim.fn.has("linux") == 1
+_G.DATA_PATH = tostring(vim.fn.stdpath("data")):gsub("\\", "/")
+_G.CONFIG_PATH = tostring(vim.fn.stdpath("config")):gsub("\\", "/")
+_G.PRIORITY = {
+    HIGH = 1000,
+    MEDIUM = 500,
+    DEFAULT = 50,
+    LOW = 0,
 }
+
+local lsp_servers_by_executable = {
+    node = {
+        "lua_ls",
+        "pyright",
+        "ts_ls",
+        "cssls",
+        "html",
+        "emmet_ls",
+        "bashls",
+        "yamlls",
+        "wgsl_analyzer",
+        "vimls",
+    },
+    cargo = { "rust_analyzer" },
+    go = { "gopls" },
+    ghcup = { "hls" },
+}
+
+_G.LSP_SERVERS = vim.iter(lsp_servers_by_executable)
+    :fold({}, function(acc, exe, lsp_servers)
+        if vim.fn.executable(exe) == 0 then
+            vim.fn.timer_start(1000, function()
+                -- Delaying to get the cool notifications XD
+                require("le.lib").notify_error(
+                    string.format(
+                        "Missing '%s' required for: %s",
+                        exe,
+                        vim.inspect(lsp_servers)
+                    )
+                )
+            end)
+            return acc
+        end
+        for _, lsp_server in ipairs(lsp_servers) do
+            table.insert(acc, lsp_server)
+        end
+        return acc
+    end)
 
 -- Metatable shenanigans
 local String = getmetatable("")

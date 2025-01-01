@@ -1,10 +1,11 @@
 local lazy_spec = {
     "nvim-lua/plenary.nvim",
-    { "kyazdani42/nvim-web-devicons", config = true },
+    { "kyazdani42/nvim-web-devicons", opts = {} },
     { "dstein64/vim-startuptime", cmd = { "StartupTime" } },
 
     -- Quality of Life
     "tpope/vim-eunuch",
+    { "Goose97/timber.nvim", event = "VeryLazy", opts = {} },
     {
         "Exafunction/codeium.nvim",
         event = "VeryLazy",
@@ -12,13 +13,6 @@ local lazy_spec = {
             "nvim-lua/plenary.nvim",
             "hrsh7th/nvim-cmp",
         },
-        config = function()
-            require("codeium").setup({})
-        end,
-    },
-    {
-        "Goose97/timber.nvim",
-        event = "VeryLazy",
         opts = {},
     },
 
@@ -26,12 +20,14 @@ local lazy_spec = {
     { "stevearc/dressing.nvim", config = true },
     {
         "folke/tokyonight.nvim",
+        priority = PRIORITY.HIGH,
         config = function()
             vim.cmd("colorscheme tokyonight")
         end,
     },
     {
         "j-hui/fidget.nvim",
+        priority = PRIORITY.HIGH,
         opts = {
             notification = {
                 override_vim_notify = true,
