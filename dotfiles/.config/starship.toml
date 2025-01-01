@@ -3,7 +3,7 @@ $username\
 $directory\
 $git_branch$git_status\
 $fill\
-$nodejs$rust$haskell$lua$java\
+$nodejs$rust$haskell$lua$java$python\
 $time
 [ λ ](fg:#ECEFF4 bg:#4C566A)[](fg:#4C566A bg:#ECEFF4)[ ](fg:#ECEFF4)"""
 
@@ -65,3 +65,7 @@ disabled = false
 time_format = " 📅 %a, %b %e 🕝 %R "
 style = "bg:#8FBCBB fg:#4C566A"
 format = "[$time]($style)"
+
+[python]
+format = "[ ${symbol}${pyenv_prefix}(${version} )(($virtualenv) )]($style)"
+style = "bg:#346E9F"
