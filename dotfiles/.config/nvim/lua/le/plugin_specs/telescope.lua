@@ -51,7 +51,7 @@ local config = function()
         { "<Leader>ff", ":Telescope find_files<Enter>", desc = "files" },
         {
             "<Leader>fF",
-            ":Telescope find_files hidden=true<Enter>",
+            ":Telescope find_files hidden=true no_ignore=true no_ignore_parent=true<Enter>",
             desc = "files (+hidden)",
         },
         {
