@@ -48,6 +48,7 @@ set foldenable foldmethod=indent foldlevel=60 " Dang I wish I could do both synt
 set guifont=Maple\ Mono\ NF,CodeNewRoman\ NF:h14,FiraCode\ NF,CaskaydiaCove\ NF " Set a font for GUI things
 
 let mapleader = "\<Space>"
+let maplocalleader = "g\<Space>"
 let g:netrw_banner = 0
 
 " Make Powershell work :)
@@ -107,7 +108,7 @@ noremap <C-S-z> u
 noremap <C-y> <C-r>
 
 " Reload config
-nnoremap <silent> <Leader><Leader>r :source $MYVIMRC<Enter>
+" nnoremap <silent> <Leader><Leader>r :source $MYVIMRC<Enter>
 
 " Global substitution for things selected in visual mode
 xnoremap gs y:%s/<C-r>"//g<Left><Left>
@@ -168,20 +169,6 @@ nnoremap <Leader>w <C-w>
 
 " Keep pasted value on replace
 vnoremap p "_dP
-
-" Text Movement
-nnoremap <M-j> :m .+1<CR>==
-nnoremap <M-k> :m .-2<CR>==
-nnoremap <M-Down> :m .+1<CR>==
-nnoremap <M-Up> :m .-2<CR>==
-inoremap <M-j> <Esc>:m .+1<CR>==gi
-inoremap <M-k> <Esc>:m .-2<CR>==gi
-inoremap <M-Down> <Esc>:m .+1<CR>==gi
-inoremap <M-Up> <Esc>:m .-2<CR>==gi
-vnoremap <M-j> :m '>+1<CR>gv=gv
-vnoremap <M-k> :m '<-2<CR>gv=gv
-vnoremap <M-Down> :m '>+1<CR>gv=gv
-vnoremap <M-Up> :m '<-2<CR>gv=gv
 
 " Fold Manipulation
 nnoremap <Leader><Leader>ff zA

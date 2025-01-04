@@ -1,10 +1,10 @@
 local config = function()
-    local lf = require("le.libf")
+    local lib = require("le.lib")
     local get_is_disabled = function(
         _, --[[ filetype ]]
         buf_number
     )
-        return lf.get_is_thicc_buffer(buf_number)
+        return lib.get_is_thicc_buffer(buf_number)
     end
 
     vim.treesitter.language.register("racket", "scheme")
@@ -81,20 +81,15 @@ local config = function()
         },
     })
 
-    vim.g.skip_ts_context_commentstring_module = true
-    require("ts_context_commentstring").setup({
-        enable_autocmd = false,
-    })
-
     require("rainbow-delimiters.setup").setup({
-        highlight = {
-            "RainbowDelimiterRed",
-            "RainbowDelimiterYellow",
-            "RainbowDelimiterBlue",
-            "RainbowDelimiterOrange",
-            "RainbowDelimiterGreen",
-            "RainbowDelimiterViolet",
-        },
+        -- highlight = {
+        --     "RainbowDelimiterRed",
+        --     "RainbowDelimiterYellow",
+        --     "RainbowDelimiterBlue",
+        --     "RainbowDelimiterOrange",
+        --     "RainbowDelimiterGreen",
+        --     "RainbowDelimiterViolet",
+        -- },
     })
 end
 
@@ -107,7 +102,6 @@ local lazy_spec = {
             "hiphish/rainbow-delimiters.nvim",
             "nvim-treesitter/nvim-treesitter-refactor",
             "nvim-treesitter/nvim-treesitter-textobjects",
-            "JoosepAlviste/nvim-ts-context-commentstring",
         },
     },
 }
