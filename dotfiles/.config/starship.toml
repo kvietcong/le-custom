@@ -4,13 +4,18 @@ $directory\
 $git_branch$git_status\
 $fill\
 $nodejs$rust$haskell$lua$java$python\
-$time
+$time$hostname
 [ λ ](fg:#ECEFF4 bg:#4C566A)[](fg:#4C566A bg:#ECEFF4)[ ](fg:#ECEFF4)"""
 
 command_timeout = 250
 
 [fill]
 symbol = " "
+
+[hostname]
+ssh_only = false
+style = "bg:#BF616A fg:#ECEFF4"
+format = '[ $ssh_symbol$hostname ]($style)'
 
 [username]
 show_always = true
