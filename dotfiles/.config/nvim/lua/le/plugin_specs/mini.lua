@@ -317,9 +317,15 @@ end
 local setup_files = function()
     local files = require("mini.files")
     local wk = require("which-key")
+    local lib = require("le.lib")
+
     files.setup({ mappings = { go_in_plus = "<Enter>" } })
     local open_file_explorer = function()
-        files.open(vim.api.nvim_buf_get_name(0))
+        if lib.get_is_file_buffer(0) then
+            files.open(vim.api.nvim_buf_get_name(0))
+        else
+            files.open()
+        end
     end
     wk.add({
         { "<C-f>", open_file_explorer, desc = "file explorer" },
