@@ -42,3 +42,15 @@ vim.keymap.set("v", "<Leader>s", function()
     end
     vim.api.nvim_feedkeys(lib.clean("<Escape>"), "n", true)
 end, { desc = "Search in browser" })
+
+vim.g.clipboard = {
+    name = 'OSC 52',
+    copy = {
+        ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+        ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+    },
+    paste = {
+        ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
+        ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+    },
+}
