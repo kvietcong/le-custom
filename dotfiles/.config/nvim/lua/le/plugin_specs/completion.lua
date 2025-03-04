@@ -17,6 +17,15 @@ local config = function()
             ["<C-k>"] = cmp.mapping.scroll_docs(-4),
             ["<C-j>"] = cmp.mapping.scroll_docs(4),
             ["<C-Space>"] = cmp.mapping.complete(nil),
+            ["<Up>"] = {
+                i = function()
+                    if cmp.visible() then
+                        cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
+                    else
+                        cmp.complete()
+                    end
+                end,
+            },
             ["<Down>"] = {
                 i = function()
                     if cmp.visible() then
@@ -37,15 +46,6 @@ local config = function()
                         )
                     else
                         fallback()
-                    end
-                end,
-            },
-            ["<Up>"] = {
-                i = function()
-                    if cmp.visible() then
-                        cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
-                    else
-                        cmp.complete()
                     end
                 end,
             },
