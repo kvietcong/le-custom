@@ -65,6 +65,11 @@ local config = function()
     })
 end
 
+local build_string = "mkdir build; zig cc -O3 -Wall -Werror -fpic -std=gnu99 -shared src/fzf.c -o build/libfzf.dll"
+if not IS_WIN then
+    build_string = "make"
+end
+
 local lazy_spec = {
     {
         "nvim-telescope/telescope.nvim",
@@ -76,7 +81,7 @@ local lazy_spec = {
     },
     {
         "nvim-telescope/telescope-fzf-native.nvim",
-        build = "mkdir build; zig cc -O3 -Wall -Werror -fpic -std=gnu99 -shared src/fzf.c -o build/libfzf.dll",
+        build = build_string,
         config = function()
             require("telescope").load_extension("fzf")
         end,
