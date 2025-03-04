@@ -1,7 +1,12 @@
+# Setup environment
+[ -f "/home/kvietcong/.ghcup/env" ] && . "/home/kvietcong/.ghcup/env"
+export PATH=$PATH:/usr/local/go/bin:$HOME/.local/bin:$HOME/bin
+. "$HOME/.cargo/env"
+
 # History and caching
 HISTSIZE=1000
 SAVEHIST=1000
-HISTFILE=~/.cache/zsh/history
+HISTFILE=~/.zsh_history
 EDITOR=nvim
 
 setopt autocd extendedglob notify
@@ -47,32 +52,37 @@ preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 bindkey -M menuselect "^P" vi-up-line-or-history
 bindkey -M menuselect "^N" vi-down-line-or-history
 
-# Custom lines
-alias ls="exa --icons"
+# Variables
+export EDITOR=nvim
+export VISUAL=nvim
+
+# Aliases
+if type "eza" &> /dev/null; then
+    alias ls="eza --icons"
+fi
+if type "lazygit" &> /dev/null; then
+    alias lg="lazygit"
+fi
+if type "lazydocker" &> /dev/null; then
+    alias lzd="lazydocker"
+fi
+
+alias vim="nvim"
 alias la="ls -a"
 alias mv="mv -i"
 alias rm="rm -I"
 alias cp="cp -i"
 alias grep="grep --color=auto"
-alias vi="nvim"
-alias vim="nvim"
-alias lg="lazygit"
-alias rice="cd ~/le-custom/dotfiles"
-alias compat="sudo mount --bind ~/.local/share/Steam/steamapps/compatdata/"
-alias gpusage="watch -d -n 0.5 nvidia-smi"
 
-# Color Scheme Application (wpgtk)
-# (cat $HOME/.config/wpg/sequences &)
+# Some program setup
+if type "zoxide" &> /dev/null; then
+    eval "$(zoxide init zsh)"
+else
+    echo Zoxide not installed
+fi
 
-# Proper Kitty autocompletion
-# kitty + complete setup zsh | source /dev/stdin
-
-eval "$(zoxide init zsh)"
-
-# Variables
-export EDITOR=nvim
-export VISUAL=nvim
-
-# Starship
-eval "$(starship init zsh)"
-
+if type "starship" &> /dev/null; then
+    eval "$(starship init zsh)"
+else
+    echo Starship not installed
+fi

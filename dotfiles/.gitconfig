@@ -4,7 +4,7 @@
 
 [user]
 	email = 32186663+kvietcong@users.noreply.github.com
-	name = KV Le
+	name = kvietcong
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
