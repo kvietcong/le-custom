@@ -1,7 +1,8 @@
 # Setup environment
-[ -f "/home/kvietcong/.ghcup/env" ] && . "/home/kvietcong/.ghcup/env"
+[ -f "$HOME/.ghcup/env" ] && . "$HOME/.ghcup/env"
 export PATH=$PATH:/usr/local/go/bin:$HOME/.local/bin:$HOME/bin
 . "$HOME/.cargo/env"
+source "$HOME/.env"
 
 # History and caching
 HISTSIZE=1000
@@ -15,7 +16,7 @@ unsetopt beep nomatch
 setopt prompt_subst
 
 # Auto complete
-zstyle :compinstall filename "/home/lecongkhoiviet/.zshrc"
+zstyle :compinstall filename "$HOME/.zshrc"
 zstyle ":completion::complete:*" gain-privileges 1
 zstyle ":completion:*" menu select
 _comp_options+=(globdots) # Auto complete hidden files

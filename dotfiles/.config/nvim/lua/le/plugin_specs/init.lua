@@ -6,15 +6,6 @@ local lazy_spec = {
     -- Quality of Life
     "tpope/vim-eunuch",
     { "Goose97/timber.nvim", event = "VeryLazy", opts = {} },
-    {
-        "Exafunction/codeium.nvim",
-        event = "VeryLazy",
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-            "hrsh7th/nvim-cmp",
-        },
-        opts = {},
-    },
 
     -- Pretty Things
     { "stevearc/dressing.nvim", config = true },

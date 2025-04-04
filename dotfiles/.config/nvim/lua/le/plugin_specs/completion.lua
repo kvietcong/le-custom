@@ -83,7 +83,6 @@ local config = function()
         }),
         sources = {
             { name = "nvim_lsp" },
-            { name = "codeium" },
             { name = "emoji", option = { insert = true } },
             { name = "path" },
             {
@@ -113,9 +112,7 @@ local config = function()
                     treesitter = "[TS]",
                     path = "[Path]",
                     emoji = "[Emoji]",
-                    codeium = "[AI]",
                 },
-                symbol_map = { Codeium = "" },
             }),
         },
     })

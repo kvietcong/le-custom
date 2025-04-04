@@ -9,6 +9,7 @@ _G.IS_WSL = vim.fn.has("wsl") == 1
 _G.IS_WIN = vim.fn.has("win32") == 1
 _G.IS_UNIX = vim.fn.has("unix") == 1
 _G.IS_LINUX = vim.fn.has("linux") == 1
+_G.IS_WSL = IS_LINUX and ((os.getenv("WSL_DISTRO_NAME") or "") ~= "" and true or false)
 _G.DATA_PATH = tostring(vim.fn.stdpath("data")):gsub("\\", "/")
 _G.CONFIG_PATH = tostring(vim.fn.stdpath("config")):gsub("\\", "/")
 _G.PRIORITY = {

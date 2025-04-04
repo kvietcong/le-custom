@@ -393,6 +393,7 @@ local config = function()
     setup_highlights()
     setup_files()
     require("mini.cursorword").setup({ delay = 500 })
+    require("mini.diff").setup({})
     require("mini.move").setup({})
 end
 
