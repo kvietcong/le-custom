@@ -137,6 +137,8 @@ end
 local lazy_spec = {
     {
         "hrsh7th/nvim-cmp",
+        commit = "b356f2c", -- See https://github.com/hrsh7th/nvim-cmp/issues/1877 for more info on the snippet bug
+        pin = true,
         event = { "BufReadPre", "BufNewFile", "CmdlineEnter" },
         config = config,
         dependencies = {

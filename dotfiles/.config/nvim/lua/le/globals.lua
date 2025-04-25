@@ -28,6 +28,7 @@ local lsp_servers_by_executable = {
         "html",
         "emmet_ls",
         "bashls",
+        "tailwindcss",
         "yamlls",
         "wgsl_analyzer",
         "vimls",

@@ -112,7 +112,7 @@ noremap <C-y> <C-r>
 " nnoremap <silent> <Leader><Leader>r :source $MYVIMRC<Enter>
 
 " Global substitution for things selected in visual mode
-xnoremap gs y:%s/<C-r>"//g<Left><Left>
+xnoremap gs y:%s/\(<C-r>"\)//g<Left><Left>
 
 " Help is now delegated to CTRL-h
 nnoremap <C-h> K
