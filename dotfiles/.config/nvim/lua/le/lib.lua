@@ -94,4 +94,10 @@ M.close_inactive_buffers = function()
     end
 end
 
+-- @param text The input string to escape.
+-- @return string The escaped string, safe to use as a literal part of a regex pattern.
+M.regex_escape = function(text)
+    return text:gsub("([%^%$%(%)%.%[%]%*%+%-%?%{%}%=%!%<%%>%|%:%\\-])", "\\%1")
+end
+
 return M

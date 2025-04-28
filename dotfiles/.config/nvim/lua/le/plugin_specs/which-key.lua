@@ -170,7 +170,12 @@ local setup_window_manipulation = function()
         {
             "<Leader>wmw",
             function()
-                vim.fn.win_gotoid(winshift_lib.pick_window())
+                local window_id = winshift_lib.pick_window()
+                if window_id then
+                    vim.fn.win_gotoid(window_id)
+                else
+                    require("le.lib").notify_error("Couldn't get valid window id")
+                end
             end,
             desc = "pick window",
         },

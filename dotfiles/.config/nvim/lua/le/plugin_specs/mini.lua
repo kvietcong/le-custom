@@ -21,7 +21,16 @@ local setup_sessions = function()
     sessions.setup({
         hooks = {
             pre = {
-                write = function() end,
+                write = function()
+                    for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+                        if
+                            vim.api.nvim_get_option_value("filetype", { buf = buffer })
+                            == "grug-far"
+                        then
+                            require("mini.bufremove").unshow(buffer)
+                        end
+                    end
+                end,
             },
             post = {
                 read = function()

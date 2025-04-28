@@ -1,13 +1,23 @@
 local config = function()
+    local lib = require("le.lib")
+    local get_is_disabled = function(
+        _, --[[ filetype ]]
+        buf_number
+    )
+        return lib.get_is_thicc_buffer(buf_number)
+    end
+
     vim.treesitter.language.register("racket", "scheme")
     vim.filetype.add({ extension = { wgsl = "wgsl" } })
 
     require("nvim-treesitter.configs").setup({
         -- ensure_installed = "all", -- "all" makes startup times much worse. Only uncomment for bootstrapping
+        ensure_installed = {},
         ignore_install = { "phpdoc" },
-        highlight = {
-            enable = true,
-        },
+        auto_install = false,
+        sync_install = false,
+        modules = {},
+        highlight = { enable = true },
         incremental_selection = {
             enable = true,
             keymaps = {
@@ -17,17 +27,21 @@ local config = function()
             },
         },
         refactor = {
+            -- THESE PLUGINS DESTROY PERFORMANCE ON LARGE FILES
             highlight_definitions = {
                 enable = true,
+                disable = get_is_disabled,
             },
             smart_rename = {
                 enable = true,
+                disable = get_is_disabled,
                 keymaps = {
                     smart_rename = "<Leader>rn",
                 },
             },
             navigation = {
                 enable = true,
+                disable = get_is_disabled,
                 keymaps = {
                     goto_definition_lsp_fallback = "gd",
                     goto_next_usage = "g>",
@@ -37,6 +51,7 @@ local config = function()
         },
         textobjects = {
             lsp_interop = { enable = true },
+            disable = get_is_disabled,
             select = {
                 enable = true,
                 lookahead = true,
@@ -66,16 +81,7 @@ local config = function()
         },
     })
 
-    require("rainbow-delimiters.setup").setup({
-        -- highlight = {
-        --     "RainbowDelimiterRed",
-        --     "RainbowDelimiterYellow",
-        --     "RainbowDelimiterBlue",
-        --     "RainbowDelimiterOrange",
-        --     "RainbowDelimiterGreen",
-        --     "RainbowDelimiterViolet",
-        -- },
-    })
+    require("rainbow-delimiters.setup").setup({})
 end
 
 local lazy_spec = {

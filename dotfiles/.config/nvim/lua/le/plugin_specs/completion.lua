@@ -40,7 +40,7 @@ local config = function()
                     if cmp.visible() then
                         cmp.abort()
                         vim.api.nvim_feedkeys(
-                            require("le.libf").clean("<Esc>"),
+                            require("le.lib").clean("<Esc>"),
                             "n",
                             false
                         )
