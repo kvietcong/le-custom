@@ -56,6 +56,7 @@ local code_companion_config = function()
 
                 return adapters.extend("gemini", {
                     env = {
+                        model = "gemini-2.5-flash-preview-04-17",
                         api_key = api_key,
                     },
                 })
