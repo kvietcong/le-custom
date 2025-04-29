@@ -11,12 +11,10 @@ local required_executables = {
     "zig",
 }
 
-local missing_executables = {}
-for _, exe in pairs(required_executables) do
-    if vim.fn.executable(exe) == 0 then
-        table.insert(missing_executables, exe)
-    end
-end
+local missing_executables = vim.iter(required_executables):filter(function(required_executable)
+    return vim.fn.executable(required_executable) == 0
+end):totable()
+
 if #missing_executables > 0 then
     vim.fn.timer_start(5000, function()
         require("le.lib").notify_error(

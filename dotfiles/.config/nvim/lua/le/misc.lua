@@ -24,7 +24,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end,
 })
 
--- Trigger autoread manually every second
+-- Trigger auto-read on a cadence
 -- This is so Vim auto-updates files on external change
 AutoReadTimer = vim.fn.timer_start(5000, function()
     vim.cmd([[silent! checktime]])

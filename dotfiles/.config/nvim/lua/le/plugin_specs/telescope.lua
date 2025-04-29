@@ -65,9 +65,10 @@ local config = function()
     })
 end
 
-local build_string = "mkdir build; zig cc -O3 -Wall -Werror -fpic -std=gnu99 -shared src/fzf.c -o build/libfzf.dll"
-if not IS_WIN then
-    build_string = "make"
+local build_string = "make"
+if IS_WIN then
+    build_string =
+        "mkdir build; zig cc -O3 -Wall -Werror -fpic -std=gnu99 -shared src/fzf.c -o build/libfzf.dll"
 end
 
 local lazy_spec = {

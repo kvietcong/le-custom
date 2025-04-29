@@ -13,17 +13,32 @@ local config = function()
         },
     })
     wk.add({ "<Leader>fr", ":GrugFar<Enter>", desc = "find and replace" })
+
+    local file_substitute = function()
+        local search = lib.get_visual_selection():gsub("(.-)%s*$", "%1")
+        local flags = { "--smart-case" }
+        if
+            vim.iter({ "\n", "\r" }):any(function(to_search)
+                return search:find(to_search) ~= nil
+            end)
+        then
+            table.insert(flags, "--multiline")
+        end
+
+        grug_far.open({
+            prefills = {
+                paths = vim.fn.expand("%"),
+                search = lib.regex_escape(search),
+                replacement = search,
+                flags = vim.iter(flags):join(" "),
+            },
+        })
+    end
     wk.add({
         mode = { "v" },
         {
             "gs",
-            function()
-                grug_far.with_visual_selection({
-                    prefills = {
-                        paths = vim.fn.expand("%"),
-                    },
-                })
-            end,
+            file_substitute,
             desc = "global substitution (current file)",
         },
     })

@@ -16,7 +16,6 @@ local config = function()
         ignore_install = { "phpdoc" },
         auto_install = false,
         sync_install = false,
-        modules = {},
         highlight = { enable = true },
         incremental_selection = {
             enable = true,

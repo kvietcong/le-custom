@@ -291,17 +291,7 @@ local setup_indentscope = function()
         end,
     })
 
-    vim.api.nvim_create_autocmd("BufEnter", {
-        group = LE_GROUP,
-        callback = function(event)
-            local lib = require("le.lib")
-            if lib.get_is_thicc_buffer(event.buf) then
-                vim.b.miniindentscope_disable = true
-                lib.notify_warn("This buffer is quite large! Disabling indent scope")
-            end
-        end,
-        vim.api.nvim_command("highlight Delimiter guifg=#4C566A"),
-    })
+    vim.api.nvim_command("highlight Delimiter guifg=#4C566A")
 end
 
 local setup_trailspace = function()
@@ -323,7 +313,7 @@ local setup_highlights = function()
     })
 end
 
-local setup_files = function()
+local setup_file_explorer = function()
     local files = require("mini.files")
     local wk = require("which-key")
     local lib = require("le.lib")
@@ -400,10 +390,22 @@ local config = function()
     setup_indentscope()
     setup_trailspace()
     setup_highlights()
-    setup_files()
+    setup_file_explorer()
     require("mini.cursorword").setup({ delay = 500 })
     require("mini.diff").setup({})
     require("mini.move").setup({})
+
+    vim.api.nvim_create_autocmd("BufEnter", {
+        group = LE_GROUP,
+        callback = function(event)
+            local lib = require("le.lib")
+            if lib.get_is_thicc_buffer(event.buf) then
+                lib.notify_warn("This buffer is quite large! Disabling some features")
+                vim.b.miniindentscope_disable = true
+                vim.b.minihipatterns_disable = true
+            end
+        end,
+    })
 end
 
 local lazy_spec = {

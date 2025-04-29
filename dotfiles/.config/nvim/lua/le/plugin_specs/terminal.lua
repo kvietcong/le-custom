@@ -13,10 +13,6 @@ local kill_all_terminals = function()
     end
 end
 
-local get_is_split_type = function()
-    return vim.g.floaterm_wintype == "split"
-end
-
 local toggle_term_type = function()
     if vim.g.floaterm_wintype == "split" then
         vim.g.floaterm_wintype = "float"
