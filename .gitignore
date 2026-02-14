@@ -3,3 +3,5 @@
 
 **/BetterDiscord/*.json
 **/BetterDiscord/**/*.json
+
+**/.DS_Store
