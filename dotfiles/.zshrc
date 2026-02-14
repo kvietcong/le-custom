@@ -1,8 +1,9 @@
 # Setup environment
 [ -f "$HOME/.ghcup/env" ] && . "$HOME/.ghcup/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+[ -f "$HOME/.env" ] && . "$HOME/.env"
+
 export PATH=$PATH:/usr/local/go/bin:$HOME/.local/bin:$HOME/bin
-. "$HOME/.cargo/env"
-source "$HOME/.env"
 
 # History and caching
 HISTSIZE=1000
