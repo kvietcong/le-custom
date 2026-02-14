@@ -13,6 +13,7 @@ local config = function()
     require("nvim-treesitter.configs").setup({
         -- ensure_installed = "all", -- "all" makes startup times much worse. Only uncomment for bootstrapping
         ensure_installed = {},
+        modules = {},
         ignore_install = { "phpdoc" },
         auto_install = false,
         sync_install = false,
@@ -86,7 +87,9 @@ end
 local lazy_spec = {
     {
         "nvim-treesitter/nvim-treesitter",
-        event = { "BufReadPre", "BufNewFile" },
+        branch = "master",
+        lazy = false,
+        build = ":TSUpdate",
         config = config,
         dependencies = {
             "hiphish/rainbow-delimiters.nvim",
