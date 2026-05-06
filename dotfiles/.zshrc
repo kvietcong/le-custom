@@ -1,7 +1,8 @@
 # Setup environment
-[ -f "$HOME/.ghcup/env" ] && . "$HOME/.ghcup/env"
-[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-[ -f "$HOME/.env" ] && . "$HOME/.env"
+[ -f "$HOME/homebrew/bin/brew" ] && eval "$(~/homebrew/bin/brew shellenv)"
+[ -f "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env"
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+[ -f "$HOME/.env" ] && source "$HOME/.env"
 
 export PATH=$PATH:/usr/local/go/bin:$HOME/.local/bin:$HOME/bin
 
@@ -33,15 +34,15 @@ bindkey '^R' history-incremental-search-backward
 
 # Change cursor shape for different vi modes.
 function zle-keymap-select {
-  if [[ ${KEYMAP} == vicmd ]] ||
-     [[ $1 = 'block' ]]; then
+    if [[ ${KEYMAP} == vicmd ]] ||
+        [[ $1 = 'block' ]]; then
     echo -ne '\e[1 q'
-  elif [[ ${KEYMAP} == main ]] ||
-       [[ ${KEYMAP} == viins ]] ||
-       [[ ${KEYMAP} = '' ]] ||
-       [[ $1 = 'beam' ]]; then
-    echo -ne '\e[5 q'
-  fi
+elif [[ ${KEYMAP} == main ]] ||
+    [[ ${KEYMAP} == viins ]] ||
+    [[ ${KEYMAP} = '' ]] ||
+    [[ $1 = 'beam' ]]; then
+echo -ne '\e[5 q'
+    fi
 }
 zle -N zle-keymap-select
 zle-line-init() {
@@ -54,29 +55,27 @@ preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 bindkey -M menuselect "^P" vi-up-line-or-history
 bindkey -M menuselect "^N" vi-down-line-or-history
 
-# Variables
-export EDITOR=nvim
-export VISUAL=nvim
-
 # Aliases
 if type "eza" &> /dev/null; then
     alias ls="eza --icons"
 fi
+
 if type "lazygit" &> /dev/null; then
     alias lg="lazygit"
 fi
+
 if type "lazydocker" &> /dev/null; then
     alias lzd="lazydocker"
 fi
 
-alias vim="nvim"
-alias la="ls -a"
-alias mv="mv -i"
-alias rm="rm -I"
-alias cp="cp -i"
-alias grep="grep --color=auto"
+if type "nvim" &> /dev/null; then
+    alias vim="nvim"
+    export EDITOR=nvim
+    export VISUAL=nvim
+else
+    echo Neovim not installed
+fi
 
-# Some program setup
 if type "zoxide" &> /dev/null; then
     eval "$(zoxide init zsh)"
 else
@@ -88,3 +87,10 @@ if type "starship" &> /dev/null; then
 else
     echo Starship not installed
 fi
+
+alias la="ls -a"
+alias ll="ls -al"
+alias mv="mv -i"
+alias rm="rm -I"
+alias cp="cp -i"
+alias grep="grep --color=auto"

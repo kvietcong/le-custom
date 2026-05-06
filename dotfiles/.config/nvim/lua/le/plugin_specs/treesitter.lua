@@ -43,7 +43,7 @@ local config = function()
                 enable = true,
                 disable = get_is_disabled,
                 keymaps = {
-                    goto_definition_lsp_fallback = "gd",
+                    -- goto_definition_lsp_fallback = "gd",
                     goto_next_usage = "g>",
                     goto_previous_usage = "g<",
                 },
