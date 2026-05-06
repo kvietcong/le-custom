@@ -1,0 +1,5 @@
+font-family = "CodeNewRoman NF"
+font-size = 16
+
+keybind = alt+shift+h=previous_tab
+keybind = alt+shift+l=next_tab

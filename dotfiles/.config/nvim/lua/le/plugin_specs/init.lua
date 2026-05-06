@@ -45,6 +45,14 @@ local lazy_spec = {
             vim.diagnostic.config({ virtual_text = false })
         end,
     },
+    {
+        "folke/trouble.nvim",
+        opts = {},
+        cmd = "Trouble",
+    },
+    {
+        "tpope/vim-dadbod",
+    },
 }
 
 return lazy_spec

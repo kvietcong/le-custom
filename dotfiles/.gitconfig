@@ -1,7 +1,3 @@
-[core]
-	editor = nvim
-	fsmonitor = true
-
 [user]
 	email = 32186663+kvietcong@users.noreply.github.com
 	name = kvietcong
@@ -11,6 +7,10 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+
+[core]
+	editor = nvim
+	fsmonitor = true
 
 [pull]
 	rebase = false
@@ -27,16 +27,14 @@
     lg1-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'
     lg2-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'
     lg3-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(white)%s%C(reset)%n''          %C(dim white)- %an <%ae> %C(reset) %C(dim white)(committer: %cn <%ce>)%C(reset)'
+    s = status
+    d = diff --ignore-space-at-eol
+    pushit = push --force-with-lease
+    fixit = commit -a --amend --no-edit
+    revise = commit --amend
 
 [merge]
     conflictstyle = diff3
 
 [diff]
     colorMoved = default
-
-[alias]
-    s = status
-    d = diff --ignore-space-at-eol
-    pushit = push --force-with-lease
-    fixit = commit -a --amend --no-edit
-    revise = commit --amend
