@@ -26,7 +26,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 
 -- Trigger auto-read on a cadence
 -- This is so Vim auto-updates files on external change
-AutoReadTimer = vim.fn.timer_start(5000, function()
+AutoReadTimer = vim.fn.timer_start(1024, function()
     vim.cmd([[silent! checktime]])
 end, { ["repeat"] = -1 })
 
@@ -37,6 +37,8 @@ vim.keymap.set("v", "<Leader>s", function()
         .. lib.get_visual_selection():trim():gsub("\n", " "):urlencode()
     if IS_WIN then
         os.execute("start " .. link)
+    elseif IS_MAC then
+        os.execute("open " .. link)
     else
         os.execute("xdg-open " .. link)
     end

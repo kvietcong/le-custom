@@ -43,7 +43,7 @@ _G.LSP_SERVERS = vim.iter(lsp_servers_by_executable)
         if vim.fn.executable(exe) == 0 then
             vim.fn.timer_start(1000, function()
                 -- Delaying to get the cool notifications XD
-                require("le.lib").notify_error(
+                require("le.lib").notify_warn(
                     string.format(
                         "Missing '%s' required for: %s",
                         exe,

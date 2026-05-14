@@ -11,9 +11,11 @@ local required_executables = {
     "zig",
 }
 
-local missing_executables = vim.iter(required_executables):filter(function(required_executable)
-    return vim.fn.executable(required_executable) == 0
-end):totable()
+local missing_executables = vim.iter(required_executables)
+    :filter(function(required_executable)
+        return vim.fn.executable(required_executable) == 0
+    end)
+    :totable()
 
 if #missing_executables > 0 then
     vim.fn.timer_start(5000, function()
